@@ -1,0 +1,125 @@
+// ==========================
+// Enums
+// ==========================
+
+Enum RecurringInterval {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+Enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+Enum AccountType {
+  CURRENT
+  SAVING
+}
+
+Enum PlanType {
+  FREE
+  PRO
+  PREMIUM
+}
+
+Enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  CANCELED
+  EXPIRED
+}
+
+// ==========================
+// Tables
+// ==========================
+
+Table users {
+  id uuid [primary key]
+  clerk_user_id varchar [unique]
+  email varchar [unique]
+  name varchar
+  image_url varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table subscriptions {
+  id uuid [primary key]
+  user_id uuid [unique]
+  plan PlanType
+  status SubscriptionStatus
+  provider varchar
+  provider_sub_id varchar
+  started_at timestamp
+  trial_ends_at timestamp
+  current_period_end timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table usage {
+  id uuid [primary key]
+  user_id uuid [unique]
+  ai_receipt_scans int
+  ai_bulk_imports int
+  period_start timestamp
+  period_end timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table budgets {
+  id uuid [primary key]
+  user_id uuid [unique]
+  amount decimal
+  last_alert_sent timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table accounts {
+  id uuid [primary key]
+  user_id uuid
+  name varchar
+  type AccountType
+  balance decimal
+  is_default boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table transactions {
+  id uuid [primary key]
+  user_id uuid
+  account_id uuid
+  type varchar
+  amount decimal
+  description varchar
+  date timestamp
+  category varchar
+  receipt_url varchar
+  is_recurring boolean
+  recurring_interval RecurringInterval
+  next_recurring_date timestamp
+  last_processed timestamp
+  status TransactionStatus
+  created_at timestamp
+  updated_at timestamp
+}
+
+// ==========================
+// Relationships
+// ==========================
+
+Ref: subscriptions.user_id > users.id
+Ref: usage.user_id > users.id
+Ref: budgets.user_id > users.id
+
+Ref: accounts.user_id > users.id
+
+Ref: transactions.user_id > users.id
+Ref: transactions.account_id > accounts.id

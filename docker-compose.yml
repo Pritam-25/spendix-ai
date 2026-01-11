@@ -1,0 +1,29 @@
+services:
+  app:
+    build:
+      context: .
+      target: runner
+      args:
+        # ---- Build-time ENV (PUBLIC ONLY) ----
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+
+    container_name: spendix_app
+
+    ports:
+      - "3000:3000"
+
+    # ---- Runtime ENV (SECRETS + DB) ----
+    env_file:
+      - .env
+
+    environment:
+      NODE_ENV: production
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+    restart: unless-stopped
