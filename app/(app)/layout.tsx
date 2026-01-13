@@ -14,8 +14,8 @@ export default async function AppLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
-        <AppSidebar />
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />``
         <main className="flex-1 p-6">
           {children}
         </main>
