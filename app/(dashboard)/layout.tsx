@@ -2,6 +2,8 @@ import { currentUser } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/web/app-sidebar"
+import { DashboardHeader } from "@/components/web/dashboard-header"
+
 
 export default async function AppLayout({
   children,
@@ -15,8 +17,9 @@ export default async function AppLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <AppSidebar />``
+        <AppSidebar />
         <main className="flex-1 p-6">
+          <DashboardHeader />
           {children}
         </main>
       </div>
