@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Trash2Icon } from "lucide-react";
 
-import { deleteAccount } from "@/actions/account";
+import { deleteAccount } from "@/app/(dashboard)/accounts/action";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -44,11 +44,11 @@ export default function DeleteAccountButton({
       const result = await deleteAccount(accountId);
 
       if (!result?.success) {
-        toast.error(result?.error ?? "Failed to delete account");
+        toast.error(result.error);
         return;
       }
 
-      toast.success("Account deleted successfully");
+      toast.success(result.message);
       setOpen(false);
     });
   };
@@ -93,9 +93,7 @@ export default function DeleteAccountButton({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           {isProtectedDefault ? (
-            <AlertDialogAction
-              onClick={() => setOpen(false)}
-            >
+            <AlertDialogAction onClick={() => setOpen(false)}>
               OK
             </AlertDialogAction>
           ) : (

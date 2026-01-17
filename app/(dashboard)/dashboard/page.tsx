@@ -58,7 +58,10 @@ export default function DashboardPage() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard title="Total Balance" value={`₹${summary.balance}`} />
-            <StatCard title="This Month Expense" value={`-₹${summary.expense}`} />
+            <StatCard
+              title="This Month Expense"
+              value={`-₹${summary.expense}`}
+            />
             <StatCard title="This Month Income" value={`+₹${summary.income}`} />
             <StatCard title="Budget Used" value={`${summary.budgetUsed}%`} />
           </div>
@@ -136,8 +139,8 @@ function EmptyDashboard() {
         <div className="text-5xl">👋</div>
         <h2 className="text-xl font-semibold">Welcome to Spendix</h2>
         <p className="text-sm text-muted-foreground max-w-md">
-          You haven’t added any data yet. Start by creating an account and adding
-          your first transaction to track your finances.
+          You haven’t added any data yet. Start by creating an account and
+          adding your first transaction to track your finances.
         </p>
         <div className="flex gap-3 mt-4">
           <Button>+ Add Account</Button>

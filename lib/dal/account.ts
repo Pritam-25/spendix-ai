@@ -1,16 +1,14 @@
 import prisma from "@/lib/prisma";
-import { serialize } from "@/lib/serialize";
+import { serialize } from "@/lib/utils/serialize";
 import { requireUser } from "./auth";
 
-export const getAccounts = 
-  async () => {
+export const getAccounts = async () => {
+  const user = await requireUser();
 
-    const user = await requireUser();
+  const accounts = await prisma.account.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+  });
 
-    const accounts = await prisma.account.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-    });
-
-    return accounts.map(serialize);
-  };
+  return accounts.map(serialize);
+};

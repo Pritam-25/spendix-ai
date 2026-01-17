@@ -37,9 +37,7 @@ export default function CreateAccountCard() {
 
         {/* Text */}
         <div className="space-y-0.5">
-          <p className="text-sm font-medium text-foreground">
-            Create account
-          </p>
+          <p className="text-sm font-medium text-foreground">Create account</p>
           <p className="max-w-[220px] text-xs leading-relaxed text-muted-foreground">
             Add a new account to manage balances and transactions.
           </p>

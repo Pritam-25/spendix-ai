@@ -1,7 +1,7 @@
-import Link from "next/link"
-import Logo from "../logo"
-import NavbarAuth from "./navbarAuth"
-import { ModeToggle } from "../mode-toggle"
+import Link from "next/link";
+import Logo from "../logo";
+import NavbarAuth from "./navbarAuth";
+import { ModeToggle } from "../mode-toggle";
 
 export default function Navbar() {
   return (
@@ -17,5 +17,5 @@ export default function Navbar() {
         </div>
       </nav>
     </div>
-  )
+  );
 }

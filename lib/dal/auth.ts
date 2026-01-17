@@ -2,20 +2,21 @@
 
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { ErrorCode } from "../errors/error-codes";
 
 export const requireUser = async () => {
-    const {userId, isAuthenticated} = await auth();
-    if(!isAuthenticated || !userId) {
-        throw new Error("Unauthorized");
-    }
+  const { userId, isAuthenticated } = await auth();
+  if (!isAuthenticated || !userId) {
+    throw new Error(ErrorCode.UNAUTHORIZED);
+  }
 
-    const user = await prisma.user.findUnique({
-        where: { clerkUserId: userId },
-    });
-    
-    if(!user) {
-        throw new Error("User not found");
-    }
+  const user = await prisma.user.findUnique({
+    where: { clerkUserId: userId },
+  });
 
-    return user;
+  if (!user) {
+    throw new Error(ErrorCode.USER_NOT_FOUND);
+  }
+
+  return user;
 };

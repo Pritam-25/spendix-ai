@@ -1,8 +1,7 @@
-"use client"
+"use client";
 
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs"
-import { Button } from "@/components/ui/button"
-import { ModeToggle } from "../mode-toggle"
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 
 export default function NavbarAuth() {
   return (
@@ -17,5 +16,5 @@ export default function NavbarAuth() {
         <UserButton />
       </SignedIn>
     </>
-  )
+  );
 }

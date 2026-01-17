@@ -24,6 +24,11 @@ enum PlanType {
   PREMIUM
 }
 
+enum TransactionType {
+  EXPENSE
+  INCOME
+}
+
 enum SubscriptionStatus {
   ACTIVE
   TRIALING
@@ -151,7 +156,7 @@ model Account {
 
 model Transaction {
   id                String            @id @default(uuid())
-  type              String
+  type              TransactionType
   amount            Decimal
   description       String?
   date              DateTime

@@ -13,17 +13,15 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useState, useTransition } from "react";
 import { AccountFormType, accountSchema } from "@/lib/schemas/account.schema";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSeparator,
   FieldSet,
-} from "@/components/ui/field"
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -33,54 +31,91 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createAccount } from "@/actions/account";
+import { createAccount } from "@/app/(dashboard)/accounts/action";
 import { toast } from "sonner";
 import { AccountType } from "@prisma/client";
 
+type CreatedAccountPayload = {
+  id: string;
+  name: string;
+  type: AccountType;
+  balance: number;
+  isDefault: boolean;
+};
+
+type CreateAccountDrawerProps = {
+  children?: React.ReactNode;
+  open?: boolean;
+  onOpenChangeAction?: (open: boolean) => void;
+  onCreatedAction?: (account: CreatedAccountPayload) => void;
+};
+
 export default function CreateAccountDrawer({
   children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
+  open,
+  onOpenChangeAction,
+  onCreatedAction,
+}: CreateAccountDrawerProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<AccountFormType>({
-    resolver: zodResolver(accountSchema),
-    defaultValues: {
-      name: "",
-      type: AccountType.CURRENT,
-      balance: 0,
-      isDefault: false,
-    },
-  });
+  const isControlled = open !== undefined;
+  const actualOpen = isControlled ? open : internalOpen;
+
+  const handleOpenChange = (value: boolean) => {
+    if (!isControlled) {
+      setInternalOpen(value);
+    }
+    onOpenChangeAction?.(value);
+  };
 
   const {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
+    reset,
     formState: { errors },
-  } = form;
+  } = useForm<AccountFormType>({
+    resolver: zodResolver(accountSchema),
+    defaultValues: {
+      name: "",
+      type: AccountType.CURRENT,
+      balance: undefined,
+      isDefault: false,
+    },
+  });
+
+  const accountType = useWatch({ control, name: "type" });
+  const isDefault = useWatch({ control, name: "isDefault" });
 
   const onSubmit = (values: AccountFormType) => {
     startTransition(async () => {
       const result = await createAccount(values);
 
       if (!result?.success) {
-        toast.error(result?.error ?? "Something went wrong");
+        toast.error(result.error);
         return;
       }
 
-      toast.success("Account created successfully");
-      form.reset();
-      setOpen(false);
+      toast.success(result.message);
+      if (result.accountId) {
+        onCreatedAction?.({
+          id: result.accountId,
+          name: values.name,
+          type: values.type,
+          balance: Number(values.balance ?? 0),
+          isDefault: values.isDefault ?? false,
+        });
+      }
+      reset();
+      handleOpenChange(false);
     });
   };
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>{children}</DrawerTrigger>
+    <Drawer open={actualOpen} onOpenChange={handleOpenChange}>
+      {children && <DrawerTrigger asChild>{children}</DrawerTrigger>}
 
       <DrawerContent className="max-w-3xl mx-auto">
         <DrawerHeader>
@@ -94,15 +129,10 @@ export default function CreateAccountDrawer({
           <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
               <FieldSet>
-                <FieldLegend>Account Details</FieldLegend>
-                <FieldDescription>
-                  Fill in the details of your new account.
-                </FieldDescription>
                 <FieldGroup>
+                  {/* Account Name */}
                   <Field>
-                    <FieldLabel htmlFor="account-name">
-                      Name
-                    </FieldLabel>
+                    <FieldLabel htmlFor="account-name">Name</FieldLabel>
                     <Input
                       id="account-name"
                       placeholder="My main account"
@@ -117,11 +147,9 @@ export default function CreateAccountDrawer({
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="account-type">
-                      Account Type
-                    </FieldLabel>
+                    <FieldLabel htmlFor="account-type">Account Type</FieldLabel>
                     <Select
-                      value={watch("type")}
+                      value={accountType}
                       onValueChange={(value) =>
                         setValue("type", value as AccountType)
                       }
@@ -146,6 +174,7 @@ export default function CreateAccountDrawer({
                     )}
                   </Field>
 
+                  {/* Initial Balance */}
                   <Field>
                     <FieldLabel htmlFor="account-balance">
                       Initial Balance
@@ -157,7 +186,7 @@ export default function CreateAccountDrawer({
                       step="0.01"
                       placeholder="0.00"
                       disabled={isPending}
-                      {...register("balance", { valueAsNumber: true })}
+                      {...register("balance")}
                     />
                     {errors.balance && (
                       <p className="text-sm text-destructive">
@@ -173,13 +202,13 @@ export default function CreateAccountDrawer({
                           Default Account
                         </FieldLabel>
                         <FieldDescription>
-                          This account will be used by default for
-                          new transactions.
+                          This account will be used by default for new
+                          transactions.
                         </FieldDescription>
                       </div>
                       <Switch
                         id="account-default"
-                        checked={watch("isDefault")}
+                        checked={isDefault}
                         onCheckedChange={(value) =>
                           setValue("isDefault", value)
                         }

@@ -5,7 +5,7 @@ import {
   BarChart3,
   Repeat,
   Settings,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -16,7 +16,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const items = [
   {
@@ -44,7 +44,7 @@ const items = [
     url: "/recurring",
     icon: Repeat,
   },
-]
+];
 
 export function AppSidebar() {
   return (
@@ -89,5 +89,5 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }

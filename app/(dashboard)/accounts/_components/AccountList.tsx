@@ -4,10 +4,9 @@ import AccountsEmpty from "./AccountsEmpty";
 import CreateAccountCard from "./CreateAccountCard";
 
 export default async function AccountsList() {
-
   const accounts = await getAccounts(); // SERVER FETCH
 
- // EMPTY STATE
+  // EMPTY STATE
   if (accounts.length === 0) {
     return <AccountsEmpty />;
   }

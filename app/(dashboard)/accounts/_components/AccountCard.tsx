@@ -23,20 +23,14 @@ export default function AccountCard({ account }: AccountCardProps) {
       {/* 🔹 HEADER */}
       <CardHeader className="flex flex-row items-center justify-between">
         {/* LEFT SIDE = NAVIGATION */}
-        <Link
-          href={`/accounts/${id}`}
-          className="flex-1 focus:outline-none"
-        >
+        <Link href={`/accounts/${id}`} className="flex-1 focus:outline-none">
           <CardTitle className="text-sm font-medium capitalize">
             {name}
           </CardTitle>
         </Link>
 
         {/* RIGHT SIDE = ACTION (same visual position) */}
-        <DefaultAccountSwitch
-          accountId={id}
-          isDefault={isDefault}
-        />
+        <DefaultAccountSwitch accountId={id} isDefault={isDefault} />
       </CardHeader>
 
       {/* 🔹 CONTENT (NAVIGATION) */}

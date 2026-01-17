@@ -16,7 +16,9 @@ const TITLES: Record<string, string> = {
 export function DashboardHeader() {
   const segment = useSelectedLayoutSegment();
 
-  const title = segment ? TITLES[segment] ?? capitalize(segment) : "Dashboard";
+  const title = segment
+    ? (TITLES[segment] ?? capitalize(segment))
+    : "Dashboard";
 
   return (
     <div className="mb-4 flex items-center justify-between gap-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import { Switch } from "@/components/ui/switch";
-import { updateDefaultAccount } from "@/actions/account";
+import { updateDefaultAccount } from "@/app/(dashboard)/accounts/action";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import {
@@ -29,9 +29,9 @@ export default function DefaultAccountSwitch({
       const res = await updateDefaultAccount(accountId);
 
       if (!res.success) {
-        toast.error(res.message);
+        toast.error(res.error);
       } else {
-        toast.success("Default account updated");
+        toast.success(res.message);
       }
     });
   };

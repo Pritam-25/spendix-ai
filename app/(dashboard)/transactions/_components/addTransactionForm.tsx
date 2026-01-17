@@ -1,0 +1,467 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { defaultCategories } from "@/lib/data/categories";
+import {
+  TransactionFormType,
+  transactionSchema,
+} from "@/lib/schemas/transaction.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Account,
+  AccountType,
+  RecurringInterval,
+  TransactionType,
+} from "@prisma/client";
+import { useTransition } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { createTransaction } from "../action";
+import { toast } from "sonner";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldSet,
+} from "@/components/ui/field";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import CreateAccountDrawer from "../../accounts/_components/CreateAccountDrawer";
+import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/web/datpicker";
+import { CategoryCombobox } from "@/components/web/category-combobox";
+import { Switch } from "@/components/ui/switch";
+import Link from "next/link";
+
+type AddTransactionFormProps = {
+  accounts: Account[];
+  category: typeof defaultCategories;
+  editmode: boolean;
+  initialData: Partial<TransactionFormType>;
+  canUseRecurring: boolean;
+};
+
+type SimpleAccount = {
+  id: string;
+  name: string;
+  type: AccountType;
+  balance: number;
+  isDefault: boolean;
+};
+
+export default function AddTransactionForm(props: AddTransactionFormProps) {
+  const { accounts, category, editmode, initialData, canUseRecurring } = props;
+
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false);
+  const [localAccounts, setLocalAccounts] = useState<SimpleAccount[]>([]);
+
+  const baseAccounts = useMemo<SimpleAccount[]>(
+    () =>
+      accounts.map((account) => ({
+        id: account.id,
+        name: account.name,
+        type: account.type,
+        balance: Number(account.balance ?? 0),
+        isDefault: account.isDefault,
+      })),
+    [accounts],
+  );
+
+  const accountsState = useMemo<SimpleAccount[]>(() => {
+    if (localAccounts.length === 0) return baseAccounts;
+
+    const merged = new Map<string, SimpleAccount>();
+    for (const acc of baseAccounts) {
+      merged.set(acc.id, acc);
+    }
+    for (const acc of localAccounts) {
+      merged.set(acc.id, acc);
+    }
+    return Array.from(merged.values());
+  }, [baseAccounts, localAccounts]);
+
+  const defaultAccountId =
+    accountsState.find((account) => account.isDefault)?.id ?? "";
+
+  const getDefaultValues = (): Partial<TransactionFormType> =>
+    editmode && initialData
+      ? {
+          ...initialData,
+          date: initialData.date ? new Date(initialData.date) : new Date(),
+        }
+      : {
+          type: TransactionType.EXPENSE,
+          date: new Date(),
+          amount: undefined,
+          category: "",
+          description: "",
+          accountId: defaultAccountId,
+          isRecurring: false,
+          recurringInterval: undefined,
+        };
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<TransactionFormType>({
+    resolver: zodResolver(transactionSchema),
+    defaultValues: getDefaultValues(),
+  });
+
+  const transactionType = useWatch({ control, name: "type" });
+  const accountId = useWatch({ control, name: "accountId" });
+  const categoryValue = useWatch({ control, name: "category" });
+  const dateValue = useWatch({ control, name: "date" });
+  const isRecurring = useWatch({ control, name: "isRecurring" });
+  const recurringInterval = useWatch({ control, name: "recurringInterval" });
+
+  const onSubmit = (values: TransactionFormType) => {
+    startTransition(async () => {
+      const result = await createTransaction(values);
+
+      if (!result?.success) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success(result.message);
+      router.push("/transactions");
+    });
+  };
+
+  // Ensure non-pro users cannot submit recurring transactions
+  useEffect(() => {
+    if (!canUseRecurring) {
+      setValue("isRecurring", false);
+      setValue("recurringInterval", undefined);
+    }
+  }, [canUseRecurring, setValue]);
+
+  return (
+    <Card>
+      <CardHeader className="border-b">
+        <CardTitle>Add transaction</CardTitle>
+        <CardDescription>
+          Create a new income or expense and optionally set it as recurring.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <CreateAccountDrawer
+          open={isAccountDrawerOpen}
+          onOpenChangeAction={setIsAccountDrawerOpen}
+          onCreatedAction={(newAccount) => {
+            setIsAccountDrawerOpen(false);
+            setLocalAccounts((prev) => [newAccount, ...prev]);
+            setValue("accountId", newAccount.id);
+          }}
+        />
+        <form onSubmit={handleSubmit(onSubmit)} className="py-4">
+          <FieldGroup>
+            <FieldSet>
+              <FieldGroup>
+                {/* Transaction Type */}
+                <Field>
+                  <FieldLabel htmlFor="transaction-type">
+                    Transaction Type
+                  </FieldLabel>
+                  <Select
+                    value={transactionType}
+                    onValueChange={(value) =>
+                      setValue("type", value as TransactionType)
+                    }
+                    disabled={isPending}
+                  >
+                    <SelectTrigger id="transaction-type">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={TransactionType.EXPENSE}>
+                        Expense
+                      </SelectItem>
+                      <SelectItem value={TransactionType.INCOME}>
+                        Income
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.type && (
+                    <p className="text-sm text-destructive">
+                      {errors.type.message}
+                    </p>
+                  )}
+                </Field>
+
+                {/* Amount and Account */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Amount */}
+                  <Field>
+                    <FieldLabel htmlFor="transaction-amount">Amount</FieldLabel>
+                    <Input
+                      id="transaction-amount"
+                      placeholder="0.00"
+                      disabled={isPending}
+                      {...register("amount")}
+                    />
+                    {errors.amount && (
+                      <p className="text-sm text-destructive">
+                        {errors.amount.message}
+                      </p>
+                    )}
+                  </Field>
+
+                  {/* Account */}
+                  <Field>
+                    <FieldLabel htmlFor="transaction-account">
+                      Account
+                    </FieldLabel>
+                    {accountsState.length === 0 ? (
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">
+                          You don&apos;t have any accounts yet. Create one to
+                          add this transaction.
+                        </p>
+                        <Button
+                          type="button"
+                          variant={"outline"}
+                          onClick={() => setIsAccountDrawerOpen(true)}
+                          className="w-full"
+                        >
+                          Add account
+                        </Button>
+                      </div>
+                    ) : (
+                      <Select
+                        value={accountId}
+                        onValueChange={(value) => {
+                          if (value === "__create_account") {
+                            return;
+                          }
+                          setValue("accountId", value as string);
+                        }}
+                        disabled={isPending}
+                      >
+                        <SelectTrigger id="transaction-account">
+                          <SelectValue placeholder="Select account" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {accountsState.map((account) => (
+                            <SelectItem
+                              key={account.id}
+                              value={account.id}
+                              className="flex items-center justify-between gap-2"
+                            >
+                              <span className="truncate max-w-[150px]">
+                                {account.name}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                (₹{account.balance.toFixed(2)})
+                              </span>
+                            </SelectItem>
+                          ))}
+                          <SelectSeparator />
+                          <SelectItem
+                            value="__create_account"
+                            onSelect={(event) => {
+                              event.preventDefault();
+                              setIsAccountDrawerOpen(true);
+                            }}
+                            className="mt-1 flex justify-center text-sm font-medium text-accent-foreground bg-accent cursor-pointer hover:bg-accent/80"
+                          >
+                            + Add account
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                    {errors.accountId && (
+                      <p className="text-sm text-destructive">
+                        {errors.accountId.message}
+                      </p>
+                    )}
+                  </Field>
+                </div>
+
+                {/* Category */}
+                <Field>
+                  <FieldLabel htmlFor="transaction-category">
+                    Category
+                  </FieldLabel>
+                  <CategoryCombobox
+                    value={categoryValue}
+                    onChangeAction={(value) =>
+                      setValue("category", value as string)
+                    }
+                    categories={category}
+                    placeholder="Select category"
+                    disabled={isPending}
+                  />
+                  {errors.category && (
+                    <p className="text-sm text-destructive">
+                      {errors.category.message}
+                    </p>
+                  )}
+                </Field>
+
+                {/* Date */}
+                <Field>
+                  <DatePicker
+                    id="transaction-date"
+                    label="Transaction Date"
+                    placeholder="June 01, 2025"
+                    value={dateValue}
+                    onChangeAction={(date) =>
+                      setValue("date", date ?? new Date())
+                    }
+                    disabled={isPending}
+                  />
+                  {errors.date && (
+                    <p className="text-sm text-destructive">
+                      {errors.date.message}
+                    </p>
+                  )}
+                </Field>
+
+                {/* Description */}
+                <Field>
+                  <FieldLabel htmlFor="transaction-description">
+                    Description
+                  </FieldLabel>
+                  <Input
+                    id="transaction-description"
+                    placeholder="Add an optional note"
+                    disabled={isPending}
+                    {...register("description")}
+                  />
+                  {errors.description && (
+                    <p className="text-sm text-destructive">
+                      {errors.description.message}
+                    </p>
+                  )}
+                </Field>
+
+                {/* Recurring Transaction (PRO feature) */}
+                <Field>
+                  {canUseRecurring ? (
+                    <>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="space-y-1">
+                          <FieldLabel htmlFor="transaction-recurring">
+                            Recurring transaction
+                          </FieldLabel>
+                          <FieldDescription>
+                            Turn on to repeat this transaction automatically.
+                          </FieldDescription>
+                        </div>
+                        <Switch
+                          id="transaction-recurring"
+                          checked={isRecurring}
+                          onCheckedChange={(checked) => {
+                            setValue("isRecurring", checked);
+                            if (!checked) {
+                              setValue("recurringInterval", undefined);
+                            }
+                          }}
+                          disabled={isPending}
+                        />
+                      </div>
+
+                      {isRecurring && (
+                        <div className="mt-4">
+                          <FieldLabel htmlFor="transaction-recurring-interval">
+                            Recurring interval
+                          </FieldLabel>
+                          <Select
+                            value={recurringInterval || undefined}
+                            onValueChange={(value) =>
+                              setValue(
+                                "recurringInterval",
+                                value as RecurringInterval,
+                              )
+                            }
+                            disabled={isPending}
+                          >
+                            <SelectTrigger id="transaction-recurring-interval">
+                              <SelectValue placeholder="Select interval" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.values(RecurringInterval).map(
+                                (interval) => (
+                                  <SelectItem key={interval} value={interval}>
+                                    {interval.charAt(0) +
+                                      interval.slice(1).toLowerCase()}
+                                  </SelectItem>
+                                ),
+                              )}
+                            </SelectContent>
+                          </Select>
+                          {errors.recurringInterval && (
+                            <p className="text-sm text-destructive">
+                              {errors.recurringInterval.message}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="mt-6 rounded-xl border border-primary/40 bg-primary/5 p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="flex items-center gap-2 text-sm font-semibold">
+                            Recurring transactions
+                            <span className="rounded-full border border-yellow-400 bg-yellow-50 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-yellow-700 dark:border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-200">
+                              PRO
+                            </span>
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Upgrade your plan to automatically repeat daily,
+                            monthly or weekly payments.
+                          </p>
+                        </div>
+                        <Button asChild size="sm" className="shrink-0">
+                          <Link href="/pricing">Upgrade</Link>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </Field>
+                <div className="mt-6 flex justify-end gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isPending}
+                    onClick={() => reset(getDefaultValues())}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isPending}>
+                    Add transaction
+                  </Button>
+                </div>
+              </FieldGroup>
+            </FieldSet>
+          </FieldGroup>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
