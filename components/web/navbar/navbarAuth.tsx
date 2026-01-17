@@ -1,7 +1,8 @@
 "use client";
 
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import UserDropdown from "../user-dropdown";
 
 export default function NavbarAuth() {
   return (
@@ -13,7 +14,7 @@ export default function NavbarAuth() {
       </SignedOut>
 
       <SignedIn>
-        <UserButton />
+        <UserDropdown />
       </SignedIn>
     </>
   );

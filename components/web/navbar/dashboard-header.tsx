@@ -3,6 +3,7 @@
 import { useSelectedLayoutSegment } from "next/navigation";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/web/mode-toggle";
+import UpgradeButton from "./updrade-button";
 
 const TITLES: Record<string, string> = {
   dashboard: "Dashboard",
@@ -27,7 +28,10 @@ export function DashboardHeader() {
         <span className="mx-2 h-5 w-[2px] bg-border" aria-hidden="true" />
         <h1 className="text-xl font-bold sm:text-2xl">{title}</h1>
       </div>
-      <ModeToggle />
+      <div className="flex item-center gap-4">
+        <UpgradeButton />
+        <ModeToggle />
+      </div>
     </div>
   );
 }

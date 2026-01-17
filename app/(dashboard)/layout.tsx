@@ -2,7 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/web/app-sidebar";
-import { DashboardHeader } from "@/components/web/dashboard-header";
+import { DashboardHeader } from "@/components/web/navbar/dashboard-header";
 
 export default async function AppLayout({
   children,

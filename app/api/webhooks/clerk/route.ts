@@ -2,6 +2,33 @@ import { verifyWebhook } from "@clerk/nextjs/webhooks";
 import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 
+function getFirstName(
+  firstName: string | null | undefined,
+  emailAddresses: { email_address?: string | null }[] | undefined,
+): string | null {
+  if (firstName && firstName.trim().length > 0) {
+    return firstName;
+  }
+
+  const email = emailAddresses?.[0]?.email_address ?? undefined;
+  if (!email) {
+    return null;
+  }
+
+  const localPart = email.split("@")[0] ?? "";
+  if (!localPart) {
+    return null;
+  }
+
+  const cleaned = localPart.replace(/[._-]+/g, " ");
+  const [firstToken] = cleaned.split(" ").filter(Boolean);
+  if (!firstToken) {
+    return null;
+  }
+
+  return firstToken.charAt(0).toUpperCase() + firstToken.slice(1).toLowerCase();
+}
+
 export async function POST(req: NextRequest) {
   try {
     const isDev = process.env.NODE_ENV !== "production";
@@ -27,13 +54,15 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      const derivedFirstName = getFirstName(first_name, email_addresses);
+
       await prisma.user.upsert({
         where: { clerkUserId: id },
         update: {}, // No update on create
         create: {
           clerkUserId: id,
           email: email_addresses[0]?.email_address ?? "",
-          firstName: first_name,
+          firstName: derivedFirstName,
           lastName: last_name,
           imageUrl: image_url,
         },
@@ -50,18 +79,20 @@ export async function POST(req: NextRequest) {
         console.log("Updating user:", id);
       }
 
+      const derivedFirstName = getFirstName(first_name, email_addresses);
+
       await prisma.user.upsert({
         where: { clerkUserId: id },
         update: {
           email: email_addresses[0]?.email_address ?? "",
-          firstName: first_name,
+          firstName: derivedFirstName,
           lastName: last_name,
           imageUrl: image_url,
         },
         create: {
           clerkUserId: id,
           email: email_addresses[0]?.email_address ?? "",
-          firstName: first_name,
+          firstName: derivedFirstName,
           lastName: last_name,
           imageUrl: image_url,
         },

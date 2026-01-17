@@ -1,3 +1,6 @@
+"use client";
+
+import { useClerk } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   CreditCard,
@@ -10,6 +13,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -17,6 +21,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import UserDropdown from "@/components/web/user-dropdown";
 
 const items = [
   {
@@ -47,6 +52,8 @@ const items = [
 ];
 
 export function AppSidebar() {
+  const { openUserProfile } = useClerk();
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -77,17 +84,21 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <a href="/settings" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </a>
+                <SidebarMenuButton
+                  onClick={() => openUserProfile()}
+                  className="flex items-center gap-2"
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Settings</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="mt-auto">
+        <UserDropdown variant="sidebar" />
+      </SidebarFooter>
     </Sidebar>
   );
 }
