@@ -10,6 +10,7 @@ import { ErrorCode } from "@/lib/constants/error-codes";
 import { mapDomainError } from "@/lib/utils/mapDomainError";
 import { findAccountById } from "@/lib/data/transactions/queries";
 import { createTransaction } from "@/lib/data/transactions/mutations";
+import { bulkDeleteTransactions } from "@/lib/data/accounts/mutations";
 
 type ResponseResult =
   | { success: true; message: string }
@@ -78,5 +79,28 @@ export async function createTransactionAction(
 
     // If error is unknown, use TRANSACTION_CREATION_FAILED
     return { success: false, error: ErrorCode.TRANSACTION_CREATION_FAILED };
+  }
+}
+
+// Bulk delete transactions for the Transactions dashboard
+export async function bulkDeleteTransactionAction(
+  transactionIds: string[],
+): Promise<ResponseResult> {
+  try {
+    const user = await requireUser();
+
+    await bulkDeleteTransactions({ userId: user.id, transactionIds });
+
+    revalidatePath("/transactions");
+    revalidatePath("/dashboard");
+    revalidatePath("/accounts/[id]", "page");
+
+    return { success: true, message: "Transactions deleted successfully" };
+  } catch (error) {
+    const mapped = mapDomainError(error);
+    if (mapped) {
+      return { success: false, error: mapped.error };
+    }
+    return { success: false, error: ErrorCode.TRANSACTION_DELETE_FAILED };
   }
 }

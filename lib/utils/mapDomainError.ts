@@ -28,6 +28,12 @@ export function mapDomainError(error: unknown) {
         success: false,
         error: "Upgrade to Pro to use recurring transactions",
       };
+    case ErrorCode.TRANSACTION_UPDATE_FAILED:
+      return { success: false, error: "Failed to update transaction" };
+    case ErrorCode.TRANSACTION_DELETE_FAILED:
+      return { success: false, error: "Failed to delete transactions" };
+    case ErrorCode.TRANSACTION_NOT_FOUND_TO_DELETE:
+      return { success: false, error: "No transaction found to delete" };
 
     // Accounts
     case ErrorCode.ACCOUNT_NOT_FOUND:

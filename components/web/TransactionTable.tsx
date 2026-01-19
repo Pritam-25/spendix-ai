@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -8,6 +8,7 @@ import {
   MoreHorizontal,
   RefreshCw,
   Search,
+  Trash2,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -22,6 +23,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -49,6 +60,8 @@ import {
   Transaction,
   TransactionType,
 } from "@prisma/client";
+import { bulkDeleteTransactionAction } from "@/app/(dashboard)/transactions/action";
+import { toast } from "sonner";
 
 const RecurringIntervals: Record<RecurringInterval, string> = {
   DAILY: "Daily",
@@ -83,6 +96,9 @@ export default function TransactionTable({
   const pageSize = 10;
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteIds, setDeleteIds] = useState<string[]>([]);
+  const [isPending, startTransition] = useTransition();
   const filteredAndSorted: Transaction[] = useMemo(() => {
     let data = [...transactions];
 
@@ -184,17 +200,52 @@ export default function TransactionTable({
   const handleSelectAll = () => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      const idsOnPage = paginatedTransactions.map((t: Transaction) => t.id);
+      const idsAll = filteredAndSorted.map((t: Transaction) => t.id);
 
-      const allSelected = idsOnPage.every((id: string) => next.has(id));
+      const allSelected = idsAll.every((id: string) => next.has(id));
 
       if (allSelected) {
-        idsOnPage.forEach((id: string) => next.delete(id));
+        idsAll.forEach((id: string) => next.delete(id));
       } else {
-        idsOnPage.forEach((id: string) => next.add(id));
+        idsAll.forEach((id: string) => next.add(id));
       }
 
       return next;
+    });
+  };
+
+  const openBulkDeleteDialog = () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setDeleteIds(ids);
+    setConfirmOpen(true);
+  };
+
+  const openSingleDeleteDialog = (id: string) => {
+    setDeleteIds([id]);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteIds.length === 0) return;
+
+    startTransition(async () => {
+      const result = await bulkDeleteTransactionAction(deleteIds);
+
+      if (!result?.success) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success(result.message);
+
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        deleteIds.forEach((id) => next.delete(id));
+        return next;
+      });
+
+      setConfirmOpen(false);
     });
   };
 
@@ -214,9 +265,21 @@ export default function TransactionTable({
 
   const hasNextPage = pageIndex + 1 < totalPages;
 
-  const selectedCount = paginatedTransactions.filter((t: Transaction) =>
+  const selectedCount = selectedIds.size;
+  const hasSelection = selectedCount > 0;
+
+  const totalFiltered = filteredAndSorted.length;
+  const selectedFilteredCount = filteredAndSorted.filter((t) =>
     selectedIds.has(t.id),
   ).length;
+  const allFilteredSelected =
+    totalFiltered > 0 && selectedFilteredCount === totalFiltered;
+  const noneFilteredSelected = selectedFilteredCount === 0;
+  const headerCheckboxState: boolean | "indeterminate" = allFilteredSelected
+    ? true
+    : noneFilteredSelected
+      ? false
+      : "indeterminate";
 
   return (
     <div className="space-y-4">
@@ -231,30 +294,46 @@ export default function TransactionTable({
           />
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Select value={typeFilter} onValueChange={handleTypeFilterChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="All Types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="INCOME">Income</SelectItem>
-              <SelectItem value="EXPENSE">Expense</SelectItem>
-            </SelectContent>
-          </Select>
+          {hasSelection ? (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={openBulkDeleteDialog}
+              disabled={isPending}
+            >
+              <Trash2 className="mr-1 h-4 w-4" />
+              Delete ({selectedCount})
+            </Button>
+          ) : (
+            <>
+              <Select value={typeFilter} onValueChange={handleTypeFilterChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="INCOME">Income</SelectItem>
+                  <SelectItem value="EXPENSE">Expense</SelectItem>
+                </SelectContent>
+              </Select>
 
-          <Select
-            value={recurringFilter}
-            onValueChange={handleRecurringFilterChange}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All Transactions" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Transactions</SelectItem>
-              <SelectItem value="recurring">Recurring Only</SelectItem>
-              <SelectItem value="non-recurring">Non-recurring Only</SelectItem>
-            </SelectContent>
-          </Select>
+              <Select
+                value={recurringFilter}
+                onValueChange={handleRecurringFilterChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All Transactions" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Transactions</SelectItem>
+                  <SelectItem value="recurring">Recurring Only</SelectItem>
+                  <SelectItem value="non-recurring">
+                    Non-recurring Only
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </>
+          )}
         </div>
       </div>
 
@@ -265,12 +344,7 @@ export default function TransactionTable({
               <TableHead className="w-[50px] text-center">
                 <Checkbox
                   className="rounded-[4px]"
-                  checked={
-                    paginatedTransactions.length > 0 &&
-                    paginatedTransactions.every((t: Transaction) =>
-                      selectedIds.has(t.id),
-                    )
-                  }
+                  checked={headerCheckboxState}
                   onCheckedChange={handleSelectAll}
                 />
               </TableHead>
@@ -406,7 +480,13 @@ export default function TransactionTable({
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem disabled>Edit</DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled className="text-red-500">
+                        <DropdownMenuItem
+                          className="text-red-500"
+                          onSelect={(event) => {
+                            event.preventDefault();
+                            openSingleDeleteDialog(transaction.id);
+                          }}
+                        >
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -444,6 +524,41 @@ export default function TransactionTable({
           </Button>
         </div>
       </div>
+
+      <AlertDialog
+        open={confirmOpen}
+        onOpenChange={(open) => {
+          if (!isPending) {
+            setConfirmOpen(open);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete transaction{deleteIds.length > 1 ? "s" : ""}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone and will permanently remove{" "}
+              {deleteIds.length} transaction
+              {deleteIds.length > 1 ? "s" : ""}. Account balances will be
+              updated accordingly.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleConfirmDelete}
+              disabled={isPending}
+            >
+              {isPending
+                ? "Deleting..."
+                : `Delete${deleteIds.length > 1 ? ` ${deleteIds.length}` : ""}`}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

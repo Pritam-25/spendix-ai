@@ -8,7 +8,10 @@ import {
   BarChart3,
   Repeat,
   Settings,
+  Plus,
 } from "lucide-react";
+
+import Link from "next/link";
 
 import {
   Sidebar,
@@ -21,6 +24,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 import UserDropdown from "@/components/web/user-dropdown";
 
 const items = [
@@ -57,10 +61,31 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarContent>
+        {/* App brand */}
+        <div className="px-3 pt-3 pb-1">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-sm font-semibold tracking-tight"
+          >
+            <span className="inline-block rounded-md bg-primary/10 px-2 py-1 text-primary">
+              S
+            </span>
+            <span>Spendix</span>
+          </Link>
+        </div>
+
+        {/* Primary action */}
+        <div className="px-3 pb-3">
+          <Button asChild className="w-full justify-start gap-2" size="sm">
+            <Link href="/transactions/create">
+              <Plus className="h-4 w-4" />
+              <span>Add transaction</span>
+            </Link>
+          </Button>
+        </div>
+
         {/* Main App Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel>Spendix</SidebarGroupLabel>
-
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

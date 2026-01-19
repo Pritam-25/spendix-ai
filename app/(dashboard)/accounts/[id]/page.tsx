@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { AccountAnalyticsSkeleton } from "../_components/AccountAnalyticsSkeleton";
 
 interface AccountTransactionPageProps {
   params: Promise<{ id: string }>;
@@ -35,13 +36,7 @@ const AccountTransactionPage = async ({
   return (
     <div className="flex flex-col gap-6">
       {/* Main layout: left = account details + chart, right = transactions table */}
-      <Suspense
-        fallback={
-          <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
-            Loading account analytics...
-          </div>
-        }
-      >
+      <Suspense fallback={<AccountAnalyticsSkeleton />}>
         <div className="grid gap-6 items-stretch xl:grid-cols-[minmax(0,1.4fr)_minmax(0,2fr)]">
           {/* Left: account details header + chart, as you designed */}
           <div className="flex h-full flex-col gap-4">

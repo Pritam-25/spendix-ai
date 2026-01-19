@@ -181,8 +181,8 @@ export default function ChartTable({ transactions }: ChartTableProps) {
           </div>
         </div>
 
-        <div className="h-[320px] md:h-[360px]">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="min-w-0">
+          <ResponsiveContainer width="100%" height={320} minWidth={0}>
             <BarChart
               data={filteredData}
               margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
@@ -211,9 +211,10 @@ export default function ChartTable({ transactions }: ChartTableProps) {
                   return format(new Date(label), "MMM dd");
                 }}
                 contentStyle={{
-                  backgroundColor: "hsl(var(--popover))",
-                  border: "1px solid hsl(var(--border))",
+                  backgroundColor: "var(--popover)",
+                  border: "1px solid var(--border)",
                   borderRadius: "var(--radius)",
+                  color: "var(--popover-foreground)",
                 }}
               />
               <Legend />

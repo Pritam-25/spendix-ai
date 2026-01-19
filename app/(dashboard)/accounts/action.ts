@@ -94,7 +94,7 @@ export async function updateDefaultAccountAction(
   }
 }
 
-// Action to delete a single account (production-safe)
+// Action to delete a single account
 export async function deleteAccountAction(
   accountId: string,
 ): Promise<ResponseResult> {
@@ -120,5 +120,3 @@ export async function deleteAccountAction(
     return { success: false, error: ErrorCode.ACCOUNT_DELETE_FAILED };
   }
 }
-
-// ---------------------------------------------------//
