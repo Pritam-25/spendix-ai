@@ -1,8 +1,8 @@
-import { getAccounts } from "@/lib/dal/account";
-import { defaultCategories } from "@/lib/data/categories";
+import { getAccounts } from "@/lib/data/accounts/queries";
+import { defaultCategories } from "@/lib/constants/categories";
 import AddTransactionForm from "../_components/addTransactionForm";
-import { hasFeature } from "@/lib/access/has-feature";
-import { FEATURES } from "@/lib/access/features";
+import { hasFeature } from "@/lib/data/auth";
+import { FEATURES } from "@/lib/constants/features";
 
 export default async function CreateTransactionPage() {
   const accounts = await getAccounts();

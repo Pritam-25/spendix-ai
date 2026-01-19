@@ -1,0 +1,449 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  MoreHorizontal,
+  RefreshCw,
+  Search,
+} from "lucide-react";
+import { format } from "date-fns";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { categoryColors } from "@/lib/constants/categories";
+
+import {
+  RecurringInterval,
+  Transaction,
+  TransactionType,
+} from "@prisma/client";
+
+const RecurringIntervals: Record<RecurringInterval, string> = {
+  DAILY: "Daily",
+  WEEKLY: "Weekly",
+  MONTHLY: "Monthly",
+  YEARLY: "Yearly",
+};
+
+export type TransactionSortField = "date" | "amount";
+export type SortDirection = "asc" | "desc";
+
+export default function TransactionTable({
+  transactions,
+}: {
+  transactions: Transaction[];
+}) {
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState<TransactionType | "all">("all");
+  const [recurringFilter, setRecurringFilter] = useState<
+    "all" | "recurring" | "non-recurring"
+  >("all");
+  const [sortConfig, setSortConfig] = useState<{
+    field: TransactionSortField;
+    direction: SortDirection;
+  }>({
+    field: "date",
+    direction: "desc",
+  });
+
+  const [pageIndex, setPageIndex] = useState(0);
+  const pageSize = 10;
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const filteredAndSorted: Transaction[] = useMemo(() => {
+    let data = [...transactions];
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      data = data.filter((t) => {
+        const desc = t.description?.toLowerCase() ?? "";
+        const category = t.category.toLowerCase();
+        return desc.includes(term) || category.includes(term);
+      });
+    }
+
+    if (typeFilter !== "all") {
+      data = data.filter((t) => t.type === typeFilter);
+    }
+
+    if (recurringFilter !== "all") {
+      data = data.filter((t) =>
+        recurringFilter === "recurring" ? t.isRecurring : !t.isRecurring,
+      );
+    }
+
+    data.sort((a, b) => {
+      const direction = sortConfig.direction === "asc" ? 1 : -1;
+
+      switch (sortConfig.field) {
+        case "amount": {
+          const diff = Number(a.amount) - Number(b.amount);
+          return diff * direction;
+        }
+        case "date":
+        default: {
+          const da = new Date(a.date).getTime();
+          const db = new Date(b.date).getTime();
+          return (da - db) * direction;
+        }
+      }
+    });
+
+    return data;
+  }, [transactions, searchTerm, typeFilter, recurringFilter, sortConfig]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredAndSorted.length / pageSize),
+  );
+
+  const paginatedTransactions = useMemo(() => {
+    const start = pageIndex * pageSize;
+    return filteredAndSorted.slice(start, start + pageSize);
+  }, [filteredAndSorted, pageIndex, pageSize]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setSearchTerm(searchInput);
+      setPageIndex(0);
+      setSelectedIds(new Set());
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [searchInput]);
+
+  const handleTypeFilterChange = (value: TransactionType | "all") => {
+    setTypeFilter(value);
+    setPageIndex(0);
+    setSelectedIds(new Set());
+  };
+
+  const handleRecurringFilterChange = (
+    value: "all" | "recurring" | "non-recurring",
+  ) => {
+    setRecurringFilter(value);
+    setPageIndex(0);
+    setSelectedIds(new Set());
+  };
+
+  const handleSort = (field: TransactionSortField) => {
+    setSortConfig((current) => ({
+      field,
+      direction:
+        current.field === field && current.direction === "asc" ? "desc" : "asc",
+    }));
+    setPageIndex(0);
+    setSelectedIds(new Set());
+  };
+
+  const handleCheckboxChange = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      const idsOnPage = paginatedTransactions.map((t: Transaction) => t.id);
+
+      const allSelected = idsOnPage.every((id: string) => next.has(id));
+
+      if (allSelected) {
+        idsOnPage.forEach((id: string) => next.delete(id));
+      } else {
+        idsOnPage.forEach((id: string) => next.add(id));
+      }
+
+      return next;
+    });
+  };
+
+  const handlePrevious = () => {
+    if (pageIndex === 0) return;
+
+    const prevIndex = pageIndex - 1;
+    setPageIndex(prevIndex);
+  };
+
+  const handleNext = () => {
+    if (pageIndex + 1 >= totalPages) return;
+
+    const nextIndex = pageIndex + 1;
+    setPageIndex(nextIndex);
+  };
+
+  const hasNextPage = pageIndex + 1 < totalPages;
+
+  const selectedCount = paginatedTransactions.filter((t: Transaction) =>
+    selectedIds.has(t.id),
+  ).length;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="relative flex-1">
+          <Search className="text-muted-foreground absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2" />
+          <Input
+            className="pl-10 pr-4"
+            placeholder="Search transactions..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Select value={typeFilter} onValueChange={handleTypeFilterChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="INCOME">Income</SelectItem>
+              <SelectItem value="EXPENSE">Expense</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={recurringFilter}
+            onValueChange={handleRecurringFilterChange}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="All Transactions" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Transactions</SelectItem>
+              <SelectItem value="recurring">Recurring Only</SelectItem>
+              <SelectItem value="non-recurring">Non-recurring Only</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader className="bg-accent">
+            <TableRow>
+              <TableHead className="w-[50px] text-center">
+                <Checkbox
+                  className="rounded-[4px]"
+                  checked={
+                    paginatedTransactions.length > 0 &&
+                    paginatedTransactions.every((t: Transaction) =>
+                      selectedIds.has(t.id),
+                    )
+                  }
+                  onCheckedChange={handleSelectAll}
+                />
+              </TableHead>
+              <TableHead
+                className="cursor-pointer text-center"
+                onClick={() => handleSort("date")}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  Date
+                  {sortConfig.field === "date" &&
+                    (sortConfig.direction === "asc" ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
+              <TableHead className="text-center">Description</TableHead>
+              <TableHead className="text-center">Category</TableHead>
+              <TableHead
+                className="cursor-pointer text-center"
+                onClick={() => handleSort("amount")}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  Amount
+                  {sortConfig.field === "amount" &&
+                    (sortConfig.direction === "asc" ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
+              <TableHead className="text-center">Recurring</TableHead>
+              <TableHead className="w-[50px] text-center" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredAndSorted.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  No transactions found
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedTransactions.map((transaction: Transaction) => (
+                <TableRow key={transaction.id}>
+                  <TableCell className="text-center">
+                    <Checkbox
+                      className="rounded-[4px]"
+                      checked={selectedIds.has(transaction.id)}
+                      onCheckedChange={() =>
+                        handleCheckboxChange(transaction.id)
+                      }
+                    />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {format(new Date(transaction.date), "PP")}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {transaction.description || "-"}
+                  </TableCell>
+                  <TableCell className="text-center capitalize">
+                    <span
+                      style={{
+                        background:
+                          categoryColors[transaction.category] ?? "#6b7280",
+                      }}
+                      className="rounded px-2 py-1 text-sm text-white"
+                    >
+                      {transaction.category}
+                    </span>
+                  </TableCell>
+                  <TableCell
+                    className={`text-center font-bold ${
+                      transaction.type === "EXPENSE"
+                        ? "text-red-500"
+                        : "text-green-500"
+                    }`}
+                  >
+                    {transaction.type === "EXPENSE" ? "- " : "+ "}$
+                    {Number(transaction.amount).toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {transaction.isRecurring ? (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700">
+                              <RefreshCw className="h-3 w-3" />
+                              {transaction.recurringInterval &&
+                                RecurringIntervals[
+                                  transaction.recurringInterval as RecurringInterval
+                                ]}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <div className="text-sm">
+                              <div className="font-medium">Next Date:</div>
+                              <div>
+                                {transaction.nextRecurringDate &&
+                                  format(
+                                    new Date(transaction.nextRecurringDate),
+                                    "PP",
+                                  )}
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs">
+                        <Clock className="h-3 w-3" />
+                        One-time
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 p-0"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem disabled>Edit</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem disabled className="text-red-500">
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="flex items-center justify-between gap-2 py-2 text-sm text-muted-foreground">
+        <div>
+          Page {pageIndex + 1}
+          {` • ${filteredAndSorted.length} matching`}
+          {selectedCount > 0 && ` • ${selectedCount} selected`}
+        </div>
+        <div className="space-x-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handlePrevious}
+            disabled={pageIndex === 0}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleNext}
+            disabled={!hasNextPage}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

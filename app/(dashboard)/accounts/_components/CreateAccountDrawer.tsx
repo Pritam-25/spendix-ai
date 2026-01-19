@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createAccount } from "@/app/(dashboard)/accounts/action";
+import { createAccountAction } from "@/app/(dashboard)/accounts/action";
 import { toast } from "sonner";
 import { AccountType } from "@prisma/client";
 
@@ -91,7 +91,7 @@ export default function CreateAccountDrawer({
 
   const onSubmit = (values: AccountFormType) => {
     startTransition(async () => {
-      const result = await createAccount(values);
+      const result = await createAccountAction(values);
 
       if (!result?.success) {
         toast.error(result.error);

@@ -1,7 +1,9 @@
+import "server-only";
+
 import { Prisma } from "@prisma/client";
-import { TransactionParsedType } from "../schemas/transaction.schema";
-import { calculateNextRecurringDate } from "../utils/recurring";
-import { ErrorCode } from "../errors/error-codes";
+import { TransactionParsedType } from "@/lib/schemas/transaction.schema";
+import { calculateNextRecurringDate } from "@/lib/utils/recurring";
+import { ErrorCode } from "@/lib/constants/error-codes";
 
 export type CreateTransactionServiceProps = {
   prisma: Prisma.TransactionClient;
@@ -10,7 +12,7 @@ export type CreateTransactionServiceProps = {
   data: TransactionParsedType;
 };
 
-export async function createTransactionService({
+export async function createTransaction({
   prisma,
   userId,
   account,

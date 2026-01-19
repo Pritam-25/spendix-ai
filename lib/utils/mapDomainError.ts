@@ -1,4 +1,4 @@
-import { ErrorCode } from "./error-codes";
+import { ErrorCode } from "../constants/error-codes";
 
 export function mapDomainError(error: unknown) {
   if (!(error instanceof Error))

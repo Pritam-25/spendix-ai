@@ -1,3 +1,5 @@
+import "server-only";
+
 import prisma from "@/lib/prisma";
 
 export function findAccountById(accountId: string, userId: string) {

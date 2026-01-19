@@ -1,4 +1,4 @@
-import { getAccounts } from "@/lib/dal/account";
+import { getAccounts } from "@/lib/data/accounts/queries";
 import AccountCard from "./AccountCard";
 import AccountsEmpty from "./AccountsEmpty";
 import CreateAccountCard from "./CreateAccountCard";

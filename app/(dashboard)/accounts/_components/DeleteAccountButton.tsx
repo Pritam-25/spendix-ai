@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Trash2Icon } from "lucide-react";
 
-import { deleteAccount } from "@/app/(dashboard)/accounts/action";
+import { deleteAccountAction } from "@/app/(dashboard)/accounts/action";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -41,7 +41,7 @@ export default function DeleteAccountButton({
     }
 
     startTransition(async () => {
-      const result = await deleteAccount(accountId);
+      const result = await deleteAccountAction(accountId);
 
       if (!result?.success) {
         toast.error(result.error);

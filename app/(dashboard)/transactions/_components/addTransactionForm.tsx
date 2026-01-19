@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { defaultCategories } from "@/lib/data/categories";
+import { defaultCategories } from "@/lib/constants/categories";
 import {
   TransactionFormType,
   transactionSchema,
@@ -23,7 +23,7 @@ import {
 import { useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { createTransaction } from "../action";
+import { createTransactionAction } from "../action";
 import { toast } from "sonner";
 import {
   Field,
@@ -139,7 +139,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
 
   const onSubmit = (values: TransactionFormType) => {
     startTransition(async () => {
-      const result = await createTransaction(values);
+      const result = await createTransactionAction(values);
 
       if (!result?.success) {
         toast.error(result.error);

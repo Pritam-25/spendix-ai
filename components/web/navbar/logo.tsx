@@ -5,22 +5,30 @@ import { useTheme } from "next-themes";
 import Image from "next/image";
 
 const Logo = () => {
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const isDark = theme === "dark";
-  const src = !mounted
-    ? "/asset3-light.svg"
-    : isDark
-      ? "/asset3.svg"
-      : "/asset3-light.svg";
+  // Prevent server/client mismatch
+  if (!mounted) {
+    return (
+      <div className="relative h-6 w-20 sm:h-7 sm:w-24 md:h-8 md:w-28 lg:w-36" />
+    );
+  }
+
+  const src =
+    resolvedTheme === "dark"
+      ? "/asset3.svg" // light logo on dark bg
+      : "/asset3-light.svg"; // dark logo on light bg
 
   return (
-    <div className="relative h-6 w-20 sm:h-7 sm:w-24 md:h-8 md:w-28 lg:w-36">
+    <div
+      className="relative h-6 w-20 sm:h-7 sm:w-24 md:h-8 md:w-28 lg:w-36"
+      suppressHydrationWarning
+    >
       <Image
         src={src}
         alt="Spendix Logo"

@@ -11,7 +11,7 @@ export default function Page() {
         <div className="pt-2">
           <a
             className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-base font-medium text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
-            href="/auth/sign-in"
+            href="/dashboard"
           >
             Get started
           </a>

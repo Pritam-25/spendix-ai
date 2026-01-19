@@ -1,23 +1,25 @@
 "use server";
 
 import { Prisma } from "@prisma/client";
-import { requireUser } from "@/lib/dal/auth";
+import { requireUser } from "@/lib/data/auth";
 import { accountSchema } from "@/lib/schemas/account.schema";
 import { revalidatePath } from "next/cache";
-import { ErrorCode } from "@/lib/errors/error-codes";
+import { ErrorCode } from "@/lib/constants/error-codes";
+import { mapDomainError } from "@/lib/utils/mapDomainError";
 import {
-  createAccountService,
-  deleteAccountService,
-  updateDefaultAccountService,
-} from "@/lib/services/account.service";
-import { mapDomainError } from "@/lib/errors/mapDomainError";
+  createAccount,
+  deleteAccount,
+  updateDefaultAccount,
+} from "@/lib/data/accounts/mutations";
 
 type ResponseResult =
   | { success: true; message: string; accountId?: string }
   | { success: false; error: string };
 
 // Action to create a new account
-export async function createAccount(data: unknown): Promise<ResponseResult> {
+export async function createAccountAction(
+  data: unknown,
+): Promise<ResponseResult> {
   // SERVER-SIDE validation (MANDATORY)
   const parsed = accountSchema.safeParse(data);
 
@@ -32,7 +34,7 @@ export async function createAccount(data: unknown): Promise<ResponseResult> {
     const balanceDecimal = new Prisma.Decimal(balance);
 
     // call service to create account
-    const account = await createAccountService({
+    const account = await createAccount({
       userId: user.id,
       name,
       type,
@@ -65,13 +67,13 @@ export async function createAccount(data: unknown): Promise<ResponseResult> {
 }
 
 // action to update default account
-export async function updateDefaultAccount(
+export async function updateDefaultAccountAction(
   accountId: string,
 ): Promise<ResponseResult> {
   try {
     const user = await requireUser();
 
-    await updateDefaultAccountService({
+    await updateDefaultAccount({
       userId: user.id,
       accountId,
     });
@@ -93,13 +95,13 @@ export async function updateDefaultAccount(
 }
 
 // Action to delete a single account (production-safe)
-export async function deleteAccount(
+export async function deleteAccountAction(
   accountId: string,
 ): Promise<ResponseResult> {
   try {
     const user = await requireUser();
 
-    await deleteAccountService({ userId: user.id, accountId });
+    await deleteAccount({ userId: user.id, accountId });
 
     revalidatePath("/accounts");
     revalidatePath("/transactions");
@@ -118,3 +120,5 @@ export async function deleteAccount(
     return { success: false, error: ErrorCode.ACCOUNT_DELETE_FAILED };
   }
 }
+
+// ---------------------------------------------------//

@@ -1,6 +1,8 @@
+import "server-only";
+
+import prisma from "@/lib/prisma";
 import { AccountType, Prisma } from "@prisma/client";
-import { ErrorCode } from "../errors/error-codes";
-import prisma from "../prisma";
+import { ErrorCode } from "../../constants/error-codes";
 
 export type CreateAccountServiceProps = {
   userId: string;
@@ -20,8 +22,8 @@ export type DeleteAccountServiceProps = {
   accountId: string;
 };
 
-// service to create a new account
-export async function createAccountService({
+// create a new account
+export async function createAccount({
   userId,
   name,
   type,
@@ -56,8 +58,8 @@ export async function createAccountService({
   return account;
 }
 
-// service to update default account
-export async function updateDefaultAccountService({
+// update default account
+export async function updateDefaultAccount({
   userId,
   accountId,
 }: UpdateDefaultAccountServiceProps) {
@@ -76,8 +78,8 @@ export async function updateDefaultAccountService({
   ]);
 }
 
-// service to delete an account
-export async function deleteAccountService({
+// delete an account
+export async function deleteAccount({
   userId,
   accountId,
 }: DeleteAccountServiceProps) {

@@ -1,22 +1,21 @@
 "use server";
 
-import { requireUser } from "@/lib/dal/auth";
+import { requireRecurringTransactions, requireUser } from "@/lib/data/auth";
 import { transactionSchema } from "@/lib/schemas/transaction.schema";
 import { request } from "@arcjet/next";
 import { aj } from "@/lib/arcjet";
-import { findAccountById } from "@/lib/dal/transaction";
 import prisma from "@/lib/prisma";
-import { createTransactionService } from "@/lib/services/transaction.service";
 import { revalidatePath } from "next/cache";
-import { requireRecurringTransactions } from "@/lib/access/guard";
-import { ErrorCode } from "@/lib/errors/error-codes";
-import { mapDomainError } from "@/lib/errors/mapDomainError";
+import { ErrorCode } from "@/lib/constants/error-codes";
+import { mapDomainError } from "@/lib/utils/mapDomainError";
+import { findAccountById } from "@/lib/data/transactions/queries";
+import { createTransaction } from "@/lib/data/transactions/mutations";
 
 type ResponseResult =
   | { success: true; message: string }
   | { success: false; error: string };
 
-export async function createTransaction(
+export async function createTransactionAction(
   data: unknown,
 ): Promise<ResponseResult> {
   const parsed = transactionSchema.safeParse(data);
@@ -53,7 +52,7 @@ export async function createTransaction(
     }
 
     await prisma.$transaction((tx) =>
-      createTransactionService({
+      createTransaction({
         prisma: tx,
         userId: user.id,
         account: { id: account.id, balance: account.balance },
