@@ -16,13 +16,13 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { AccountAnalyticsSkeleton } from "../_components/AccountAnalyticsSkeleton";
 
-interface AccountTransactionPageProps {
+interface AccountTransactionFromProps {
   params: Promise<{ id: string }>;
 }
 
 const AccountTransactionPage = async ({
   params,
-}: AccountTransactionPageProps) => {
+}: AccountTransactionFromProps) => {
   const { id } = await params;
 
   const accountData = await getAllTransactionsByAccountId(id);

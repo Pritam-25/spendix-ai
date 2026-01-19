@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronDown,
   ChevronUp,
@@ -78,6 +79,10 @@ export default function TransactionTable({
 }: {
   transactions: Transaction[];
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<TransactionType | "all">("all");
@@ -478,7 +483,21 @@ export default function TransactionTable({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem disabled>Edit</DropdownMenuItem>
+                        <DropdownMenuItem
+                          onSelect={(event) => {
+                            event.preventDefault();
+                            const currentQuery = searchParams.toString();
+                            const returnUrl =
+                              pathname +
+                              (currentQuery ? `?${currentQuery}` : "");
+
+                            router.push(
+                              `/transactions/create?edit=${transaction.id}&returnUrl=${encodeURIComponent(returnUrl)}`,
+                            );
+                          }}
+                        >
+                          Edit
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-500"

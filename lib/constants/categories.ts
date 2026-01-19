@@ -35,6 +35,43 @@ export const defaultCategories = [
     color: "#f59e0b", // amber-500
     icon: "Home",
   },
+
+  // Extra Income Categories
+  {
+    id: "bonus",
+    name: "Bonus",
+    type: "INCOME",
+    color: "#22c55e", // green-500
+    icon: "Gift",
+  },
+  {
+    id: "cashback",
+    name: "Cashback & Rewards",
+    type: "INCOME",
+    color: "#0ea5e9", // sky-500
+    icon: "CreditCard",
+  },
+  {
+    id: "interest-income",
+    name: "Interest Income",
+    type: "INCOME",
+    color: "#6366f1", // indigo-500
+    icon: "Banknote",
+  },
+  {
+    id: "dividends",
+    name: "Dividends",
+    type: "INCOME",
+    color: "#f97316", // orange-500
+    icon: "Coins",
+  },
+  {
+    id: "refunds",
+    name: "Refunds & Reimbursements",
+    type: "INCOME",
+    color: "#facc15", // yellow-400
+    icon: "RotateCcw",
+  },
   {
     id: "other-income",
     name: "Other Income",
@@ -151,6 +188,48 @@ export const defaultCategories = [
     color: "#fb7185", // rose-400
     icon: "Receipt",
     subcategories: ["Bank Fees", "Late Fees", "Service Charges"],
+  },
+
+  // Extra Expense Categories
+  {
+    id: "subscriptions",
+    name: "Subscriptions",
+    type: "EXPENSE",
+    color: "#0ea5e9", // sky-500
+    icon: "CreditCard",
+    subcategories: ["Streaming", "Software", "Memberships"],
+  },
+  {
+    id: "kids-family",
+    name: "Kids & Family",
+    type: "EXPENSE",
+    color: "#f97316", // orange-500
+    icon: "Users",
+    subcategories: ["School", "Activities", "Toys"],
+  },
+  {
+    id: "pet-care",
+    name: "Pet Care",
+    type: "EXPENSE",
+    color: "#22c55e", // green-500
+    icon: "PawPrint",
+    subcategories: ["Food", "Vet", "Grooming"],
+  },
+  {
+    id: "savings-goals",
+    name: "Savings Goals",
+    type: "EXPENSE",
+    color: "#a855f7", // purple-500
+    icon: "PiggyBank",
+    subcategories: ["Emergency Fund", "Travel Fund", "Down Payment"],
+  },
+  {
+    id: "debt-payments",
+    name: "Debt Payments",
+    type: "EXPENSE",
+    color: "#ef4444", // red-500
+    icon: "Coins",
+    subcategories: ["Credit Card", "Loan", "Overdraft"],
   },
   {
     id: "other-expense",

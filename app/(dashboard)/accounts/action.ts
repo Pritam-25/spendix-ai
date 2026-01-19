@@ -1,6 +1,5 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
 import { requireUser } from "@/lib/data/auth";
 import { accountSchema } from "@/lib/schemas/account.schema";
 import { revalidatePath } from "next/cache";
@@ -11,6 +10,7 @@ import {
   deleteAccount,
   updateDefaultAccount,
 } from "@/lib/data/accounts/mutations";
+import { Prisma } from "@prisma/client";
 
 type ResponseResult =
   | { success: true; message: string; accountId?: string }
@@ -31,14 +31,14 @@ export async function createAccountAction(
     const user = await requireUser();
     const { name, type, balance, isDefault } = parsed.data;
 
-    const balanceDecimal = new Prisma.Decimal(balance);
+    const decimalBalance = new Prisma.Decimal(balance);
 
     // call service to create account
     const account = await createAccount({
       userId: user.id,
       name,
       type,
-      balance: balanceDecimal,
+      balance: decimalBalance,
       isDefault,
     });
 

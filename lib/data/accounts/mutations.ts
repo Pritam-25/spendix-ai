@@ -119,7 +119,7 @@ export async function bulkDeleteTransactions({
   });
 
   if (transactions.length === 0) {
-    throw new Error(ErrorCode.TRANSACTION_NOT_FOUND_TO_DELETE);
+    throw new Error(ErrorCode.TRANSACTION_NOT_FOUND);
   }
 
   // Calculate balance changes per account

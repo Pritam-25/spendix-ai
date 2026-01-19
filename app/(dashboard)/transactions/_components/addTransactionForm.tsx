@@ -22,8 +22,8 @@ import {
 } from "@prisma/client";
 import { useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { createTransactionAction } from "../action";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createTransactionAction, updateTransactionAction } from "../action";
 import { toast } from "sonner";
 import {
   Field,
@@ -53,6 +53,7 @@ type AddTransactionFormProps = {
   accounts: Account[];
   category: typeof defaultCategories;
   editmode: boolean;
+  editId?: string;
   initialData: Partial<TransactionFormType>;
   canUseRecurring: boolean;
 };
@@ -66,9 +67,13 @@ type SimpleAccount = {
 };
 
 export default function AddTransactionForm(props: AddTransactionFormProps) {
-  const { accounts, category, editmode, initialData, canUseRecurring } = props;
+  const { accounts, category, editmode, editId, initialData, canUseRecurring } =
+    props;
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
+
   const [isPending, startTransition] = useTransition();
   const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false);
   const [localAccounts, setLocalAccounts] = useState<SimpleAccount[]>([]);
@@ -137,9 +142,20 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
   const isRecurring = useWatch({ control, name: "isRecurring" });
   const recurringInterval = useWatch({ control, name: "recurringInterval" });
 
+  const filteredCategories = useMemo(
+    () =>
+      category.filter((cat) =>
+        transactionType ? cat.type === transactionType : true,
+      ),
+    [category, transactionType],
+  );
+
   const onSubmit = (values: TransactionFormType) => {
     startTransition(async () => {
-      const result = await createTransactionAction(values);
+      const result =
+        editmode && editId
+          ? await updateTransactionAction(editId, values)
+          : await createTransactionAction(values);
 
       if (!result?.success) {
         toast.error(result.error);
@@ -147,7 +163,17 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
       }
 
       toast.success(result.message);
-      router.push("/transactions");
+      const accountPath = `/accounts/${accountId}`;
+
+      if (editmode && editId) {
+        const safeReturnUrl = returnUrl?.startsWith("/")
+          ? returnUrl
+          : accountPath;
+
+        router.replace(safeReturnUrl);
+      } else {
+        router.push(accountPath);
+      }
     });
   };
 
@@ -159,12 +185,28 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
     }
   }, [canUseRecurring, setValue]);
 
+  // Reset category when switching between income/expense so it stays valid
+  useEffect(() => {
+    if (!categoryValue) return;
+
+    const stillValid = filteredCategories.some(
+      (cat) => cat.id === categoryValue,
+    );
+    if (!stillValid) {
+      setValue("category", "");
+    }
+  }, [categoryValue, filteredCategories, setValue]);
+
   return (
     <Card>
       <CardHeader className="border-b">
-        <CardTitle>Add transaction</CardTitle>
+        <CardTitle>
+          {editmode ? "Edit transaction" : "Add transaction"}
+        </CardTitle>
         <CardDescription>
-          Create a new income or expense and optionally set it as recurring.
+          {editmode
+            ? "Update this transaction. Account cannot be changed."
+            : "Create a new income or expense and optionally set it as recurring."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -259,7 +301,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                           }
                           setValue("accountId", value as string);
                         }}
-                        disabled={isPending}
+                        disabled={isPending || editmode}
                       >
                         <SelectTrigger id="transaction-account">
                           <SelectValue placeholder="Select account" />
@@ -311,7 +353,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                     onChangeAction={(value) =>
                       setValue("category", value as string)
                     }
-                    categories={category}
+                    categories={filteredCategories}
                     placeholder="Select category"
                     disabled={isPending}
                   />
@@ -454,7 +496,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isPending}>
-                    Add transaction
+                    {editmode ? "Update transaction" : "Add transaction"}
                   </Button>
                 </div>
               </FieldGroup>

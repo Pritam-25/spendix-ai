@@ -4,12 +4,14 @@ import { requireRecurringTransactions, requireUser } from "@/lib/data/auth";
 import { transactionSchema } from "@/lib/schemas/transaction.schema";
 import { request } from "@arcjet/next";
 import { aj } from "@/lib/arcjet";
-import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ErrorCode } from "@/lib/constants/error-codes";
 import { mapDomainError } from "@/lib/utils/mapDomainError";
 import { findAccountById } from "@/lib/data/transactions/queries";
-import { createTransaction } from "@/lib/data/transactions/mutations";
+import {
+  createTransaction,
+  updateTransaction,
+} from "@/lib/data/transactions/mutations";
 import { bulkDeleteTransactions } from "@/lib/data/accounts/mutations";
 
 type ResponseResult =
@@ -52,15 +54,11 @@ export async function createTransactionAction(
       throw new Error(ErrorCode.ACCOUNT_NOT_FOUND);
     }
 
-    await prisma.$transaction((tx) =>
-      createTransaction({
-        prisma: tx,
-        userId: user.id,
-        account: { id: account.id, balance: account.balance },
-        data: parsed.data,
-      }),
-    );
-
+    await createTransaction({
+      userId: user.id,
+      account: { id: account.id, balance: account.balance },
+      data: parsed.data,
+    });
     revalidatePath("/transactions");
     revalidatePath("/dashboard");
     revalidatePath(`/accounts/${account.id}`);
@@ -102,5 +100,46 @@ export async function bulkDeleteTransactionAction(
       return { success: false, error: mapped.error };
     }
     return { success: false, error: ErrorCode.TRANSACTION_DELETE_FAILED };
+  }
+}
+
+// update transaction
+export async function updateTransactionAction(
+  transactionId: string,
+  data: unknown,
+): Promise<ResponseResult> {
+  const parsed = transactionSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(ErrorCode.INVALID_FORM_DATA);
+  }
+
+  try {
+    const user = await requireUser();
+
+    // pro feature check
+    if (parsed.data.isRecurring) {
+      await requireRecurringTransactions();
+    }
+
+    await updateTransaction({
+      id: transactionId,
+      userId: user.id,
+      data: parsed.data,
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath(`/accounts/${parsed.data.accountId}`, "page");
+    revalidatePath("/transactions");
+
+    return {
+      success: true,
+      message: "Transaction updated successfully",
+    };
+  } catch (error) {
+    const mapped = mapDomainError(error);
+    if (mapped) {
+      return { success: false, error: mapped.error };
+    }
+    return { success: false, error: ErrorCode.TRANSACTION_UPDATE_FAILED };
   }
 }

@@ -32,7 +32,7 @@ export function mapDomainError(error: unknown) {
       return { success: false, error: "Failed to update transaction" };
     case ErrorCode.TRANSACTION_DELETE_FAILED:
       return { success: false, error: "Failed to delete transactions" };
-    case ErrorCode.TRANSACTION_NOT_FOUND_TO_DELETE:
+    case ErrorCode.TRANSACTION_NOT_FOUND:
       return { success: false, error: "No transaction found to delete" };
 
     // Accounts
