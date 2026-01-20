@@ -12,8 +12,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
-
 // -------------------------
 // Enums
 // -------------------------
@@ -31,9 +29,13 @@ enum TransactionType {
 
 enum SubscriptionStatus {
   ACTIVE
-  TRIALING
+  PAST_DUE
   CANCELED
-  EXPIRED
+  TRIALING
+  ENDED
+  ABANDONED
+  INCOMPLETE
+  UPCOMING
 }
 
 enum RecurringInterval {
@@ -54,6 +56,17 @@ enum AccountType {
   SAVING
 }
 
+enum PaymentStatus {
+  PAID
+  FAILED
+  PENDING
+}
+
+enum PaymentType {
+  CHECKOUT
+  RECURRING
+}
+
 // -------------------------
 // Models
 // -------------------------
@@ -62,18 +75,20 @@ model User {
   id          String   @id @default(uuid())
   clerkUserId String   @unique
   email       String   @unique
-  firstName String?
-  lastName  String?
+  firstName   String?
+  lastName    String?
   imageUrl    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
-  budgets      Budget[]
-  accounts     Account[]
-  transactions Transaction[]
-  usage        Usage?
-  subscription Subscription?
+  budgets           Budget[]
+  accounts          Account[]
+  transactions      Transaction[]
+  usage             Usage?
+  subscription      Subscription?
+  payments          Payment[]
+  subscriptionItems SubscriptionItem[]
 
   @@map("users")
 }
@@ -98,33 +113,57 @@ model Usage {
 }
 
 model Subscription {
-  id        String   @id @default(uuid())
-  plan      PlanType @default(FREE)
-  status    SubscriptionStatus @default(ACTIVE)
+  id        String   @id // Clerk subscription.id
+  userId    String   @unique
+  createdAt DateTime
+  updatedAt DateTime
 
-  provider      String   // "clerk" | "stripe"
-  providerSubId String?  // Stripe / Clerk subscription ID
+  user  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items SubscriptionItem[]
 
-  startedAt        DateTime @default(now())
-  trialEndsAt      DateTime?
-  currentPeriodEnd DateTime?
+  @@index([userId])
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model SubscriptionItem {
+  id             String @id
+  userId         String
+  subscriptionId String
 
-  // Foreign Key
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planKey  String
+  planType PlanType
+  status   SubscriptionStatus // single source of truth
 
-  @@map("subscriptions")
+  periodStart DateTime?
+  periodEnd   DateTime?
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, subscriptionId, status])
+}
+
+model Payment {
+  id        String        @id
+  userId    String
+  status    PaymentStatus
+  type      PaymentType
+  amount    Int?
+  createdAt DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Budget {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   amount        Decimal
   lastAlertSent DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Foreign Key
   userId String @unique
@@ -145,7 +184,7 @@ model Account {
 
   // Foreign Key
   userId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Relations
   transactions Transaction[]
@@ -155,20 +194,20 @@ model Account {
 }
 
 model Transaction {
-  id                String            @id @default(uuid())
+  id                String             @id @default(uuid())
   type              TransactionType
   amount            Decimal
   description       String?
   date              DateTime
   category          String
   receiptUrl        String?
-  isRecurring       Boolean           @default(false)
+  isRecurring       Boolean            @default(false)
   recurringInterval RecurringInterval?
   nextRecurringDate DateTime?
   lastProcessed     DateTime?
-  status            TransactionStatus @default(COMPLETED)
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  status            TransactionStatus  @default(COMPLETED)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   // Foreign Keys
   userId    String
@@ -180,4 +219,3 @@ model Transaction {
   @@index([accountId])
   @@map("transactions")
 }
-

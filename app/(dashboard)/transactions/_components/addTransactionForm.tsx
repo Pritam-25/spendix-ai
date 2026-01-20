@@ -44,6 +44,7 @@ import {
 import { Input } from "@/components/ui/input";
 import CreateAccountDrawer from "../../accounts/_components/CreateAccountDrawer";
 import { Button } from "@/components/ui/button";
+import AiRecieptScanner from "./AiRecieptScanner";
 import { DatePicker } from "@/components/web/datpicker";
 import { CategoryCombobox } from "@/components/web/category-combobox";
 import { Switch } from "@/components/ui/switch";
@@ -210,6 +211,19 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {/* AI Receipt Scanner */}
+        {!editmode && (
+          <AiRecieptScanner
+            onScanComplete={(result) => {
+              if (result.amount !== undefined)
+                setValue("amount", result.amount);
+              if (result.date) setValue("date", result.date);
+              if (result.description)
+                setValue("description", result.description);
+              if (result.category) setValue("category", result.category);
+            }}
+          />
+        )}
         <CreateAccountDrawer
           open={isAccountDrawerOpen}
           onOpenChangeAction={setIsAccountDrawerOpen}

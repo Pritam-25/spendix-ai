@@ -158,13 +158,13 @@ export default function ChartTable({ transactions }: ChartTableProps) {
           <div className="text-center">
             <p className="text-muted-foreground">Total Income</p>
             <p className="font-bold text-lg text-green-500">
-              $ {totals.income.toFixed(2)}
+              ₹ {totals.income.toFixed(2)}
             </p>
           </div>
           <div className="text-center">
             <p className="text-muted-foreground">Total Expense</p>
             <p className="font-bold text-lg text-red-500">
-              $ {totals.expense.toFixed(2)}
+              ₹ {totals.expense.toFixed(2)}
             </p>
           </div>
           <div className="text-center">
@@ -176,7 +176,9 @@ export default function ChartTable({ transactions }: ChartTableProps) {
                   : "text-red-500"
               }`}
             >
-              $ {(totals.income - totals.expense).toFixed(2)}
+              {totals.income - totals.expense < 0
+                ? `-₹ ${Math.abs(totals.income - totals.expense).toFixed(2)}`
+                : `₹ ${(totals.income - totals.expense).toFixed(2)}`}
             </p>
           </div>
         </div>

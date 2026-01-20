@@ -413,7 +413,28 @@ export default function TransactionTable({
                     {format(new Date(transaction.date), "PP")}
                   </TableCell>
                   <TableCell className="text-center">
-                    {transaction.description || "-"}
+                    {transaction.description ? (
+                      transaction.description.length > 30 ? (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-block max-w-[200px] truncate align-middle">
+                                {transaction.description}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs break-words">
+                                {transaction.description}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        <span>{transaction.description}</span>
+                      )
+                    ) : (
+                      "-"
+                    )}
                   </TableCell>
                   <TableCell className="text-center capitalize">
                     <span
@@ -427,13 +448,13 @@ export default function TransactionTable({
                     </span>
                   </TableCell>
                   <TableCell
-                    className={`text-center font-bold ${
+                    className={`text-center ${
                       transaction.type === "EXPENSE"
                         ? "text-red-500"
                         : "text-green-500"
                     }`}
                   >
-                    {transaction.type === "EXPENSE" ? "- " : "+ "}$
+                    {transaction.type === "EXPENSE" ? "-₹ " : "+₹ "}
                     {Number(transaction.amount).toFixed(2)}
                   </TableCell>
                   <TableCell className="text-center">

@@ -13,6 +13,8 @@ import {
   updateTransaction,
 } from "@/lib/data/transactions/mutations";
 import { bulkDeleteTransactions } from "@/lib/data/accounts/mutations";
+import { z } from "zod";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 type ResponseResult =
   | { success: true; message: string }
@@ -141,5 +143,108 @@ export async function updateTransactionAction(
       return { success: false, error: mapped.error };
     }
     return { success: false, error: ErrorCode.TRANSACTION_UPDATE_FAILED };
+  }
+}
+
+// ai scan reciept action
+const receiptSchema = z.object({
+  amount: z.number().positive(),
+  date: z.string(),
+  description: z.string(),
+  merchantName: z.string(),
+  category: z.string(),
+});
+
+export async function aiScanReceiptAction(file: File) {
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    const modelName = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+
+    if (!apiKey) {
+      throw new Error("Gemini API key is not defined");
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: modelName });
+
+    const buffer = await file.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
+
+    const prompt = `
+            Analyze this receipt image and extract the following information:
+            - Total amount (number only)
+            - Date (YYYY-MM-DD)
+            - Brief description
+            - Store/merchant name
+            - Category (choose one: housing, transportation, groceries, utilities, entertainment, food, shopping, healthcare, education, personal, travel, insurance, gifts, bills, other-expense)
+
+            Return ONLY valid JSON:
+            {
+              "amount": number,
+              "date": "YYYY-MM-DD",
+              "description": "string",
+              "merchantName": "string",
+              "category": "string"
+            }
+
+            If unreadable, return {}
+            `;
+
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          mimeType: file.type,
+          data: base64,
+        },
+      },
+    ]);
+
+    const text = result.response.text();
+
+    // Extract JSON safely
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("No JSON found in Gemini response");
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (Object.keys(parsed).length === 0) {
+      throw new Error("Empty receipt data");
+    }
+
+    const validated = receiptSchema.parse({
+      ...parsed,
+      amount: Number(parsed.amount),
+    });
+
+    // If merchantName is available, concatenate with description and do not return merchantName
+    let description = validated.description;
+    if (validated.merchantName) {
+      description = `${validated.merchantName} - ${validated.description}`;
+    }
+    return {
+      amount: validated.amount,
+      date: new Date(validated.date),
+      description,
+      category: validated.category,
+    };
+  } catch (error) {
+    console.error("Receipt scanning failed:", error);
+
+    if (error instanceof Error) {
+      if (error.message.includes("404")) {
+        throw new Error("Gemini model unavailable");
+      }
+      if (error.message.includes("429")) {
+        throw new Error("Too many requests");
+      }
+      if (error.message.includes("413")) {
+        throw new Error("Image too large");
+      }
+      throw error;
+    }
+
+    throw new Error("Failed to scan receipt");
   }
 }

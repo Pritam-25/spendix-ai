@@ -81,7 +81,7 @@ const AccountTransactionPage = async ({
                   </span>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-semibold text-emerald-400">
-                      ${Number(account.balance).toFixed(2)}
+                      ₹ {Number(account.balance).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-[11px] text-muted-foreground">

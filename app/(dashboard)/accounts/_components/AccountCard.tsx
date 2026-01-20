@@ -37,7 +37,7 @@ export default function AccountCard({ account }: AccountCardProps) {
       <Link href={`/accounts/${id}`} className="block">
         <CardContent>
           <div className="text-2xl font-bold">
-            ${Number(balance).toFixed(2)}
+            ₹ {Number(balance).toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground">
             {type.toLowerCase()} account
