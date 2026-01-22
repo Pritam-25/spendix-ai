@@ -2,7 +2,13 @@ import { format } from "date-fns";
 import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
@@ -39,32 +45,45 @@ export function RecentTransactionsCard({
   recentTransactions,
 }: RecentTransactionsCardProps) {
   return (
-    <Card className="lg:col-span-2">
+    <Card className="lg:col-span-2 h-full">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Recent Transactions</CardTitle>
+        <div className="space-y-1">
+          <CardTitle>Recent Transactions</CardTitle>
+          <CardDescription>
+            Your most recent income and expenses at a glance
+          </CardDescription>
+        </div>
         <Link
           href={`/accounts/${accountId}`}
-          className={cn(buttonVariants({ variant: "link" }))}
+          className={cn(buttonVariants({ variant: "outline" }))}
         >
           View all
         </Link>
       </CardHeader>
       <CardContent className="space-y-3">
-        {recentTransactions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No transactions yet.</p>
-        ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader className="bg-accent">
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader className="bg-accent">
+              <TableRow>
+                <TableHead className="text-center">Date</TableHead>
+                <TableHead className="text-center">Description</TableHead>
+                <TableHead className="text-center">Category</TableHead>
+                <TableHead className="text-center">Amount</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {recentTransactions.length === 0 ? (
                 <TableRow>
-                  <TableHead className="text-center">Date</TableHead>
-                  <TableHead className="text-center">Description</TableHead>
-                  <TableHead className="text-center">Category</TableHead>
-                  <TableHead className="text-center">Amount</TableHead>
+                  <TableCell
+                    colSpan={4}
+                    className="py-8 text-center text-sm text-muted-foreground"
+                  >
+                    No transactions yet.
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentTransactions.map((tx) => (
+              ) : (
+                recentTransactions.map((tx) => (
                   <TableRow key={tx.id}>
                     <TableCell className="text-center">
                       {format(new Date(tx.date), "PP")}
@@ -116,11 +135,11 @@ export function RecentTransactionsCard({
                       </span>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

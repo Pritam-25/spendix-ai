@@ -6,6 +6,8 @@ import { serialize } from "@/lib/utils/serialize";
 
 type DashboardSummary = {
   accountId: string;
+  accountName: string;
+  accountType: string;
   balance: number;
   totalIncome: number;
   totalExpense: number;
@@ -16,23 +18,29 @@ type DashboardSummary = {
     category: string;
     amount: number;
     description: string | null;
-    // add any other fields you actually use in the UI
   }[];
 };
 
-export default async function getDefaultAccountDataForDashboard(): Promise<DashboardSummary | null> {
-  const user = await requireUser();
-
-  const defaultAccount = await prisma.account.findFirst({
+async function getDefaultAccountByUserId(userId: string) {
+  return await prisma.account.findFirst({
     where: {
-      userId: user.id,
+      userId: userId,
       isDefault: true,
     },
     select: {
       id: true,
+      name: true,
+      type: true,
       balance: true,
     },
   });
+}
+
+// get total income, total expense, recent transactions for default account
+export default async function getDefaultAccountDataForDashboard(): Promise<DashboardSummary | null> {
+  const user = await requireUser();
+
+  const defaultAccount = await getDefaultAccountByUserId(user.id);
 
   if (!defaultAccount) return null;
 
@@ -76,6 +84,8 @@ export default async function getDefaultAccountDataForDashboard(): Promise<Dashb
 
   const rawResult = {
     accountId: defaultAccount.id,
+    accountName: defaultAccount.name,
+    accountType: defaultAccount.type,
     balance: defaultAccount.balance,
     totalIncome: incomeAgg._sum.amount ?? 0,
     totalExpense: expenseAgg._sum.amount ?? 0,
@@ -83,4 +93,58 @@ export default async function getDefaultAccountDataForDashboard(): Promise<Dashb
   };
 
   return serialize(rawResult) as DashboardSummary;
+}
+
+// get top income and expense categories for default account
+type CategorySummary = {
+  category: string;
+  totalAmount: number;
+};
+
+export async function getTopCategoriesForDashboard() {
+  const user = await requireUser();
+
+  const defaultAccount = await getDefaultAccountByUserId(user.id);
+
+  if (!defaultAccount)
+    return {
+      topIncomeCategories: [],
+      topExpenseCategories: [],
+    };
+
+  const groupedData = await prisma.transaction.groupBy({
+    by: ["category", "type"],
+    where: {
+      accountId: defaultAccount.id,
+    },
+    _sum: {
+      amount: true,
+    },
+  });
+
+  const incomeCategories: CategorySummary[] = [];
+  const expenseCategories: CategorySummary[] = [];
+
+  for (const row of groupedData) {
+    const item = {
+      category: row.category,
+      totalAmount: Number(row._sum.amount) ?? 0,
+    };
+
+    if (row.type === "INCOME") {
+      incomeCategories.push(item);
+    } else if (row.type === "EXPENSE") {
+      expenseCategories.push(item);
+    }
+  }
+
+  return {
+    topIncomeCategories: incomeCategories
+      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .slice(0, 5),
+
+    topExpenseCategories: expenseCategories
+      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .slice(0, 5),
+  };
 }
