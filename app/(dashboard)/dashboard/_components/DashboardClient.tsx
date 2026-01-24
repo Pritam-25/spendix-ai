@@ -1,6 +1,6 @@
 import { Wallet2, TrendingDown, TrendingUp } from "lucide-react";
 
-import { BudgetOverviewCard } from "./BudgetOverviewCard";
+import BudgetOverviewCard from "./BudgetOverviewCard";
 import { EmptyDashboard } from "./EmptyDashboard";
 import { RecentTransactionsCard } from "./RecentTransactionsCard";
 import { StatCard } from "./StatCard";
@@ -10,6 +10,7 @@ import { Suspense } from "react";
 import { DashboardCardSkeleton } from "./(skeleton)/DashboardCardSkeleton";
 import { RecentTransactionsCardSkeleton } from "./(skeleton)/RecentTransactionsCardSkeleton";
 import { StatCardSkeleton } from "./(skeleton)/StatCardSkeleton";
+import { categoriesType } from "../page";
 
 type RecentTransaction = {
   id: string;
@@ -30,7 +31,13 @@ type DashboardData = {
   recentTransactions: RecentTransaction[];
 } | null;
 
-export default function DashboardClient({ data }: { data: DashboardData }) {
+export default function DashboardClient({
+  data,
+  categories,
+}: {
+  data: DashboardData;
+  categories: categoriesType;
+}) {
   if (!data) {
     return <EmptyDashboard />;
   }
@@ -48,9 +55,9 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   return (
     <div className="flex flex-col gap-6">
       {/* ================= TOP ROW ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-11 xl:grid-cols-11 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 2xl:grid-cols-12 gap-6 2xl:gap-8 items-stretch">
         {/* LEFT 70% */}
-        <div className="lg:col-span-7 xl:col-span-7 grid grid-cols-1 lg:grid-cols-8 xl:grid-cols-8 gap-7 items-stretch">
+        <div className="lg:col-span-8 2xl:col-span-8 grid grid-cols-1 lg:grid-cols-8 gap-7 items-stretch">
           {/* Account details – 35% */}
           <div className="lg:col-span-4 xl:col-span-4 flex flex-col space-y-6 h-full">
             <Suspense fallback={<StatCardSkeleton />}>
@@ -113,17 +120,19 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
         </div>
 
         {/* RIGHT 30% – Income categories */}
-        <div className="lg:col-span-4 xl:col-span-4 h-full">
+        <div className="lg:col-span-4 2xl:col-span-4 h-full">
           <Suspense fallback={<DashboardCardSkeleton />}>
-            <TopIncomeCategoryCard />
+            <TopIncomeCategoryCard
+              topIncomeCategories={categories.topIncomeCategories}
+            />
           </Suspense>
         </div>
       </div>
 
       {/* ================= BOTTOM ROW ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-11 xl:grid-cols-11 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 2xl:grid-cols-12 gap-6 2xl:gap-8">
         {/* Recent transactions – 70% */}
-        <div className="lg:col-span-7 xl:col-span-7 h-full">
+        <div className="lg:col-span-8 2xl:col-span-8 h-full">
           <Suspense fallback={<RecentTransactionsCardSkeleton />}>
             <RecentTransactionsCard
               accountId={accountId}
@@ -133,9 +142,11 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
         </div>
 
         {/* Expense categories – 30% */}
-        <div className="lg:col-span-4 xl:col-span-4 h-full">
+        <div className="lg:col-span-4 2xl:col-span-4 h-full">
           <Suspense fallback={<DashboardCardSkeleton />}>
-            <TopExpenseCategoryCard />
+            <TopExpenseCategoryCard
+              topExpenseCategories={categories.topExpenseCategories}
+            />
           </Suspense>
         </div>
       </div>

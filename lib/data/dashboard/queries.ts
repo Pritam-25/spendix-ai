@@ -3,8 +3,10 @@ import "server-only";
 import prisma from "@/lib/prisma";
 import { requireUser } from "../auth";
 import { serialize } from "@/lib/utils/serialize";
+import { Prisma, TransactionType } from "@prisma/client";
+import { getKpiDateRange, KpiTimeRange } from "@/lib/utils/timerange";
 
-type DashboardSummary = {
+export type DashboardSummary = {
   accountId: string;
   accountName: string;
   accountType: string;
@@ -37,35 +39,42 @@ async function getDefaultAccountByUserId(userId: string) {
 }
 
 // get total income, total expense, recent transactions for default account
-export default async function getDefaultAccountDataForDashboard(): Promise<DashboardSummary | null> {
+export default async function getDefaultAccountDataForDashboard(
+  timeRange: KpiTimeRange = KpiTimeRange.ALL_TIME,
+): Promise<DashboardSummary | null> {
   const user = await requireUser();
 
   const defaultAccount = await getDefaultAccountByUserId(user.id);
 
   if (!defaultAccount) return null;
 
+  const dateFilter = getKpiDateRange(timeRange);
+
+  const baseWhere: Prisma.TransactionWhereInput = {
+    accountId: defaultAccount.id,
+    ...(dateFilter && { date: dateFilter }),
+  };
+
   const [incomeAgg, expenseAgg, recentTransactions] = await prisma.$transaction(
     [
       prisma.transaction.aggregate({
         where: {
-          accountId: defaultAccount.id,
-          type: "INCOME",
+          ...baseWhere,
+          type: TransactionType.INCOME,
         },
         _sum: { amount: true },
       }),
 
       prisma.transaction.aggregate({
         where: {
-          accountId: defaultAccount.id,
-          type: "EXPENSE",
+          ...baseWhere,
+          type: TransactionType.EXPENSE,
         },
         _sum: { amount: true },
       }),
 
       prisma.transaction.findMany({
-        where: {
-          accountId: defaultAccount.id,
-        },
+        where: { accountId: defaultAccount.id },
         orderBy: {
           date: "desc",
         },
@@ -96,12 +105,14 @@ export default async function getDefaultAccountDataForDashboard(): Promise<Dashb
 }
 
 // get top income and expense categories for default account
-type CategorySummary = {
+export type CategorySummary = {
   category: string;
   totalAmount: number;
 };
 
-export async function getTopCategoriesForDashboard() {
+export async function getTopCategoriesForDashboard(
+  timeRange: KpiTimeRange = KpiTimeRange.ALL_TIME,
+) {
   const user = await requireUser();
 
   const defaultAccount = await getDefaultAccountByUserId(user.id);
@@ -112,11 +123,16 @@ export async function getTopCategoriesForDashboard() {
       topExpenseCategories: [],
     };
 
+  const dateFilter = getKpiDateRange(timeRange);
+
+  const baseWhere: Prisma.TransactionWhereInput = {
+    accountId: defaultAccount.id,
+    ...(dateFilter && { date: dateFilter }),
+  };
+
   const groupedData = await prisma.transaction.groupBy({
     by: ["category", "type"],
-    where: {
-      accountId: defaultAccount.id,
-    },
+    where: baseWhere,
     _sum: {
       amount: true,
     },
@@ -128,12 +144,12 @@ export async function getTopCategoriesForDashboard() {
   for (const row of groupedData) {
     const item = {
       category: row.category,
-      totalAmount: Number(row._sum.amount) ?? 0,
+      totalAmount: Number(row._sum.amount ?? 0),
     };
 
-    if (row.type === "INCOME") {
+    if (row.type === TransactionType.INCOME) {
       incomeCategories.push(item);
-    } else if (row.type === "EXPENSE") {
+    } else if (row.type === TransactionType.EXPENSE) {
       expenseCategories.push(item);
     }
   }

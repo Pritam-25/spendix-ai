@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -155,6 +156,21 @@ export function TopExpensePieChart({
           </p>
         )}
       </CardContent>
+      {hasData && (
+        <CardFooter className="flex justify-center gap-6 border-t pt-4 text-xs text-muted-foreground">
+          {data.map((d, index) => (
+            <div key={d.name} className="flex items-center gap-2">
+              <span
+                className="h-3 w-3 rounded-sm"
+                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+              />
+              <span className="font-medium text-muted-foreground">
+                {d.name}
+              </span>
+            </div>
+          ))}
+        </CardFooter>
+      )}
     </Card>
   );
 }

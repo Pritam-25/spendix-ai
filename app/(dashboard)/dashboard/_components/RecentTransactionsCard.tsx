@@ -84,7 +84,7 @@ export function RecentTransactionsCard({
                 </TableRow>
               ) : (
                 recentTransactions.map((tx) => (
-                  <TableRow key={tx.id}>
+                  <TableRow key={tx.id} className="h-12">
                     <TableCell className="text-center">
                       {format(new Date(tx.date), "PP")}
                     </TableCell>

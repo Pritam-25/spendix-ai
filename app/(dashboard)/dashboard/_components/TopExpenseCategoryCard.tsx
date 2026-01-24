@@ -1,7 +1,10 @@
-import { getTopCategoriesForDashboard } from "@/lib/data/dashboard/queries";
 import { TopExpensePieChart } from "./TopExpensePieChart";
+import { categoriesType } from "../page";
 
-export default async function TopExpenseCategoryCard() {
-  const { topExpenseCategories } = await getTopCategoriesForDashboard();
+export default async function TopExpenseCategoryCard({
+  topExpenseCategories,
+}: {
+  topExpenseCategories: categoriesType["topExpenseCategories"];
+}) {
   return <TopExpensePieChart categories={topExpenseCategories} />;
 }

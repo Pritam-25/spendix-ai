@@ -1,7 +1,10 @@
-import { getTopCategoriesForDashboard } from "@/lib/data/dashboard/queries";
 import TopIncomeBarChart from "./TopIncomeBarChart";
+import { categoriesType } from "../page";
 
-export default async function TopIncomeCategoryCard() {
-  const { topIncomeCategories } = await getTopCategoriesForDashboard();
+export default async function TopIncomeCategoryCard({
+  topIncomeCategories,
+}: {
+  topIncomeCategories: categoriesType["topIncomeCategories"];
+}) {
   return <TopIncomeBarChart categories={topIncomeCategories} />;
 }

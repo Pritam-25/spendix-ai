@@ -44,8 +44,8 @@ const items = [
     icon: Wallet,
   },
   {
-    title: "Budgets",
-    url: "/budgets",
+    title: "Budget",
+    url: "/budget",
     icon: BarChart3,
   },
   {

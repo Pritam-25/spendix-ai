@@ -24,7 +24,7 @@ export async function createAccountAction(
   const parsed = accountSchema.safeParse(data);
 
   if (!parsed.success) {
-    throw new Error(ErrorCode.INVALID_FORM_DATA);
+    return { success: false, error: ErrorCode.INVALID_FORM_DATA };
   }
 
   try {

@@ -34,10 +34,14 @@ export function mapDomainError(error: unknown) {
       return { success: false, error: "Failed to delete transactions" };
     case ErrorCode.TRANSACTION_NOT_FOUND:
       return { success: false, error: "No transaction found to delete" };
+    case ErrorCode.TRANSACTION_FETCH_FAILED:
+      return { success: false, error: "Failed to fetch transactions" };
 
     // Accounts
     case ErrorCode.ACCOUNT_NOT_FOUND:
       return { success: false, error: "Account not found" };
+    case ErrorCode.ACCOUNTS_FETCH_FAILED:
+      return { success: false, error: "Failed to fetch accounts" };
     case ErrorCode.LAST_DEFAULT_ACCOUNT:
       return {
         success: false,
@@ -60,6 +64,14 @@ export function mapDomainError(error: unknown) {
     // Budget
     case ErrorCode.BUDGET_NOT_FOUND:
       return { success: false, error: "Budget not found" };
+
+    case ErrorCode.BUDGET_CREATION_FAILED:
+      return { success: false, error: "Failed to create budget" };
+
+    case ErrorCode.BUDGET_UPDATE_FAILED:
+      return { success: false, error: "Failed to update budget" };
+    case ErrorCode.BUDGET_FETCH_FAILED:
+      return { success: false, error: "Failed to fetch budget" };
 
     // Rate limiting
     case ErrorCode.RATE_LIMITED:

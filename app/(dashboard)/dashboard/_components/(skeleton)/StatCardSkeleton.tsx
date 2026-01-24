@@ -15,26 +15,32 @@ export function StatCardSkeleton({
   return (
     <Card className={className}>
       {/* Header */}
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-        <div className="space-y-2">
+      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-2 pb-2">
+        <div className="space-y-2 flex-1 min-w-0">
           {/* Title */}
-          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-5 w-full max-w-[160px] sm:max-w-[180px] md:max-w-[240px]" />
 
           {/* Description */}
-          {showDescription && <Skeleton className="h-4 w-48" />}
+          {showDescription && (
+            <Skeleton className="h-4 w-full max-w-[220px] sm:max-w-[280px] md:max-w-[320px]" />
+          )}
         </div>
 
         {/* Icon */}
-        <Skeleton className="h-9 w-9 rounded-full" />
+        <div className="flex-none">
+          <Skeleton className="h-9 w-9 rounded-full" />
+        </div>
       </CardHeader>
 
       {/* Content */}
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-2 min-w-0">
         {/* Value */}
-        <Skeleton className="h-7 w-36" />
+        <Skeleton className="h-7 w-full max-w-[200px] sm:max-w-[240px] md:max-w-[320px]" />
 
         {/* Detail */}
-        {showDetail && <Skeleton className="h-4 w-44" />}
+        {showDetail && (
+          <Skeleton className="h-4 w-full max-w-[260px] sm:max-w-[320px] md:max-w-[400px]" />
+        )}
       </CardContent>
     </Card>
   );
