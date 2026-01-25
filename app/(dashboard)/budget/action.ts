@@ -1,7 +1,7 @@
 "use server";
 
 import { ErrorCode } from "@/lib/constants/error-codes";
-import { requireUser } from "@/lib/data/auth";
+import { requireUser } from "@/lib/data/users/auth";
 import { createOrUpdateBudgetForUser } from "@/lib/data/budget/mutaions";
 import { budgetSchema } from "@/lib/schemas/budget.schema";
 import { mapDomainError } from "@/lib/utils/mapDomainError";

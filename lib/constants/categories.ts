@@ -152,6 +152,14 @@ export const defaultCategories = [
     subcategories: ["Tuition", "Books", "Courses"],
   },
   {
+    id: "fitness",
+    name: "Fitness",
+    type: "EXPENSE",
+    color: "#22c55e", // green-500
+    icon: "Dumbbell",
+    subcategories: ["Gym", "Sports", "Equipment"],
+  },
+  {
     id: "personal",
     name: "Personal Care",
     type: "EXPENSE",
@@ -248,13 +256,14 @@ export const categoryColors = defaultCategories.reduce(
   {} as Record<string, string>,
 );
 
-/*
-acc start with an empty object {} as the initial value.
+export const EXPENSE_CATEGORIES = defaultCategories
+  .filter((cat) => cat.type === "EXPENSE")
+  .map((cat) => cat.name);
 
-Output:
-{
-  salary: "#22c55e",
-  freelance: "#06b6d4",
-  investments: "#6366f1"
-}
-*/
+export const INCOME_CATEGORIES = defaultCategories
+  .filter((cat) => cat.type === "INCOME")
+  .map((cat) => cat.name);
+
+export const ALL_CATEGORIES = defaultCategories.map((cat) => cat.name);
+
+export const FALLBACK_CATEGORY = "Uncategorized";

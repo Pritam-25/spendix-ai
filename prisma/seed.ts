@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client";
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
-const ACCOUNT_ID = "9819b5fa-dcad-4b61-9a7e-ed5cd19f890d";
+const ACCOUNT_ID = "54749085-1e0e-4b43-abee-f33833ab8854";
 const USER_ID = "e3d5cf8b-cdfc-4603-8f21-a06ea39c8676";
 
 type TransactionType = "INCOME" | "EXPENSE";

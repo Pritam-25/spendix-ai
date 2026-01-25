@@ -1,7 +1,7 @@
 import "server-only";
 
 import prisma from "@/lib/prisma";
-import { requireUser } from "../auth";
+import { requireUser } from "../users/auth";
 import { serialize } from "@/lib/utils/serialize";
 import { Prisma, TransactionType } from "@prisma/client";
 import { getKpiDateRange, KpiTimeRange } from "@/lib/utils/timerange";

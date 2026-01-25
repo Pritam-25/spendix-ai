@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "postinstall": "prisma generate",
+    "seed": "prisma db seed",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -38,6 +39,7 @@
     "date-fns": "^4.1.0",
     "inngest": "^3.49.1",
     "lucide-react": "^0.562.0",
+    "nanoid": "^5.1.6",
     "next": "16.1.1",
     "next-themes": "^0.4.6",
     "react": "19.2.3",

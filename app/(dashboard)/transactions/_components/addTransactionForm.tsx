@@ -49,6 +49,7 @@ import { DatePicker } from "@/components/web/datpicker";
 import { CategoryCombobox } from "@/components/web/category-combobox";
 import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 
 type AddTransactionFormProps = {
   accounts: Account[];
@@ -233,7 +234,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
             setValue("accountId", newAccount.id);
           }}
         />
-        <form onSubmit={handleSubmit(onSubmit)} className="py-4">
+        <form onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup>
             <FieldSet>
               <FieldGroup>
@@ -299,10 +300,11 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                         </p>
                         <Button
                           type="button"
-                          variant={"outline"}
+                          variant={"default"}
                           onClick={() => setIsAccountDrawerOpen(true)}
                           className="w-full"
                         >
+                          <Plus className="mr-2" />
                           Add account
                         </Button>
                       </div>
@@ -357,45 +359,52 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                   </Field>
                 </div>
 
-                {/* Category */}
-                <Field>
-                  <FieldLabel htmlFor="transaction-category">
-                    Category
-                  </FieldLabel>
-                  <CategoryCombobox
-                    value={categoryValue}
-                    onChangeAction={(value) =>
-                      setValue("category", value as string)
-                    }
-                    categories={filteredCategories}
-                    placeholder="Select category"
-                    disabled={isPending}
-                  />
-                  {errors.category && (
-                    <p className="text-sm text-destructive">
-                      {errors.category.message}
-                    </p>
-                  )}
-                </Field>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Date */}
+                  <Field>
+                    <FieldLabel htmlFor="transaction-date">
+                      Transaction Date
+                    </FieldLabel>
+                    <DatePicker
+                      id="transaction-date"
+                      label=""
+                      placeholder="June 01, 2025"
+                      value={dateValue}
+                      onChangeAction={(date) =>
+                        setValue("date", date ?? new Date())
+                      }
+                      disabled={isPending}
+                    />
+                    {errors.date && (
+                      <p className="text-sm text-destructive">
+                        {errors.date.message}
+                      </p>
+                    )}
+                  </Field>
+
+                  {/* Category */}
+                  <Field className="flex flex-col">
+                    <FieldLabel htmlFor="transaction-category">
+                      Category
+                    </FieldLabel>
+                    <CategoryCombobox
+                      value={categoryValue}
+                      onChangeAction={(value) =>
+                        setValue("category", value as string)
+                      }
+                      categories={filteredCategories}
+                      placeholder="Select category"
+                      disabled={isPending}
+                    />
+                    {errors.category && (
+                      <p className="text-sm text-destructive">
+                        {errors.category.message}
+                      </p>
+                    )}
+                  </Field>
+                </div>
 
                 {/* Date */}
-                <Field>
-                  <DatePicker
-                    id="transaction-date"
-                    label="Transaction Date"
-                    placeholder="June 01, 2025"
-                    value={dateValue}
-                    onChangeAction={(date) =>
-                      setValue("date", date ?? new Date())
-                    }
-                    disabled={isPending}
-                  />
-                  {errors.date && (
-                    <p className="text-sm text-destructive">
-                      {errors.date.message}
-                    </p>
-                  )}
-                </Field>
 
                 {/* Description */}
                 <Field>

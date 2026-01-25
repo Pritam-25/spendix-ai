@@ -62,15 +62,17 @@ export function DatePicker({
 
   return (
     <div className="flex flex-col gap-3">
-      <Label htmlFor={id} className="px-1">
-        {label}
-      </Label>
+      {label ? (
+        <Label htmlFor={id} className="px-1">
+          {label}
+        </Label>
+      ) : null}
       <div className="relative flex gap-2">
         <Input
           id={id}
           value={inputValue}
           placeholder={placeholder}
-          className="bg-background pr-10"
+          className="w-full bg-background pr-10"
           disabled={disabled}
           onChange={(e) => {
             const date = new Date(e.target.value);

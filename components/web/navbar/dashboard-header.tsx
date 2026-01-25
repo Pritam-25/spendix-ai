@@ -4,6 +4,7 @@ import { useSelectedLayoutSegment } from "next/navigation";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/web/mode-toggle";
 import UpgradeButton from "./updrade-button";
+import Link from "next/link";
 
 const TITLES: Record<string, string> = {
   dashboard: "Dashboard",
@@ -29,7 +30,9 @@ export function DashboardHeader() {
         <h1 className="text-xl font-bold sm:text-2xl">{title}</h1>
       </div>
       <div className="flex item-center gap-4">
-        <UpgradeButton />
+        <Link href="/pricing" className="hidden sm:inline-flex">
+          <UpgradeButton />
+        </Link>
         <ModeToggle />
       </div>
     </div>

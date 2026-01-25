@@ -1,7 +1,7 @@
 import "server-only";
 
 import prisma from "@/lib/prisma";
-import { AccountType, Prisma, TransactionType } from "@prisma/client";
+import { AccountType, Prisma } from "@prisma/client";
 import { ErrorCode } from "../../constants/error-codes";
 
 type CreateAccountServiceProps = {
@@ -20,11 +20,6 @@ type UpdateDefaultAccountServiceProps = {
 type DeleteAccountServiceProps = {
   userId: string;
   accountId: string;
-};
-
-type BulkDeleteAccountsServiceProps = {
-  userId: string;
-  transactionIds: string[];
 };
 
 // create a new account
@@ -102,70 +97,5 @@ export async function deleteAccount({
     }
 
     await tx.account.deleteMany({ where: { id: accountId, userId } });
-  });
-}
-
-// bulk delete transactions
-export async function bulkDeleteTransactions({
-  transactionIds,
-  userId,
-}: BulkDeleteAccountsServiceProps) {
-  // fetch transactions to verify ownership
-  const transactions = await prisma.transaction.findMany({
-    where: {
-      id: { in: transactionIds },
-      userId,
-    },
-  });
-
-  if (transactions.length === 0) {
-    throw new Error(ErrorCode.TRANSACTION_NOT_FOUND);
-  }
-
-  // Calculate balance changes per account
-
-  /*
-      Example result:
-      {
-        "account_1": 200,
-        "account_2": -300
-      }
-    */
-
-  const accountBalanceChanges: Record<string, Prisma.Decimal> = {};
-
-  for (const tx of transactions) {
-    const amount = tx.type === TransactionType.EXPENSE ? tx.amount : -tx.amount;
-
-    accountBalanceChanges[tx.accountId] = (
-      accountBalanceChanges[tx.accountId] || new Prisma.Decimal(0)
-    ).plus(amount);
-  }
-
-  // Run delete + balance update inside a DB transaction
-  // This ensures data consistency (all succeed or all rollback)
-
-  await prisma.$transaction(async (tx) => {
-    // Delete transactions
-    await tx.transaction.deleteMany({
-      where: {
-        id: { in: transactionIds },
-        userId,
-      },
-    });
-
-    // Update account balances in parallel
-    await Promise.all(
-      Object.entries(accountBalanceChanges).map(([accountId, balanceChange]) =>
-        tx.account.update({
-          where: { id: accountId, userId },
-          data: {
-            balance: {
-              increment: balanceChange,
-            },
-          },
-        }),
-      ),
-    );
   });
 }

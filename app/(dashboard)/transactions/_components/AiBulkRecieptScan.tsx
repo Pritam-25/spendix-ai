@@ -1,28 +1,25 @@
 "use client";
 
-import { aiScanReceiptAction } from "../action";
+import { aiBulkReceiptScan } from "../action";
 import { Button } from "@/components/ui/button";
 import { CameraIcon, Loader2 } from "lucide-react";
 import { useRef, useTransition } from "react";
 import { toast } from "sonner";
 
-/**
- * Normalized server response
- */
-interface ScannedReceipt {
+interface BulkScannedReceipt {
   amount: number;
   date: Date;
   description?: string;
   category?: string;
 }
 
-interface ReceiptScannerProps {
-  onScanComplete: (data: ScannedReceipt) => void;
+interface BulkScanReceiptProps {
+  onScanComplete: (transactions: BulkScannedReceipt[]) => void;
 }
 
-export default function AiReceiptScanner({
+export default function AiBulkReceiptScanner({
   onScanComplete,
-}: ReceiptScannerProps) {
+}: BulkScanReceiptProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -38,13 +35,23 @@ export default function AiReceiptScanner({
     }
 
     startTransition(async () => {
-      const result = await aiScanReceiptAction(file);
-      if (result.success) {
-        onScanComplete(result.data);
-        toast.success(result.message);
-      } else {
+      const result = await aiBulkReceiptScan(file);
+
+      if (!result.success) {
         toast.error(result.error);
+        return;
       }
+
+      const transactions = result.data.transactions;
+
+      if (!transactions.length) {
+        toast.error("No transactions detected");
+        return;
+      }
+
+      onScanComplete(transactions);
+      console.log("Bulk scan result:", transactions);
+      toast.success(result.message);
     });
   };
 
@@ -58,9 +65,7 @@ export default function AiReceiptScanner({
         capture="environment"
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) {
-            handleReceiptScan(file);
-          }
+          if (file) handleReceiptScan(file);
           e.target.value = "";
         }}
       />
@@ -81,7 +86,7 @@ export default function AiReceiptScanner({
         ) : (
           <>
             <CameraIcon className="h-12 w-12" />
-            <span>Scan Receipt</span>
+            <span>Scan Receipts</span>
           </>
         )}
       </Button>

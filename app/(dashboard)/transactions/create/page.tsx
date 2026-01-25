@@ -1,10 +1,10 @@
 import { getAccounts } from "@/lib/data/accounts/queries";
 import { defaultCategories } from "@/lib/constants/categories";
 import AddTransactionForm from "../_components/addTransactionForm";
-import { hasFeature } from "@/lib/data/auth";
 import { FEATURES } from "@/lib/config/features";
 import { getTransactionById } from "@/lib/data/transactions/queries";
 import { TransactionFormType } from "@/lib/schemas/transaction.schema";
+import { hasFeature } from "@/lib/data/users/subscription";
 
 type CreateTransactionPageProps = {
   searchParams?: Promise<{ edit?: string }>;

@@ -64,6 +64,25 @@ export async function POST(req: NextRequest) {
         periodStart,
         periodEnd,
       });
+      // Ensure the parent Subscription row exists to satisfy FK constraints.
+      try {
+        await prisma.subscription.upsert({
+          where: { id: subId },
+          update: { updatedAt: new Date() },
+          create: {
+            id: subId,
+            userId: user.id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        });
+      } catch (err) {
+        console.log(
+          "[Clerk Webhook] Failed to ensure Subscription exists before upserting item",
+          err,
+        );
+        // Continue and let the subsequent upsert surface any issues
+      }
       await prisma.subscriptionItem.upsert({
         where: { id: item.id },
         update: {

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireUser } from "@/lib/data/auth";
+import { requireUser } from "@/lib/data/users/auth";
 import { accountSchema } from "@/lib/schemas/account.schema";
 import { revalidatePath } from "next/cache";
 import { ErrorCode } from "@/lib/constants/error-codes";

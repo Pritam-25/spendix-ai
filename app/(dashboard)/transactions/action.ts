@@ -1,6 +1,6 @@
 "use server";
 
-import { requireRecurringTransactions, requireUser } from "@/lib/data/auth";
+import { requireUser } from "@/lib/data/users/auth";
 import { transactionSchema } from "@/lib/schemas/transaction.schema";
 import { request } from "@arcjet/next";
 import { aj } from "@/lib/arcjet";
@@ -12,9 +12,16 @@ import {
   createTransaction,
   updateTransaction,
 } from "@/lib/data/transactions/mutations";
-import { bulkDeleteTransactions } from "@/lib/data/accounts/mutations";
+import { bulkDeleteTransactions } from "@/lib/data/transactions/mutations";
 import { z } from "zod";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { requireFeature } from "@/lib/data/users/subscription";
+import { FEATURES } from "@/lib/config/features";
+import {
+  guardAiReceiptScan,
+  incrementAiReceiptUsage,
+} from "@/lib/data/users/usages";
+import { EXPENSE_CATEGORIES } from "@/lib/constants/categories";
 
 type ResponseResult =
   | { success: true; message: string }
@@ -36,7 +43,7 @@ export async function createTransactionAction(
 
     // 🔐 PRO FEATURE CHECK
     if (parsed.data.isRecurring) {
-      await requireRecurringTransactions();
+      await requireFeature(FEATURES.RECURRING_TRANSACTIONS);
     }
 
     // arcjet
@@ -120,7 +127,7 @@ export async function updateTransactionAction(
 
     // pro feature check
     if (parsed.data.isRecurring) {
-      await requireRecurringTransactions();
+      await requireFeature(FEATURES.RECURRING_TRANSACTIONS);
     }
 
     await updateTransaction({
@@ -155,8 +162,28 @@ const receiptSchema = z.object({
   category: z.string(),
 });
 
-export async function aiScanReceiptAction(file: File) {
+type AiReceiptScanResult =
+  | {
+      success: true;
+      data: {
+        amount: number;
+        date: Date;
+        description: string;
+        category: string;
+      };
+      message: string;
+    }
+  | { success: false; error: string };
+
+export async function aiScanReceiptAction(
+  file: File,
+): Promise<AiReceiptScanResult> {
   try {
+    const user = await requireUser();
+
+    // usage guard
+    await guardAiReceiptScan(user.id);
+
     const apiKey = process.env.GEMINI_API_KEY;
     const modelName = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
 
@@ -165,30 +192,43 @@ export async function aiScanReceiptAction(file: File) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({
+      model: modelName,
+      generationConfig: {
+        responseMimeType: "application/json",
+      },
+    });
 
     const buffer = await file.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
 
     const prompt = `
-            Analyze this receipt image and extract the following information:
-            - Total amount (number only)
-            - Date (YYYY-MM-DD)
-            - Brief description
-            - Store/merchant name
-            - Category (choose one: housing, transportation, groceries, utilities, entertainment, food, shopping, healthcare, education, personal, travel, insurance, gifts, bills, other-expense)
+This image contains EXACTLY ONE receipt for ONE transaction.
 
-            Return ONLY valid JSON:
-            {
-              "amount": number,
-              "date": "YYYY-MM-DD",
-              "description": "string",
-              "merchantName": "string",
-              "category": "string"
-            }
+STRICT RULES:
+- If more than ONE transaction, table, or receipt is visible → return []
 
-            If unreadable, return {}
-            `;
+Extract ONLY if exactly one transaction exists:
+- Total amount
+- Date
+- Description
+- Merchant name
+- Category (choose one: ${EXPENSE_CATEGORIES.join(", ")})
+
+Return ONLY valid JSON.
+
+Valid receipt:
+{
+  "amount": number,
+  "date": "YYYY-MM-DD",
+  "description": "string",
+  "merchantName": "string",
+  "category": "string"
+}
+
+Multiple transactions:
+[]
+`;
 
     const result = await model.generateContent([
       prompt,
@@ -200,17 +240,27 @@ export async function aiScanReceiptAction(file: File) {
       },
     ]);
 
+    // ✅ JSON only (no regex needed)
     const text = result.response.text();
+    const parsed = JSON.parse(text);
 
-    // Extract JSON safely
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("No JSON found in Gemini response");
+    // 🚫 MULTIPLE RECEIPTS (explicit signal)
+    if (Array.isArray(parsed) && parsed.length === 0) {
+      throw new Error(ErrorCode.BULK_RECEIPT_NOT_ALLOWED);
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
-    if (Object.keys(parsed).length === 0) {
-      throw new Error("Empty receipt data");
+    // 🚫 Any array is invalid
+    if (Array.isArray(parsed)) {
+      throw new Error(ErrorCode.BULK_RECEIPT_NOT_ALLOWED);
+    }
+
+    // 🚫 Unreadable / failed extraction
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      Object.keys(parsed).length === 0
+    ) {
+      throw new Error(ErrorCode.RECEIPT_UNREADABLE);
     }
 
     const validated = receiptSchema.parse({
@@ -218,19 +268,31 @@ export async function aiScanReceiptAction(file: File) {
       amount: Number(parsed.amount),
     });
 
-    // If merchantName is available, concatenate with description and do not return merchantName
     let description = validated.description;
     if (validated.merchantName) {
       description = `${validated.merchantName} - ${validated.description}`;
     }
+
+    // ✅ increment only on success
+    await incrementAiReceiptUsage(user.id);
+
     return {
-      amount: validated.amount,
-      date: new Date(validated.date),
-      description,
-      category: validated.category,
+      success: true,
+      message: "Receipt scanned successfully",
+      data: {
+        amount: validated.amount,
+        date: new Date(validated.date),
+        description,
+        category: validated.category,
+      },
     };
   } catch (error) {
     console.error("Receipt scanning failed:", error);
+
+    const mapped = mapDomainError(error);
+    if (mapped) {
+      return { success: false, error: mapped.error };
+    }
 
     if (error instanceof Error) {
       if (error.message.includes("404")) {
@@ -246,5 +308,152 @@ export async function aiScanReceiptAction(file: File) {
     }
 
     throw new Error("Failed to scan receipt");
+  }
+}
+
+type AiBulkReceiptScanResult =
+  | {
+      success: true;
+      message: string;
+      data: {
+        transactions: {
+          amount: number;
+          date: Date;
+          description: string;
+          category: string;
+        }[];
+      };
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+const bulkReceiptSchema = z.object({
+  transactions: z
+    .array(
+      z.object({
+        amount: z.number().positive(),
+        date: z.string(),
+        description: z.string(),
+        category: z.enum(EXPENSE_CATEGORIES),
+      }),
+    )
+    .min(1),
+});
+
+export async function aiBulkReceiptScan(
+  file: File,
+): Promise<AiBulkReceiptScanResult> {
+  try {
+    await requireUser();
+
+    // check premium feature ai bulk receipt scan
+    await requireFeature(FEATURES.AI_BULK_INSERT);
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    const modelName = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+
+    if (!apiKey) {
+      throw new Error("Gemini API key is not defined");
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: modelName,
+      generationConfig: {
+        responseMimeType: "application/json",
+      },
+    });
+
+    const buffer = await file.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
+
+    const prompt = `
+This image may contain MULTIPLE receipts or transactions.
+
+GOAL:
+- Extract ALL visible transactions.
+- Each transaction must be independent.
+
+RULES:
+- If NO valid transactions are detected → return []
+- Do NOT merge transactions.
+- Do NOT hallucinate missing values.
+
+Return ONLY valid JSON.
+
+{
+  "transactions": [
+    {
+      "amount": number,
+      "date": "YYYY-MM-DD",
+      "description": "string",
+      "category": "${EXPENSE_CATEGORIES.join(" | ")}"
+    }
+  ]
+}
+`;
+
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          mimeType: file.type,
+          data: base64,
+        },
+      },
+    ]);
+
+    // ✅ JSON only
+    const parsed = JSON.parse(result.response.text());
+
+    // 🚫 No transactions found
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      !Array.isArray(parsed.transactions) ||
+      parsed.transactions.length === 0
+    ) {
+      throw new Error(ErrorCode.NO_TRANSACTIONS_FOR_BULK_SCAN);
+    }
+
+    // ✅ Validate structure
+    const validated = bulkReceiptSchema.parse(parsed);
+
+    const transactions = validated.transactions.map((tx) => ({
+      amount: tx.amount,
+      date: new Date(tx.date),
+      description: tx.description,
+      category: tx.category,
+    }));
+
+    return {
+      success: true,
+      message: `${transactions.length} transactions scanned successfully`,
+      data: { transactions },
+    };
+  } catch (error) {
+    console.error("Bulk receipt scanning failed:", error);
+
+    const mapped = mapDomainError(error);
+    if (mapped) {
+      return { success: false, error: mapped.error };
+    }
+
+    if (error instanceof Error) {
+      if (error.message.includes("404")) {
+        throw new Error("Gemini model unavailable");
+      }
+      if (error.message.includes("429")) {
+        throw new Error("Too many requests");
+      }
+      if (error.message.includes("413")) {
+        throw new Error("Image too large");
+      }
+      throw error;
+    }
+
+    throw new Error("Failed to scan bulk receipts");
   }
 }

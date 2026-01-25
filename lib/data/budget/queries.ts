@@ -1,5 +1,5 @@
 import "server-only";
-import { requireUser } from "../auth";
+import { requireUser } from "../users/auth";
 import prisma from "@/lib/prisma";
 import { serialize } from "@/lib/utils/serialize";
 import { Prisma } from "@prisma/client";
