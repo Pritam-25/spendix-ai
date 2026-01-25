@@ -137,11 +137,13 @@ export default async function BudgetPage() {
           </CardHeader>
 
           <CardContent>
-            <div className="mx-auto max-w-3xl p-4 bg-secondary/30 rounded-lg ">
+            <div className="mx-auto max-w-3xl p-4 bg-secondary/30 rounded-lg h-full">
               {totalExpenses === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No expense data available
-                </p>
+                <div className="flex min-h-[180px] items-center justify-center">
+                  <p className="text-sm text-muted-foreground">
+                    No expense data available
+                  </p>
+                </div>
               ) : (
                 <div className="space-y-4">
                   <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-6">

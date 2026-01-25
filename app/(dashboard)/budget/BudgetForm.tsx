@@ -25,7 +25,7 @@ export default function BudgetForm({ initialAmount = 0 }: BudgetFormProps) {
     handleSubmit,
     formState: { errors },
     reset,
-    control, // add control for useWatch
+    control,
   } = useForm<BudgetFormType>({
     resolver: zodResolver(budgetSchema),
     defaultValues: {
@@ -34,7 +34,6 @@ export default function BudgetForm({ initialAmount = 0 }: BudgetFormProps) {
     },
   });
 
-  // Use useWatch to avoid legacy warning
   const emailAlertsEnabled = useWatch({
     control,
     name: "emailAlerts",
@@ -56,6 +55,7 @@ export default function BudgetForm({ initialAmount = 0 }: BudgetFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Budget Amount */}
       <Field>
         <FieldLabel className="font-semibold">Monthly Budget</FieldLabel>
         <FieldDescription>
@@ -92,7 +92,7 @@ export default function BudgetForm({ initialAmount = 0 }: BudgetFormProps) {
           checked={emailAlertsEnabled}
           onCheckedChange={(v) =>
             reset({
-              ...control._formValues, // safer way without using watch()
+              ...control._formValues,
               emailAlerts: v,
             })
           }
@@ -113,12 +113,12 @@ export default function BudgetForm({ initialAmount = 0 }: BudgetFormProps) {
             })
           }
           disabled={isPending}
-          className="cursor-pointer"
+          className="w-full sm:w-auto"
         >
           Cancel
         </Button>
 
-        <Button type="submit" disabled={isPending} className="cursor-pointer">
+        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
           Save Changes
         </Button>
       </div>

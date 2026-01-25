@@ -1,7 +1,10 @@
 "use server";
 
 import { requireUser } from "@/lib/data/users/auth";
-import { transactionSchema } from "@/lib/schemas/transaction.schema";
+import {
+  bulkTransactionSchema,
+  transactionSchema,
+} from "@/lib/schemas/transaction.schema";
 import { request } from "@arcjet/next";
 import { aj } from "@/lib/arcjet";
 import { revalidatePath } from "next/cache";
@@ -10,6 +13,7 @@ import { mapDomainError } from "@/lib/utils/mapDomainError";
 import { findAccountById } from "@/lib/data/transactions/queries";
 import {
   createTransaction,
+  saveBulkTransactions,
   updateTransaction,
 } from "@/lib/data/transactions/mutations";
 import { bulkDeleteTransactions } from "@/lib/data/transactions/mutations";
@@ -451,9 +455,58 @@ Return ONLY valid JSON.
       if (error.message.includes("413")) {
         throw new Error("Image too large");
       }
-      throw error;
+      return {
+        success: false,
+        error: "Receipt scanning service temporarily unavailable",
+      };
     }
 
-    throw new Error("Failed to scan bulk receipts");
+    return {
+      success: false,
+      error: "Failed to scan bulk receipts",
+    };
+  }
+}
+
+type bulkSaveResponse =
+  | { success: true; message: string }
+  | { success: false; error: string };
+
+export async function saveBulkTransactionsAction(
+  data: unknown,
+): Promise<bulkSaveResponse> {
+  try {
+    const user = await requireUser();
+
+    // parse and validate data
+    const parsed = bulkTransactionSchema.safeParse(data);
+
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: "Invalid transaction data",
+      };
+    }
+
+    const transactions = parsed.data;
+
+    // call dal layer to save
+    await saveBulkTransactions(user.id, transactions);
+
+    // revalidate paths
+    revalidatePath("/transactions");
+    revalidatePath("/dashboard");
+    revalidatePath("/accounts/[id]", "page");
+
+    return {
+      success: true,
+      message: `${transactions.length} transactions saved successfully`,
+    };
+  } catch (error) {
+    const mapped = mapDomainError(error);
+    if (mapped) {
+      return { success: false, error: mapped.error };
+    }
+    return { success: false, error: "bulk transaction save failed" };
   }
 }

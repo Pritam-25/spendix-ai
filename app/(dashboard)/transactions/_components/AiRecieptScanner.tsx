@@ -58,33 +58,40 @@ export default function AiReceiptScanner({
         capture="environment"
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) {
-            handleReceiptScan(file);
-          }
+          if (file) handleReceiptScan(file);
           e.target.value = "";
         }}
       />
 
-      <Button
-        type="button"
-        onClick={() => fileInputRef.current?.click()}
-        disabled={isPending}
-        className="w-full py-6 h-auto flex items-center justify-center gap-3
-                   bg-secondary hover:bg-secondary/90 text-lg font-medium
-                   rounded-lg shadow-md border-2 border-dashed mb-10"
-      >
-        {isPending ? (
-          <>
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Scanning…</span>
-          </>
-        ) : (
-          <>
-            <CameraIcon className="h-12 w-12" />
-            <span>Scan Receipt</span>
-          </>
-        )}
-      </Button>
+      <div className="w-full flex flex-col items-center gap-2 mb-10">
+        <Button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isPending}
+          className="
+        w-full py-6 h-auto flex items-center justify-center gap-3
+        bg-secondary hover:bg-secondary/70 text-lg font-medium
+        rounded-xl shadow-sm border-2 border-dashed
+      "
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>Scanning…</span>
+            </>
+          ) : (
+            <>
+              <CameraIcon className="h-12 w-12" />
+              <span>Scan Receipt</span>
+            </>
+          )}
+        </Button>
+
+        <p className="text-sm text-muted-foreground text-center max-w-sm">
+          Upload a clear receipt photo. We’ll auto-fill the details — you can
+          edit before saving.
+        </p>
+      </div>
     </>
   );
 }

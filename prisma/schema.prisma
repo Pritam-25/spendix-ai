@@ -106,10 +106,24 @@ model Usage {
   updatedAt DateTime @updatedAt
 
   // Foreign Key
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String      @unique
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  importJobs ImportJob[]
 
   @@map("usage")
+}
+
+model ImportJob {
+  id        String   @id // importId (hash)
+  userId    String
+  accountId String?
+  status    String   @default("SCANNED") // SCANNED, SAVED, FAILED
+  createdAt DateTime @default(now())
+
+  usageId String?
+  usage   Usage?  @relation(fields: [usageId], references: [id], onDelete: Cascade)
+
+  @@unique([id, userId])
 }
 
 model Subscription {
@@ -215,7 +229,7 @@ model Transaction {
   accountId String
   account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-  @@index([accountId])
+  // ✅ Prevent duplicate transactions
+  @@unique([userId, accountId, date, amount, description])
   @@map("transactions")
 }

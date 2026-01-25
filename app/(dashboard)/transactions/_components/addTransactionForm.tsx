@@ -250,7 +250,10 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                     }
                     disabled={isPending}
                   >
-                    <SelectTrigger id="transaction-type">
+                    <SelectTrigger
+                      id="transaction-type"
+                      aria-invalid={errors.type ? true : undefined}
+                    >
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -278,6 +281,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                       id="transaction-amount"
                       placeholder="0.00"
                       disabled={isPending}
+                      aria-invalid={errors.amount ? true : undefined}
                       {...register("amount")}
                     />
                     {errors.amount && (
@@ -294,10 +298,6 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                     </FieldLabel>
                     {accountsState.length === 0 ? (
                       <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">
-                          You don&apos;t have any accounts yet. Create one to
-                          add this transaction.
-                        </p>
                         <Button
                           type="button"
                           variant={"default"}
@@ -307,6 +307,10 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                           <Plus className="mr-2" />
                           Add account
                         </Button>
+                        <p className="text-sm text-muted-foreground">
+                          You don&apos;t have any accounts yet. Create one to
+                          add this transaction.
+                        </p>
                       </div>
                     ) : (
                       <Select
@@ -319,7 +323,10 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                         }}
                         disabled={isPending || editmode}
                       >
-                        <SelectTrigger id="transaction-account">
+                        <SelectTrigger
+                          id="transaction-account"
+                          aria-invalid={errors.accountId ? true : undefined}
+                        >
                           <SelectValue placeholder="Select account" />
                         </SelectTrigger>
                         <SelectContent>
@@ -428,64 +435,83 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                 <Field>
                   {canUseRecurring ? (
                     <>
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="space-y-1">
-                          <FieldLabel htmlFor="transaction-recurring">
-                            Recurring transaction
-                          </FieldLabel>
-                          <FieldDescription>
-                            Turn on to repeat this transaction automatically.
-                          </FieldDescription>
-                        </div>
-                        <Switch
-                          id="transaction-recurring"
-                          checked={isRecurring}
-                          onCheckedChange={(checked) => {
-                            setValue("isRecurring", checked);
-                            if (!checked) {
-                              setValue("recurringInterval", undefined);
-                            }
-                          }}
-                          disabled={isPending}
-                        />
-                      </div>
+                      {/* Pop-out card containing both the toggle and interval select */}
+                      <Card className="mt-4 shadow-md">
+                        <CardContent>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="space-y-1">
+                              <FieldLabel htmlFor="transaction-recurring">
+                                Recurring transaction
+                              </FieldLabel>
+                              <FieldDescription>
+                                Turn on to repeat this transaction
+                                automatically.
+                              </FieldDescription>
+                            </div>
+                            <Switch
+                              id="transaction-recurring"
+                              checked={isRecurring}
+                              onCheckedChange={(checked) => {
+                                setValue("isRecurring", checked);
+                                if (!checked) {
+                                  setValue("recurringInterval", undefined);
+                                }
+                              }}
+                              disabled={isPending}
+                            />
+                          </div>
 
-                      {isRecurring && (
-                        <div className="mt-4">
-                          <FieldLabel htmlFor="transaction-recurring-interval">
-                            Recurring interval
-                          </FieldLabel>
-                          <Select
-                            value={recurringInterval || undefined}
-                            onValueChange={(value) =>
-                              setValue(
-                                "recurringInterval",
-                                value as RecurringInterval,
-                              )
-                            }
-                            disabled={isPending}
-                          >
-                            <SelectTrigger id="transaction-recurring-interval">
-                              <SelectValue placeholder="Select interval" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Object.values(RecurringInterval).map(
-                                (interval) => (
-                                  <SelectItem key={interval} value={interval}>
-                                    {interval.charAt(0) +
-                                      interval.slice(1).toLowerCase()}
-                                  </SelectItem>
-                                ),
-                              )}
-                            </SelectContent>
-                          </Select>
-                          {errors.recurringInterval && (
-                            <p className="text-sm text-destructive">
-                              {errors.recurringInterval.message}
-                            </p>
+                          {isRecurring && (
+                            <div className="mt-4">
+                              <FieldLabel htmlFor="transaction-recurring-interval">
+                                Recurring interval
+                              </FieldLabel>
+                              <div className="mt-2">
+                                <Select
+                                  value={recurringInterval || undefined}
+                                  onValueChange={(value) =>
+                                    setValue(
+                                      "recurringInterval",
+                                      value as RecurringInterval,
+                                    )
+                                  }
+                                  disabled={isPending}
+                                >
+                                  <SelectTrigger
+                                    id="transaction-recurring-interval"
+                                    aria-invalid={
+                                      errors.recurringInterval
+                                        ? true
+                                        : undefined
+                                    }
+                                    className="w-full"
+                                  >
+                                    <SelectValue placeholder="Select interval" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {Object.values(RecurringInterval).map(
+                                      (interval) => (
+                                        <SelectItem
+                                          key={interval}
+                                          value={interval}
+                                        >
+                                          {interval.charAt(0) +
+                                            interval.slice(1).toLowerCase()}
+                                        </SelectItem>
+                                      ),
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                                {errors.recurringInterval && (
+                                  <p className="text-sm text-destructive mt-2">
+                                    {errors.recurringInterval.message}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
                           )}
-                        </div>
-                      )}
+                        </CardContent>
+                      </Card>
                     </>
                   ) : (
                     <div className="mt-6 rounded-xl border border-primary/40 bg-primary/5 p-4">

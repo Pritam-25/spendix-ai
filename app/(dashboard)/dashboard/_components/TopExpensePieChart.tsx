@@ -119,9 +119,7 @@ export function TopExpensePieChart({
                 <Cell
                   key={index}
                   fill={
-                    hasData
-                      ? COLORS[index % COLORS.length]
-                      : "hsl(var(--muted))"
+                    hasData ? COLORS[index % COLORS.length] : "var(--muted)"
                   }
                 />
               ))}

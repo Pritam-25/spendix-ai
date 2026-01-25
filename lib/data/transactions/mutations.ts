@@ -1,7 +1,10 @@
 import "server-only";
 
 import { Prisma, TransactionType } from "@prisma/client";
-import { TransactionParsedType } from "@/lib/schemas/transaction.schema";
+import {
+  BulkTransactionParsedType,
+  TransactionParsedType,
+} from "@/lib/schemas/transaction.schema";
 import { calculateNextRecurringDate } from "@/lib/utils/recurring";
 import { ErrorCode } from "@/lib/constants/error-codes";
 import prisma from "@/lib/prisma";
@@ -190,3 +193,92 @@ export async function bulkDeleteTransactions({
     );
   });
 }
+
+// ------------------------------------------------//
+function normalizeDescription(text?: string | null) {
+  return (text ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+
+function calculateNet(rows: BulkTransactionParsedType) {
+  return rows.reduce((sum, t) => {
+    return t.type === "INCOME"
+      ? sum.add(t.amount)
+      : sum.sub(t.amount);
+  }, new Prisma.Decimal(0));
+}
+
+export async function saveBulkTransactions(
+  userId: string,
+  rows: BulkTransactionParsedType,
+) {
+  return await prisma.$transaction(async (tx) => {
+    const accountId = rows[0].accountId;
+
+    // 🔍 find existing (possible duplicates)
+    const existing = await tx.transaction.findMany({
+      where: {
+        userId,
+        accountId,
+        OR: rows.map((r) => ({
+          date: r.date,
+          amount: r.amount,
+          description: normalizeDescription(r.description),
+        })),
+      },
+      select: {
+        date: true,
+        amount: true,
+        description: true,
+      },
+    });
+
+    const existingSet = new Set(
+      existing.map(
+        (e) =>
+          `${e.date.toISOString()}-${e.amount.toString()}-${normalizeDescription(e.description)}`,
+      ),
+    );
+
+    // 🧹 keep only new rows
+    const newRows = rows.filter(
+      (r) =>
+        !existingSet.has(
+          `${r.date.toISOString()}-${r.amount.toString()}-${normalizeDescription(r.description)}`,
+        ),
+    );
+
+    if (newRows.length === 0) return;
+
+    // 📥 insert only new transactions
+    await tx.transaction.createMany({
+      data: newRows.map((r) => ({
+        userId,
+        accountId,
+        type: r.type,
+        amount: r.amount,
+        description: normalizeDescription(r.description),
+        date: r.date,
+        category: r.category,
+        isRecurring: r.recurring !== "NONE",
+        recurringInterval: r.recurring === "NONE" ? null : r.recurring,
+      })),
+    });
+
+    // 💰 update balance only for inserted rows
+    const netBalanceChange = calculateNet(newRows);
+
+    await tx.account.update({
+      where: { id: accountId, userId },
+      data: {
+        balance: {
+          increment: netBalanceChange,
+        },
+      },
+    });
+  });
+}
+

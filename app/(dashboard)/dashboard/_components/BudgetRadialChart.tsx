@@ -16,8 +16,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-
-export const description = "A radial chart showing monthly budget progress";
+import { cn } from "@/lib/cn";
 
 type RadialChartProps = {
   totalBudget: number;
@@ -25,30 +24,69 @@ type RadialChartProps = {
 };
 
 export function BudgetRadialChart({ totalBudget, spent }: RadialChartProps) {
-  const percentUsed = Math.min(100, Math.round((spent / totalBudget) * 100));
+  const hasBudget = totalBudget > 0;
 
-  // Dynamic spent color
-  const spentColor =
-    percentUsed >= 90
-      ? "#dc2626" // red-600
-      : percentUsed >= 75
-        ? "#ca8a04" // yellow-500
-        : "#22c55e"; // emerald-500
+  // allow >100 for messaging, cap chart at 100
+  const rawPercentUsed = hasBudget
+    ? Math.round((spent / totalBudget) * 100)
+    : 0;
 
-  // Chart data must match RadialBar dataKeys
-  const chartData = [
-    {
-      month: "January",
-      spent,
-      remaining: totalBudget - spent,
-    },
-  ];
+  const percentUsed = Math.min(rawPercentUsed, 100);
 
-  // Chart config (used by ChartContainer, optional)
+  // ---- Severity & colors  ----
+  const statusConfig = !hasBudget
+    ? {
+        text: "No monthly budget has been set.",
+        spentColor: "var(--muted)",
+      }
+    : rawPercentUsed < 75
+      ? {
+          text: "You are within a safe spending limit.",
+          className: "text-emerald-500",
+          spentColor: "#22c55e",
+        }
+      : rawPercentUsed < 90
+        ? {
+            text: "Warning: Spending is nearing the monthly budget cap.",
+            className: "text-yellow-500",
+            spentColor: "#ca8a04",
+          }
+        : rawPercentUsed < 100
+          ? {
+              text: "High risk: You are very close to your monthly budget.",
+              className: "text-orange-500",
+              spentColor: "#f97316",
+            }
+          : {
+              text: "Critical: You have exceeded your monthly budget.",
+              className: "text-red-500",
+              spentColor: "#dc2626",
+            };
+
+  /**
+   * IMPORTANT:
+   * Recharts does NOT render RadialBarChart when all values are 0
+   */
+  const chartData = hasBudget
+    ? [
+        {
+          name: "Budget",
+          spent: percentUsed,
+          remaining: Math.max(100 - percentUsed, 0),
+        },
+      ]
+    : [
+        {
+          name: "No budget",
+          spent: 1, // dummy value so chart renders
+          remaining: 0,
+        },
+      ];
+
   const chartConfig = {
     spent: {
       label: "Spent",
-      color: spentColor,
+      color: statusConfig.spentColor,
     },
     remaining: {
       label: "Remaining",
@@ -73,11 +111,10 @@ export function BudgetRadialChart({ totalBudget, spent }: RadialChartProps) {
           <RadialBarChart
             data={chartData}
             startAngle={180}
-            endAngle={0} // Semi-circle
+            endAngle={0}
             innerRadius={70}
             outerRadius={110}
           >
-            {/* Optional tooltip */}
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
@@ -87,39 +124,50 @@ export function BudgetRadialChart({ totalBudget, spent }: RadialChartProps) {
             <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
               <Label
                 content={({ viewBox }) => {
-                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                    return (
-                      <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) - 10}
-                          className="fill-foreground text-2xl font-bold"
-                        >
-                          {percentUsed.toLocaleString()}%
-                        </tspan>
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 10}
-                          className="fill-muted-foreground text-sm"
-                        >
-                          used
-                        </tspan>
-                      </text>
-                    );
+                  if (
+                    !viewBox ||
+                    !("cx" in viewBox) ||
+                    !("cy" in viewBox) ||
+                    typeof (viewBox as any).cx !== "number" ||
+                    typeof (viewBox as any).cy !== "number"
+                  ) {
+                    return null;
                   }
+
+                  const cx = (viewBox as any).cx;
+                  const cy = (viewBox as any).cy;
+
+                  return (
+                    <text x={cx} y={cy} textAnchor="middle">
+                      <tspan
+                        x={cx}
+                        y={cy - 10}
+                        className="fill-foreground text-2xl font-bold"
+                      >
+                        {hasBudget ? `${rawPercentUsed}%` : "—"}
+                      </tspan>
+                      <tspan
+                        x={cx}
+                        y={cy + 10}
+                        className="fill-muted-foreground text-sm"
+                      >
+                        {hasBudget ? "used" : "no budget"}
+                      </tspan>
+                    </text>
+                  );
                 }}
               />
             </PolarRadiusAxis>
 
-            {/* Radial bars - draw remaining first, then spent on top */}
-
-            <RadialBar
+            {/* Bars */}
+             <RadialBar
               dataKey="spent"
               stackId="a"
               cornerRadius={6}
-              fill={spentColor}
+              fill={statusConfig.spentColor}
               className="stroke-transparent"
             />
+            
             <RadialBar
               dataKey="remaining"
               stackId="a"
@@ -127,28 +175,33 @@ export function BudgetRadialChart({ totalBudget, spent }: RadialChartProps) {
               fill="currentColor"
               className="text-muted-foreground/20 stroke-transparent"
             />
+           
           </RadialBarChart>
         </ChartContainer>
       </CardContent>
 
       {/* Footer */}
       <CardFooter className="flex flex-col items-center pt-2">
-        {/* Conditional Status Message */}
-        <p className="text-sm font-semibold mb-2">
-          {percentUsed <= 75
-            ? "You are within a safe spending limit."
-            : percentUsed <= 90
-              ? "Warning: Spending is nearing the monthly budget cap."
-              : "“Critical: Your spending is almost at your monthly limit"}
+        <p
+          className={cn(
+            "text-sm font-semibold mb-2 text-center",
+            statusConfig.className,
+          )}
+        >
+          {statusConfig.text}
         </p>
 
-        {/* Actual Spending Info */}
-        <p className="text-sm text-muted-foreground">
-          Spent <span className="font-semibold">₹{spent.toLocaleString()}</span>{" "}
-          out of{" "}
-          <span className="font-semibold">₹{totalBudget.toLocaleString()}</span>{" "}
-          this month
-        </p>
+        {hasBudget && (
+          <p className="text-sm text-muted-foreground text-center">
+            Spent{" "}
+            <span className="font-semibold">₹{spent.toLocaleString()}</span> out
+            of{" "}
+            <span className="font-semibold">
+              ₹{totalBudget.toLocaleString()}
+            </span>{" "}
+            this month
+          </p>
+        )}
       </CardFooter>
     </Card>
   );

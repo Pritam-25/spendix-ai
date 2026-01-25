@@ -45,7 +45,6 @@ export default async function getDefaultAccountDataForDashboard(
   const user = await requireUser();
 
   const defaultAccount = await getDefaultAccountByUserId(user.id);
-
   if (!defaultAccount) return null;
 
   const dateFilter = getKpiDateRange(timeRange);
@@ -55,41 +54,37 @@ export default async function getDefaultAccountDataForDashboard(
     ...(dateFilter && { date: dateFilter }),
   };
 
-  const [incomeAgg, expenseAgg, recentTransactions] = await prisma.$transaction(
-    [
-      prisma.transaction.aggregate({
-        where: {
-          ...baseWhere,
-          type: TransactionType.INCOME,
-        },
-        _sum: { amount: true },
-      }),
+  const [incomeAgg, expenseAgg, recentTransactions] = await Promise.all([
+    prisma.transaction.aggregate({
+      where: {
+        ...baseWhere,
+        type: TransactionType.INCOME,
+      },
+      _sum: { amount: true },
+    }),
 
-      prisma.transaction.aggregate({
-        where: {
-          ...baseWhere,
-          type: TransactionType.EXPENSE,
-        },
-        _sum: { amount: true },
-      }),
+    prisma.transaction.aggregate({
+      where: {
+        ...baseWhere,
+        type: TransactionType.EXPENSE,
+      },
+      _sum: { amount: true },
+    }),
 
-      prisma.transaction.findMany({
-        where: { accountId: defaultAccount.id },
-        orderBy: {
-          date: "desc",
-        },
-        select: {
-          id: true,
-          date: true,
-          description: true,
-          type: true,
-          amount: true,
-          category: true,
-        },
-        take: 5,
-      }),
-    ],
-  );
+    prisma.transaction.findMany({
+      where: baseWhere, // reuse filter correctly
+      orderBy: { date: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        date: true,
+        description: true,
+        type: true,
+        amount: true,
+        category: true,
+      },
+    }),
+  ]);
 
   const rawResult = {
     accountId: defaultAccount.id,
@@ -103,6 +98,7 @@ export default async function getDefaultAccountDataForDashboard(
 
   return serialize(rawResult) as DashboardSummary;
 }
+
 
 // get top income and expense categories for default account
 export type CategorySummary = {

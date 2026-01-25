@@ -137,6 +137,7 @@ export default function CreateAccountDrawer({
                       id="account-name"
                       placeholder="My main account"
                       disabled={isPending}
+                      aria-invalid={errors.name ? true : undefined}
                       {...register("name")}
                     />
                     {errors.name && (
@@ -155,7 +156,10 @@ export default function CreateAccountDrawer({
                       }
                       disabled={isPending}
                     >
-                      <SelectTrigger id="account-type">
+                      <SelectTrigger
+                        id="account-type"
+                        aria-invalid={errors.type ? true : undefined}
+                      >
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -186,6 +190,7 @@ export default function CreateAccountDrawer({
                       step="0.01"
                       placeholder="0.00"
                       disabled={isPending}
+                      aria-invalid={errors.balance ? true : undefined}
                       {...register("balance")}
                     />
                     {errors.balance && (

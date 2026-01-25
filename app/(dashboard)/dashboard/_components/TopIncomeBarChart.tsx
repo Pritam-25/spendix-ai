@@ -126,9 +126,7 @@ export default function TopIncomeBarChart({
               {chartData.map((_, i) => (
                 <Cell
                   key={`cell-${i}`}
-                  fill={
-                    hasData ? COLORS[i % COLORS.length] : "hsl(var(--muted))"
-                  }
+                  fill={hasData ? COLORS[i % COLORS.length] : "var(--muted)"}
                 />
               ))}
 
