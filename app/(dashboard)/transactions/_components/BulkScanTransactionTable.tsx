@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { Save } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,11 +53,23 @@ export default function BulkScanTransactionTable({
   const [isPending, startTransition] = useTransition();
   const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false);
 
-  // Use derived default account ID to avoid setState in useEffect
-  const initialDefaultAccountId = accounts.find((a) => a.isDefault)?.id ?? "";
+  // Lazy init: select default account on first render
+  const initialDefaultAccountId = useMemo(
+    () => accounts.find((a) => a.isDefault)?.id ?? "",
+    [accounts],
+  );
+
   const [defaultAccountId, setDefaultAccountId] = useState(
     initialDefaultAccountId,
   );
+
+  useEffect(() => {
+    if (!defaultAccountId) return;
+
+    onChangeAction((prev) =>
+      prev.map((t) => ({ ...t, accountId: defaultAccountId })),
+    );
+  }, [defaultAccountId, onChangeAction]);
 
   // Handle select all logic
   const allSelected = data.length > 0 && data.every((r) => r.selected);

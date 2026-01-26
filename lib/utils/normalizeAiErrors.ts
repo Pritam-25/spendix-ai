@@ -1,4 +1,16 @@
+import { Prisma } from "@prisma/client";
+
 export function normalizeAiImportError(error: unknown): string {
+  // Handle Prisma errors
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === "P2002") {
+      // Unique constraint failed
+      return "Duplicate entry — a record with these details already exists";
+    }
+    return `Database error: ${error.message}`;
+  }
+
+  // Handle general JS errors
   if (error instanceof Error) {
     const msg = error.message;
 

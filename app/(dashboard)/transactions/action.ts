@@ -94,8 +94,12 @@ export async function createTransactionAction(
     // Map known domain errors
     const mapped = mapDomainError(error);
 
+    const aiError = normalizeAiImportError(error);
+
+    const errorMessage = mapped?.error ?? aiError;
+
     if (mapped) {
-      return { success: false, error: mapped.error };
+      return { success: false, error: errorMessage };
     }
     // If error is unknown
     return { success: false, error: "Transaction creation failed" };

@@ -14,9 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
 import {
   bulkTransactionRowSchema,
   BulkTransactionRowType,
@@ -44,18 +43,20 @@ export function RowForm({
     mode: "onBlur",
   });
 
-  const { register, setValue, formState, control } = form;
+  const { register, setValue, formState } = form;
   const { errors } = formState;
 
-  const watchedValues = useWatch({ control });
+  const updateField = <K extends keyof BulkTransactionRowType>(
+    key: K,
+    value: BulkTransactionRowType[K],
+  ) => {
+    setValue(key as any, value as any);
 
-  // Sync parent whenever fields change
-  useEffect(() => {
     onUpdateAction({
       ...row,
-      ...watchedValues,
-    });
-  }, [watchedValues, onUpdateAction, row]);
+      [key]: value,
+    } as EditableTransaction);
+  };
 
   const rowHasError = Object.keys(errors).length > 0;
 
@@ -77,8 +78,8 @@ export function RowForm({
       {/* Date */}
       <TableCell>
         <DatePicker
-          value={watchedValues.date ? new Date(watchedValues.date) : undefined}
-          onChangeAction={(d) => setValue("date", d ?? new Date())}
+          value={row.date ? new Date(row.date) : undefined}
+          onChangeAction={(d) => updateField("date", (d ?? new Date()) as any)}
         />
         {errors.date && (
           <p className="text-xs text-destructive mt-1">{errors.date.message}</p>
@@ -88,8 +89,8 @@ export function RowForm({
       {/* Type */}
       <TableCell>
         <Select
-          value={watchedValues.type}
-          onValueChange={(v) => setValue("type", v as TransactionType)}
+          value={row.type}
+          onValueChange={(v) => updateField("type", v as TransactionType)}
         >
           <SelectTrigger>
             <SelectValue />
@@ -103,7 +104,13 @@ export function RowForm({
 
       {/* Amount */}
       <TableCell>
-        <Input type="number" {...register("amount")} />
+        <Input
+          type="number"
+          {...register("amount", {
+            onChange: (e: any) =>
+              updateField("amount", Number(e.target.value) as any),
+          })}
+        />
         {errors.amount && (
           <p className="text-xs text-destructive mt-1">
             {errors.amount.message}
@@ -113,14 +120,21 @@ export function RowForm({
 
       {/* Description */}
       <TableCell>
-        <Input {...register("description")} />
+        <Input
+          {...register("description", {
+            onChange: (e: any) =>
+              updateField("description", e.target.value as any),
+          })}
+        />
       </TableCell>
 
       {/* Recurring */}
       <TableCell>
         <Select
-          value={watchedValues.recurring}
-          onValueChange={(v) => setValue("recurring", v as RecurringInterval)}
+          value={row.recurring}
+          onValueChange={(v) =>
+            updateField("recurring", v as RecurringInterval)
+          }
         >
           <SelectTrigger>
             <SelectValue />
@@ -138,10 +152,10 @@ export function RowForm({
       {/* Category */}
       <TableCell>
         <CategoryCombobox
-          value={watchedValues.category}
-          onChangeAction={(v) => setValue("category", v)}
+          value={row.category}
+          onChangeAction={(v) => updateField("category", v)}
           categories={defaultCategories
-            .filter((c) => c.type === watchedValues.type)
+            .filter((c) => c.type === row.type)
             .map((c) => ({ id: c.id, name: c.name }))}
         />
       </TableCell>

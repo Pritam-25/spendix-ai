@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { nanoid } from "nanoid";
 import { TransactionType, Account, AccountType } from "@prisma/client";
 
@@ -29,10 +29,10 @@ export default function TransactionsClient({
 }: {
   accounts: Account[];
 }) {
-  //  bulk scanned rows
+  // bulk scanned rows
   const [transactions, setTransactions] = useState<EditableTransaction[]>([]);
 
-  //  local added accounts (from drawer)
+  // local added accounts (from drawer)
   const [localAccounts, setLocalAccounts] = useState<SimpleAccount[]>([]);
   const [importJobId, setImportJobId] = useState<string>("");
 
@@ -57,31 +57,41 @@ export default function TransactionsClient({
     return Array.from(map.values());
   }, [baseAccounts, localAccounts]);
 
-  const defaultAccountId = accountsState.find((a) => a.isDefault)?.id ?? "";
+  // ✅ stable setter for child (fixes useEffect warning + loops)
+  const handleTransactionsChange = useCallback(
+    (updater: React.SetStateAction<EditableTransaction[]>) => {
+      setTransactions(updater);
+    },
+    [],
+  );
 
-  const handleBulkScanComplete = (
-    data: ScannedReceipt[],
-    newImportJobId: string,
-  ) => {
-    const mapped: EditableTransaction[] = data.map((receipt) => ({
-      id: nanoid(),
-      selected: false,
-      date: receipt.date,
-      type: TransactionType.EXPENSE,
-      amount: receipt.amount,
-      accountId: defaultAccountId,
-      description: receipt.description ?? "",
-      category: receipt.category
-        ? (defaultCategories.find(
-            (c) => c.name.toLowerCase() === receipt.category!.toLowerCase(),
-          )?.id ?? "")
-        : "",
-      recurring: "NONE",
-    }));
+  const handleBulkScanComplete = useCallback(
+    (data: ScannedReceipt[], newImportJobId: string) => {
+      const defaultAccountId =
+        accountsState.find((a) => a.isDefault)?.id ?? "";
 
-    setTransactions(mapped);
-    setImportJobId(newImportJobId);
-  };
+      const mapped: EditableTransaction[] = data.map((receipt) => ({
+        id: nanoid(),
+        selected: false,
+        date: receipt.date,
+        type: TransactionType.EXPENSE,
+        amount: receipt.amount,
+        accountId: defaultAccountId,
+        description: receipt.description ?? "",
+        category: receipt.category
+          ? (defaultCategories.find(
+              (c) =>
+                c.name.toLowerCase() === receipt.category!.toLowerCase(),
+            )?.id ?? "")
+          : "",
+        recurring: "NONE",
+      }));
+
+      setTransactions(mapped);
+      setImportJobId(newImportJobId);
+    },
+    [accountsState],
+  );
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -89,9 +99,9 @@ export default function TransactionsClient({
 
       <BulkScanTransactionTable
         data={transactions}
-        onChangeAction={setTransactions}
+        onChangeAction={handleTransactionsChange}  
         accounts={accountsState}
-        onAccountCreatedAction={setLocalAccounts} // 👈 important
+        onAccountCreatedAction={setLocalAccounts}
         importJobId={importJobId}
       />
     </div>

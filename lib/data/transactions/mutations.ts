@@ -10,7 +10,6 @@ import { ErrorCode } from "@/lib/constants/error-codes";
 import { prisma } from "@/lib/prisma";
 import { ImportJobStatus } from "@prisma/client";
 import {
-  incrementBulkAiReceiptUsage,
   upsertImportJob,
 } from "../users/usages";
 
@@ -62,22 +61,6 @@ export async function createTransaction({
         }
       }
 
-      // check for same transaction already existing (idempotency)
-      const existingTransaction = await tx.transaction.findFirst({
-        where: {
-          userId,
-          accountId: account.id,
-          date: data.date,
-          amount: data.amount,
-          description: data.description,
-        },
-      });
-
-      if (existingTransaction) {
-        throw new Error(ErrorCode.DUPLICATE_TRANSACTION);
-      }
-
-
       const balanceChange =
         data.type === TransactionType.INCOME ? data.amount : -data.amount;
 
@@ -126,7 +109,6 @@ export async function createTransaction({
 
       return transaction;
     });
-
 }
 
 export async function updateTransaction({
