@@ -160,14 +160,14 @@ export function BudgetRadialChart({ totalBudget, spent }: RadialChartProps) {
             </PolarRadiusAxis>
 
             {/* Bars */}
-             <RadialBar
+            <RadialBar
               dataKey="spent"
               stackId="a"
               cornerRadius={6}
               fill={statusConfig.spentColor}
               className="stroke-transparent"
             />
-            
+
             <RadialBar
               dataKey="remaining"
               stackId="a"
@@ -175,7 +175,6 @@ export function BudgetRadialChart({ totalBudget, spent }: RadialChartProps) {
               fill="currentColor"
               className="text-muted-foreground/20 stroke-transparent"
             />
-           
           </RadialBarChart>
         </ChartContainer>
       </CardContent>

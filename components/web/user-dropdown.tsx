@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useClerk, useUser } from "@clerk/nextjs";
 import {
   LogOutIcon,
-  SparklesIcon,
   LayoutDashboard,
   Wallet,
-  Receipt,
   Settings,
   ChevronsUpDown,
+  CreditCard,
+  Star,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -145,7 +145,7 @@ export default function UserDropdown({
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/transactions" className="flex items-center gap-2">
-              <Receipt className="h-4 w-4" />
+              <CreditCard className="h-4 w-4" />
               <span>Transactions</span>
             </Link>
           </DropdownMenuItem>
@@ -159,26 +159,20 @@ export default function UserDropdown({
             <Settings className="h-4 w-4" />
             <span>Account settings</span>
           </DropdownMenuItem>
-          {tier && tier !== "premium" && (
+          {tier !== "premium" && tier && (
             <DropdownMenuItem asChild>
-              <Link
-                href="/pricing"
-                className="flex items-center gap-2 text-emerald-600 dark:text-emerald-300"
-              >
-                <SparklesIcon className="h-4 w-4" />
-                <span>
-                  {tier === "free" ? "Upgrade to Pro" : "Upgrade to Premium"}
-                </span>
+              <Link href="/pricing" className="flex items-center gap-2 ">
+                <Star className="h-4 w-4 " />
+
+                {tier === "free" && <span>Upgrade to Pro</span>}
+                {tier === "pro" && <span>Upgrade to Premium</span>}
               </Link>
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={handleSignOut}
-          className="cursor-pointer text-red-600 focus:text-red-600"
-        >
-          <LogOutIcon className="h-4 w-4" />
+        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer ">
+          <LogOutIcon className="h-4 w-4 " />
           <span>Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

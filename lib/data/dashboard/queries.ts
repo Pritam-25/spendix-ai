@@ -1,6 +1,6 @@
 import "server-only";
 
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { requireUser } from "../users/auth";
 import { serialize } from "@/lib/utils/serialize";
 import { Prisma, TransactionType } from "@prisma/client";
@@ -98,7 +98,6 @@ export default async function getDefaultAccountDataForDashboard(
 
   return serialize(rawResult) as DashboardSummary;
 }
-
 
 // get top income and expense categories for default account
 export type CategorySummary = {

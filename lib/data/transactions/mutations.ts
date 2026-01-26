@@ -7,12 +7,19 @@ import {
 } from "@/lib/schemas/transaction.schema";
 import { calculateNextRecurringDate } from "@/lib/utils/recurring";
 import { ErrorCode } from "@/lib/constants/error-codes";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
+import { ImportJobStatus } from "@prisma/client";
+import {
+  incrementBulkAiReceiptUsage,
+  upsertImportJob,
+} from "../users/usages";
 
 type CreateTransactionProps = {
   userId: string;
   account: { id: string; balance: Prisma.Decimal };
   data: TransactionParsedType;
+  isReceiptScan: boolean;
+  importId: string;
 };
 
 type updateTransactonProps = {
@@ -30,42 +37,96 @@ export async function createTransaction({
   userId,
   account,
   data,
+  isReceiptScan,
+  importId,
 }: CreateTransactionProps) {
-  return prisma.$transaction(async (tx) => {
-    const balanceChange = data.type === "INCOME" ? data.amount : -data.amount;
+    return await prisma.$transaction(async (tx) => {
+      if (isReceiptScan && !importId) {
+        throw new Error(ErrorCode.IMPORT_JOB_ID_NOT_FOUND);
+      }
 
-    // calculate new balance
-    const newBalance = account.balance.add(balanceChange);
+      console.log("isreceiptscan", isReceiptScan);
+      console.log("importId", importId);
+      console.log("saved: ", ImportJobStatus.SAVED);
 
-    if (newBalance.lessThan(0)) {
-      throw new Error(ErrorCode.INSUFFICIENT_BALANCE);
-    }
+      // idempotency check
+      if (isReceiptScan) {
+        console.log("Import job check for id:", importId);
+        const existing = await tx.importJob.findUnique({
+          where: { id_userId: { id: importId, userId } },
+        });
+        console.log("Existing import job status:", existing);
+        if (existing?.status === ImportJobStatus.SAVED) {
+          console.log("Existing import job status saved:", existing);
+          throw new Error(ErrorCode.IMPORT_JOB_ALREADY_PROCESSED);
+        }
+      }
 
-    // calculate next recurring date
-    const nextRecurringDate =
-      data.isRecurring && data.recurringInterval
-        ? calculateNextRecurringDate(data.date, data.recurringInterval)
-        : null;
+      // check for same transaction already existing (idempotency)
+      const existingTransaction = await tx.transaction.findFirst({
+        where: {
+          userId,
+          accountId: account.id,
+          date: data.date,
+          amount: data.amount,
+          description: data.description,
+        },
+      });
 
-    // create transaction
-    const transaction = await tx.transaction.create({
-      data: {
-        ...data,
-        userId,
-        nextRecurringDate,
-      },
+      if (existingTransaction) {
+        throw new Error(ErrorCode.DUPLICATE_TRANSACTION);
+      }
+
+
+      const balanceChange =
+        data.type === TransactionType.INCOME ? data.amount : -data.amount;
+
+      // calculate new balance
+      const newBalance = account.balance.add(balanceChange);
+
+      if (newBalance.lessThan(0)) {
+        throw new Error(ErrorCode.INSUFFICIENT_BALANCE);
+      }
+
+      // calculate next recurring date
+      const nextRecurringDate =
+        data.isRecurring && data.recurringInterval
+          ? calculateNextRecurringDate(data.date, data.recurringInterval)
+          : null;
+
+      // create transaction
+      const transaction = await tx.transaction.create({
+        data: {
+          ...data,
+          userId,
+          nextRecurringDate,
+        },
+      });
+
+      //  atomic balance update
+      await tx.account.update({
+        where: { id: account.id },
+        data: {
+          balance: {
+            increment: balanceChange,
+          },
+        },
+      });
+
+      // mark import job as saved
+      if (isReceiptScan) {
+        await upsertImportJob({
+          importJobId: importId,
+          userId,
+          status: ImportJobStatus.SAVED,
+          accountId: account.id,
+          tx,
+        });
+      }
+
+      return transaction;
     });
 
-    // update account balance
-    await tx.account.update({
-      where: { id: account.id },
-      data: {
-        balance: newBalance,
-      },
-    });
-
-    return transaction;
-  });
 }
 
 export async function updateTransaction({
@@ -86,12 +147,12 @@ export async function updateTransaction({
 
     // calculate balance changes
     const oldBalanceChange =
-      existingTransaction.type === "INCOME"
+      existingTransaction.type === TransactionType.INCOME
         ? existingTransaction.amount
         : existingTransaction.amount.neg();
 
     const newBalanceChange =
-      data.type === "INCOME"
+      data.type === TransactionType.INCOME
         ? new Prisma.Decimal(data.amount)
         : new Prisma.Decimal(data.amount).neg();
 
@@ -196,29 +257,38 @@ export async function bulkDeleteTransactions({
 
 // ------------------------------------------------//
 function normalizeDescription(text?: string | null) {
-  return (text ?? "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
+  return (text ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 }
-
 
 function calculateNet(rows: BulkTransactionParsedType) {
   return rows.reduce((sum, t) => {
-    return t.type === "INCOME"
-      ? sum.add(t.amount)
-      : sum.sub(t.amount);
+    return t.type === "INCOME" ? sum.add(t.amount) : sum.sub(t.amount);
   }, new Prisma.Decimal(0));
 }
 
 export async function saveBulkTransactions(
   userId: string,
   rows: BulkTransactionParsedType,
+  importId: string,
 ) {
   return await prisma.$transaction(async (tx) => {
     const accountId = rows[0].accountId;
 
-    // 🔍 find existing (possible duplicates)
+    if (!accountId) {
+      throw new Error(ErrorCode.ACCOUNT_NOT_FOUND);
+    }
+
+    //  Check if this import was already processed
+    const existingImport = await tx.importJob.findUnique({
+      where: { id_userId: { id: importId, userId } },
+    });
+
+    if (existingImport?.status === ImportJobStatus.SAVED) {
+      // Import already processed → idempotent
+      return { skipped: true };
+    }
+
+    //  find existing (possible duplicates)
     const existing = await tx.transaction.findMany({
       where: {
         userId,
@@ -243,7 +313,7 @@ export async function saveBulkTransactions(
       ),
     );
 
-    // 🧹 keep only new rows
+    //  keep only new rows
     const newRows = rows.filter(
       (r) =>
         !existingSet.has(
@@ -251,9 +321,9 @@ export async function saveBulkTransactions(
         ),
     );
 
-    if (newRows.length === 0) return;
+    if (newRows.length === 0) return { skipped: true };
 
-    // 📥 insert only new transactions
+    //  insert only new transactions
     await tx.transaction.createMany({
       data: newRows.map((r) => ({
         userId,
@@ -268,7 +338,7 @@ export async function saveBulkTransactions(
       })),
     });
 
-    // 💰 update balance only for inserted rows
+    //  update balance only for inserted rows
     const netBalanceChange = calculateNet(newRows);
 
     await tx.account.update({
@@ -279,6 +349,21 @@ export async function saveBulkTransactions(
         },
       },
     });
+
+
+    //  update import job status
+    await upsertImportJob({
+      importJobId: importId,
+      userId,
+      status: ImportJobStatus.SAVED,
+      tx,
+      accountId,
+    });
+
+    return {
+      skipped: false,
+      inserted: newRows.length,
+      rejected: rows.length - newRows.length,
+    };
   });
 }
-

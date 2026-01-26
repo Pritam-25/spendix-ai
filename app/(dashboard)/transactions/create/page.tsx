@@ -5,6 +5,8 @@ import { FEATURES } from "@/lib/config/features";
 import { getTransactionById } from "@/lib/data/transactions/queries";
 import { TransactionFormType } from "@/lib/schemas/transaction.schema";
 import { hasFeature } from "@/lib/data/users/subscription";
+import { UsageStatus } from "../_components/AiRecieptScanner";
+import { getAiReceiptUsageStatus } from "@/lib/data/users/usages";
 
 type CreateTransactionPageProps = {
   searchParams?: Promise<{ edit?: string }>;
@@ -15,6 +17,9 @@ export default async function CreateTransactionPage({
 }: CreateTransactionPageProps) {
   const accounts = await getAccounts();
   const canUseRecurring = await hasFeature(FEATURES.RECURRING_TRANSACTIONS);
+  const usage: UsageStatus = await getAiReceiptUsageStatus();
+
+  console.log("usage: ", usage);
 
   const resolveParams = await searchParams;
   const editId = resolveParams?.edit;
@@ -47,6 +52,7 @@ export default async function CreateTransactionPage({
         editId={editId}
         initialData={initialData}
         canUseRecurring={canUseRecurring}
+        initialUsage={usage}
       />
     </div>
   );

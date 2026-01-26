@@ -26,7 +26,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 
-import { BarChart3 } from "lucide-react";
+import { ChartColumnBigIcon } from "lucide-react";
 
 const chartConfig = {
   income: {
@@ -195,7 +195,7 @@ export default function ChartTable({ transactions }: ChartTableProps) {
         <div className="min-w-0">
           {filteredData.length === 0 ? (
             <div className="flex h-[320px] flex-col items-center justify-center gap-3 rounded-md border border-dashed bg-muted/30 text-center">
-              <BarChart3 className="h-8 w-8 text-muted-foreground" />
+              <ChartColumnBigIcon className="h-8 w-8 text-muted-foreground" />
 
               <div className="space-y-2">
                 <p className="text-sm font-medium">No transactions found</p>

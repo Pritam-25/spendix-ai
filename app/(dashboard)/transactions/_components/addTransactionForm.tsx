@@ -44,7 +44,7 @@ import {
 import { Input } from "@/components/ui/input";
 import CreateAccountDrawer from "../../accounts/_components/CreateAccountDrawer";
 import { Button } from "@/components/ui/button";
-import AiRecieptScanner from "./AiRecieptScanner";
+import AiRecieptScanner, { UsageStatus } from "./AiRecieptScanner";
 import { DatePicker } from "@/components/web/datpicker";
 import { CategoryCombobox } from "@/components/web/category-combobox";
 import { Switch } from "@/components/ui/switch";
@@ -58,6 +58,7 @@ type AddTransactionFormProps = {
   editId?: string;
   initialData: Partial<TransactionFormType>;
   canUseRecurring: boolean;
+  initialUsage: UsageStatus;
 };
 
 type SimpleAccount = {
@@ -69,8 +70,15 @@ type SimpleAccount = {
 };
 
 export default function AddTransactionForm(props: AddTransactionFormProps) {
-  const { accounts, category, editmode, editId, initialData, canUseRecurring } =
-    props;
+  const {
+    accounts,
+    category,
+    editmode,
+    editId,
+    initialData,
+    canUseRecurring,
+    initialUsage,
+  } = props;
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -78,7 +86,9 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
 
   const [isPending, startTransition] = useTransition();
   const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false);
+  const [isReceiptScan, setIsReceiptScan] = useState(false);
   const [localAccounts, setLocalAccounts] = useState<SimpleAccount[]>([]);
+  const [importId, setImportId] = useState<string>("");
 
   const baseAccounts = useMemo<SimpleAccount[]>(
     () =>
@@ -157,7 +167,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
       const result =
         editmode && editId
           ? await updateTransactionAction(editId, values)
-          : await createTransactionAction(values);
+          : await createTransactionAction(values, isReceiptScan, importId);
 
       if (!result?.success) {
         toast.error(result.error);
@@ -215,7 +225,10 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
         {/* AI Receipt Scanner */}
         {!editmode && (
           <AiRecieptScanner
+            initialUsage={initialUsage}
             onScanComplete={(result) => {
+              setIsReceiptScan(true);
+              setImportId(result.importId);
               if (result.amount !== undefined)
                 setValue("amount", result.amount);
               if (result.date) setValue("date", result.date);
@@ -514,7 +527,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                       </Card>
                     </>
                   ) : (
-                    <div className="mt-6 rounded-xl border border-primary/40 bg-primary/5 p-4">
+                    <div className="rounded-xl border border-primary/40 bg-primary/5 p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="flex items-center gap-2 text-sm font-semibold">
@@ -535,7 +548,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                     </div>
                   )}
                 </Field>
-                <div className="mt-6 flex justify-end gap-3">
+                <div className="flex justify-end gap-3">
                   <Button
                     type="button"
                     variant="outline"

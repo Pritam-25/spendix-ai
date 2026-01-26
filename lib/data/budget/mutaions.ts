@@ -1,7 +1,7 @@
 import "server-only";
 
 //  create or update budget mutation
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export async function createOrUpdateBudgetForUser(
   userId: string,

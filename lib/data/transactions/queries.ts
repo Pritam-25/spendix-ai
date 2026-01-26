@@ -1,6 +1,6 @@
 import "server-only";
 
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { requireUser } from "../users/auth";
 
 export function findAccountById(accountId: string, userId: string) {

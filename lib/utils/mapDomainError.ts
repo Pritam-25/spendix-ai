@@ -19,8 +19,7 @@ export function mapDomainError(error: unknown) {
     // Transactions
     case ErrorCode.INSUFFICIENT_BALANCE:
       return { error: "Insufficient balance" };
-    case ErrorCode.TRANSACTION_CREATION_FAILED:
-      return { error: "Failed to create transaction" };
+
     case ErrorCode.PRO_FEATURE_REQUIRED:
       return {
         error: "Upgrade to Pro to use recurring transactions",
@@ -86,6 +85,24 @@ export function mapDomainError(error: unknown) {
 
     case ErrorCode.BULK_RECEIPT_NOT_ALLOWED:
       return { error: "Bulk receipt scanning is not allowed" };
+
+    case ErrorCode.IMPORT_JOB_UPDATE_FAILED:
+      return { error: "Failed to update import job status" };
+
+    case ErrorCode.IMPORT_JOB_ID_NOT_FOUND:
+      return { error: "Import job ID not found" };
+
+    case ErrorCode.IMPORT_JOB_UPDATE_FAILED:
+      return { error: "Failed to update import job status" };
+
+    case ErrorCode.IMPORT_JOB_ALREADY_PROCESSED:
+      return {
+        error: "That receipt scan has already been converted into transactions",
+      };
+
+    case ErrorCode.DUPLICATE_TRANSACTION:
+      return { error: "Duplicate transaction detected" };
+
     // Rate limiting
     case ErrorCode.RATE_LIMITED:
       return { error: "Rate limit exceeded" };

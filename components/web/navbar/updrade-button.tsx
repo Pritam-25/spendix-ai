@@ -11,13 +11,13 @@ export default function UpgradeButton() {
 
   if (!tier || tier === "premium") return null;
 
-  const targetLabel = tier === "free" ? "Upgrade to Pro" : "Upgrade to Premium";
+  const targetLabel = tier === "free" ? "Get Pro" : "Get Premium";
 
   return (
     <span
       className={cn(
         buttonVariants({ variant: "default", size: "sm" }),
-        "inline-flex items-center gap-2",
+        "inline-flex items-center gap-2 rounded-full dark:bg-yellow-800 dark:text-yellow-50 dark:border-yellow-600 dark:border-2 hover:dark:bg-yellow-700",
       )}
     >
       <Crown className="w-4 h-4" />

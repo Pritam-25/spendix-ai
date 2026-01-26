@@ -24,8 +24,13 @@ import { FEATURES } from "@/lib/config/features";
 import {
   guardAiReceiptScan,
   incrementAiReceiptUsage,
+  incrementBulkAiReceiptUsage,
+  upsertImportJob,
 } from "@/lib/data/users/usages";
 import { EXPENSE_CATEGORIES } from "@/lib/constants/categories";
+import generateImportId from "@/lib/utils/generateImportId";
+import { ImportJobStatus } from "@prisma/client";
+import { normalizeAiImportError } from "@/lib/utils/normalizeAiErrors";
 
 type ResponseResult =
   | { success: true; message: string }
@@ -33,6 +38,8 @@ type ResponseResult =
 
 export async function createTransactionAction(
   data: unknown,
+  isReceiptScan: boolean,
+  importId: string,
 ): Promise<ResponseResult> {
   const parsed = transactionSchema.safeParse(data);
 
@@ -71,7 +78,10 @@ export async function createTransactionAction(
       userId: user.id,
       account: { id: account.id, balance: account.balance },
       data: parsed.data,
+      isReceiptScan,
+      importId,
     });
+
     revalidatePath("/transactions");
     revalidatePath("/dashboard");
     revalidatePath(`/accounts/${account.id}`);
@@ -87,9 +97,8 @@ export async function createTransactionAction(
     if (mapped) {
       return { success: false, error: mapped.error };
     }
-
-    // If error is unknown, use TRANSACTION_CREATION_FAILED
-    return { success: false, error: ErrorCode.TRANSACTION_CREATION_FAILED };
+    // If error is unknown
+    return { success: false, error: "Transaction creation failed" };
   }
 }
 
@@ -174,16 +183,23 @@ type AiReceiptScanResult =
         date: Date;
         description: string;
         category: string;
+        isReceiptScan: boolean;
+        importId: string;
       };
       message: string;
+      aiReceiptScan: number;
     }
   | { success: false; error: string };
 
 export async function aiScanReceiptAction(
   file: File,
 ): Promise<AiReceiptScanResult> {
+  let importId: string = "";
+  let userId: string = "";
+
   try {
     const user = await requireUser();
+    userId = user.id;
 
     // usage guard
     await guardAiReceiptScan(user.id);
@@ -205,6 +221,8 @@ export async function aiScanReceiptAction(
 
     const buffer = await file.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
+
+    importId = generateImportId(Buffer.from(buffer));
 
     const prompt = `
 This image contains EXACTLY ONE receipt for ONE transaction.
@@ -253,11 +271,6 @@ Multiple transactions:
       throw new Error(ErrorCode.BULK_RECEIPT_NOT_ALLOWED);
     }
 
-    // 🚫 Any array is invalid
-    if (Array.isArray(parsed)) {
-      throw new Error(ErrorCode.BULK_RECEIPT_NOT_ALLOWED);
-    }
-
     // 🚫 Unreadable / failed extraction
     if (
       typeof parsed === "object" &&
@@ -277,8 +290,16 @@ Multiple transactions:
       description = `${validated.merchantName} - ${validated.description}`;
     }
 
-    // ✅ increment only on success
-    await incrementAiReceiptUsage(user.id);
+    // increment usage (consume quota) and persist usageId with import job
+    const usage = await incrementAiReceiptUsage(user.id);
+
+    // save importId with status SCANNED and attach usageId
+    await upsertImportJob({
+      importJobId: importId,
+      userId: user.id,
+      usageId: usage.id,
+      status: ImportJobStatus.SCANNED,
+    });
 
     return {
       success: true,
@@ -288,30 +309,29 @@ Multiple transactions:
         date: new Date(validated.date),
         description,
         category: validated.category,
+        isReceiptScan: true,
+        importId,
       },
+      aiReceiptScan: usage.aiReceiptScans,
     };
   } catch (error) {
-    console.error("Receipt scanning failed:", error);
-
     const mapped = mapDomainError(error);
-    if (mapped) {
-      return { success: false, error: mapped.error };
+
+    const aiError = normalizeAiImportError(error);
+
+    const errorMessage = mapped?.error ?? aiError;
+
+    // create importId with status failed
+    if (importId && userId) {
+      await upsertImportJob({
+        importJobId: importId,
+        userId,
+        status: ImportJobStatus.FAILED,
+        errMsg: errorMessage ?? "unknown AI receipt scan error",
+      });
     }
 
-    if (error instanceof Error) {
-      if (error.message.includes("404")) {
-        throw new Error("Gemini model unavailable");
-      }
-      if (error.message.includes("429")) {
-        throw new Error("Too many requests");
-      }
-      if (error.message.includes("413")) {
-        throw new Error("Image too large");
-      }
-      throw error;
-    }
-
-    throw new Error("Failed to scan receipt");
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -326,6 +346,8 @@ type AiBulkReceiptScanResult =
           description: string;
           category: string;
         }[];
+        importId: string;
+        isReceiptScan: boolean;
       };
     }
   | {
@@ -349,8 +371,12 @@ const bulkReceiptSchema = z.object({
 export async function aiBulkReceiptScan(
   file: File,
 ): Promise<AiBulkReceiptScanResult> {
+  let importId: string = "";
+  let userId: string = "";
+
   try {
-    await requireUser();
+    const user = await requireUser();
+    userId = user.id;
 
     // check premium feature ai bulk receipt scan
     await requireFeature(FEATURES.AI_BULK_INSERT);
@@ -372,6 +398,8 @@ export async function aiBulkReceiptScan(
 
     const buffer = await file.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
+
+    importId = generateImportId(Buffer.from(buffer));
 
     const prompt = `
 This image may contain MULTIPLE receipts or transactions.
@@ -410,7 +438,7 @@ Return ONLY valid JSON.
     ]);
 
     // ✅ JSON only
-    const parsed = JSON.parse(result.response.text());
+    const parsed = JSON.parse(result.response.text().trim());
 
     // 🚫 No transactions found
     if (
@@ -432,38 +460,42 @@ Return ONLY valid JSON.
       category: tx.category,
     }));
 
+    // increment bulk ai receipt usage
+    const usageId = await incrementBulkAiReceiptUsage(user.id);
+
+    // create importId with status SCANNED
+    await upsertImportJob({
+      importJobId: importId,
+      userId: user.id,
+      status: ImportJobStatus.SCANNED,
+      usageId: usageId,
+    });
+
     return {
       success: true,
       message: `${transactions.length} transactions scanned successfully`,
-      data: { transactions },
+      data: { transactions, importId, isReceiptScan: true },
     };
   } catch (error) {
-    console.error("Bulk receipt scanning failed:", error);
-
     const mapped = mapDomainError(error);
-    if (mapped) {
-      return { success: false, error: mapped.error };
-    }
 
-    if (error instanceof Error) {
-      if (error.message.includes("404")) {
-        throw new Error("Gemini model unavailable");
-      }
-      if (error.message.includes("429")) {
-        throw new Error("Too many requests");
-      }
-      if (error.message.includes("413")) {
-        throw new Error("Image too large");
-      }
-      return {
-        success: false,
-        error: "Receipt scanning service temporarily unavailable",
-      };
+    const aiError = normalizeAiImportError(error);
+
+    const errorMessage = mapped?.error ?? aiError;
+
+    // create importId with status failed
+    if (importId && userId) {
+      await upsertImportJob({
+        importJobId: importId,
+        userId,
+        status: ImportJobStatus.FAILED,
+        errMsg: errorMessage ?? "unknown AI bulk receipt scan error",
+      });
     }
 
     return {
       success: false,
-      error: "Failed to scan bulk receipts",
+      error: errorMessage,
     };
   }
 }
@@ -474,6 +506,7 @@ type bulkSaveResponse =
 
 export async function saveBulkTransactionsAction(
   data: unknown,
+  importId: string,
 ): Promise<bulkSaveResponse> {
   try {
     const user = await requireUser();
@@ -491,7 +524,10 @@ export async function saveBulkTransactionsAction(
     const transactions = parsed.data;
 
     // call dal layer to save
-    await saveBulkTransactions(user.id, transactions);
+    const result = await saveBulkTransactions(user.id, transactions, importId);
+
+    const inserted = result?.inserted ?? 0;
+    const rejected = result?.rejected ?? 0;
 
     // revalidate paths
     revalidatePath("/transactions");
@@ -500,13 +536,17 @@ export async function saveBulkTransactionsAction(
 
     return {
       success: true,
-      message: `${transactions.length} transactions saved successfully`,
+      message:
+        rejected === 0
+          ? `${inserted} transactions imported successfully`
+          : `${inserted} imported, ${rejected} duplicates skipped`,
     };
   } catch (error) {
     const mapped = mapDomainError(error);
     if (mapped) {
       return { success: false, error: mapped.error };
     }
+
     return { success: false, error: "bulk transaction save failed" };
   }
 }

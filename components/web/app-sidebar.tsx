@@ -5,10 +5,12 @@ import {
   LayoutDashboard,
   CreditCard,
   Wallet,
-  BarChart3,
   Repeat,
   Settings,
   Plus,
+  PiggyBank,
+  ChartPie,
+  CircleFadingArrowUp,
 } from "lucide-react";
 
 import Link from "next/link";
@@ -46,12 +48,17 @@ const items = [
   {
     title: "Budget",
     url: "/budget",
-    icon: BarChart3,
+    icon: ChartPie,
   },
   {
     title: "Recurring",
     url: "/recurring",
     icon: Repeat,
+  },
+  {
+    title: "Ai Imports",
+    url: "/transactions/ai-imports",
+    icon: CircleFadingArrowUp,
   },
 ];
 
@@ -62,13 +69,13 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         {/* App brand */}
-        <div className="px-3 pt-3 pb-1">
+        <div className="px-3 py-4">
           <Link
             href="/"
-            className="flex items-center gap-2 text-sm font-semibold tracking-tight"
+            className="flex items-center gap-2 text-lg font-semibold tracking-tight"
           >
             <span className="inline-block rounded-md bg-primary/10 px-2 py-1 text-primary">
-              S
+              <PiggyBank className="h-5 w-5 text-primary" />
             </span>
             <span>Spendix</span>
           </Link>

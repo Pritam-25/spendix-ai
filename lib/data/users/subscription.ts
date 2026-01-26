@@ -2,7 +2,7 @@ import { FEATURE_MIN_PLAN } from "@/lib/config/feature-requirements";
 import { FeatureKey } from "@/lib/config/features";
 import { isPlanSufficient } from "@/lib/config/plan-order";
 import { ErrorCode } from "@/lib/constants/error-codes";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { PlanType, SubscriptionStatus } from "@prisma/client";
 

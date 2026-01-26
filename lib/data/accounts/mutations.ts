@@ -1,6 +1,6 @@
 import "server-only";
 
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { AccountType, Prisma } from "@prisma/client";
 import { ErrorCode } from "../../constants/error-codes";
 

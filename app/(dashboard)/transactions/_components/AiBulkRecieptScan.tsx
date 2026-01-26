@@ -14,7 +14,10 @@ interface BulkScannedReceipt {
 }
 
 interface BulkScanReceiptProps {
-  onScanComplete: (transactions: BulkScannedReceipt[]) => void;
+  onScanComplete: (
+    transactions: BulkScannedReceipt[],
+    importId: string,
+  ) => void;
 }
 
 export default function AiBulkReceiptScanner({
@@ -42,14 +45,14 @@ export default function AiBulkReceiptScanner({
         return;
       }
 
-      const transactions = result.data.transactions;
+      const { transactions, importId } = result.data;
 
       if (!transactions.length) {
         toast.error("No transactions detected");
         return;
       }
 
-      onScanComplete(transactions);
+      onScanComplete(transactions, importId);
       console.log("Bulk scan result:", transactions);
       toast.success(result.message);
     });

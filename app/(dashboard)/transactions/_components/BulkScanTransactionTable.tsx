@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { Save } from "lucide-react";
 import { toast } from "sonner";
 
@@ -39,31 +39,27 @@ type Props = {
   data: EditableTransaction[];
   onChangeAction: React.Dispatch<React.SetStateAction<EditableTransaction[]>>;
   accounts: SimpleAccount[];
-  onAccountCreated: React.Dispatch<
-    React.SetStateAction<SimpleAccount[]>
-  >;
+  onAccountCreatedAction: React.Dispatch<React.SetStateAction<SimpleAccount[]>>;
+  importJobId: string;
 };
 
 export default function BulkScanTransactionTable({
   data,
   onChangeAction,
   accounts,
-  onAccountCreated,
+  onAccountCreatedAction,
+  importJobId,
 }: Props) {
   const [isPending, startTransition] = useTransition();
-
-  const [defaultAccountId, setDefaultAccountId] = useState("");
   const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false);
 
-  useEffect(() => {
-  const defaultAcc = accounts.find(a => a.isDefault);
+  // Use derived default account ID to avoid setState in useEffect
+  const initialDefaultAccountId = accounts.find((a) => a.isDefault)?.id ?? "";
+  const [defaultAccountId, setDefaultAccountId] = useState(
+    initialDefaultAccountId,
+  );
 
-  if (defaultAcc && !defaultAccountId) {
-    setDefaultAccountId(defaultAcc.id);
-  }
-}, [accounts, defaultAccountId]);
-
-
+  // Handle select all logic
   const allSelected = data.length > 0 && data.every((r) => r.selected);
   const someSelected = data.some((r) => r.selected);
 
@@ -80,22 +76,20 @@ export default function BulkScanTransactionTable({
 
   const onSaveAll = () => {
     startTransition(async () => {
-      
-        const payload = data.map(({ id, selected, ...rest }) => ({
-          ...rest,
-          accountId: defaultAccountId,
-        }));
+      const payload = data.map(({ ...rest }) => ({
+        ...rest,
+        accountId: defaultAccountId,
+      }));
 
-        const result = await saveBulkTransactionsAction(payload);
+      const result = await saveBulkTransactionsAction(payload, importJobId);
 
-        if(!result.success){
-          toast.error(result.error);
-          return;
-        }
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
 
-        toast.success(result.message);
-        onChangeAction([]);
-      
+      toast.success(result.message);
+      onChangeAction([]);
     });
   };
 
@@ -104,9 +98,7 @@ export default function BulkScanTransactionTable({
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Review transactions</CardTitle>
-          <CardDescription>
-            Fix errors before saving
-          </CardDescription>
+          <CardDescription>Fix errors before saving</CardDescription>
         </div>
 
         <div className="flex items-center gap-2">
@@ -138,18 +130,12 @@ export default function BulkScanTransactionTable({
 
               <SelectSeparator />
 
-              <SelectItem value="__create_account">
-                + Add account
-              </SelectItem>
+              <SelectItem value="__create_account">+ Add account</SelectItem>
             </SelectContent>
           </Select>
 
           {someSelected && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={deleteSelected}
-            >
+            <Button variant="destructive" size="sm" onClick={deleteSelected}>
               Delete selected
             </Button>
           )}
@@ -169,7 +155,7 @@ export default function BulkScanTransactionTable({
         open={isAccountDrawerOpen}
         onOpenChangeAction={setIsAccountDrawerOpen}
         onCreatedAction={(acc) => {
-          onAccountCreated((prev) => [
+          onAccountCreatedAction((prev) => [
             {
               id: acc.id,
               name: acc.name,
@@ -179,7 +165,6 @@ export default function BulkScanTransactionTable({
             },
             ...prev,
           ]);
-
           setDefaultAccountId(acc.id);
         }}
       />
@@ -195,8 +180,8 @@ export default function BulkScanTransactionTable({
                       allSelected
                         ? true
                         : someSelected
-                        ? "indeterminate"
-                        : false
+                          ? "indeterminate"
+                          : false
                     }
                     onCheckedChange={(v) => toggleAll(v === true)}
                   />
@@ -218,9 +203,7 @@ export default function BulkScanTransactionTable({
                   row={row}
                   onUpdateAction={(updated) =>
                     onChangeAction((prev) =>
-                      prev.map((r) =>
-                        r.id === row.id ? updated : r,
-                      ),
+                      prev.map((r) => (r.id === row.id ? updated : r)),
                     )
                   }
                   onDeleteAction={() => deleteRow(row.id)}

@@ -67,6 +67,12 @@ enum PaymentType {
   RECURRING
 }
 
+enum ImportJobStatus {
+  SCANNED
+  SAVED
+  FAILED
+}
+
 // -------------------------
 // Models
 // -------------------------
@@ -114,16 +120,17 @@ model Usage {
 }
 
 model ImportJob {
-  id        String   @id // importId (hash)
+  id        String   
   userId    String
   accountId String?
-  status    String   @default("SCANNED") // SCANNED, SAVED, FAILED
+  status    ImportJobStatus   @default(SCANNED)
   createdAt DateTime @default(now())
+  errorMsg  String?
 
   usageId String?
   usage   Usage?  @relation(fields: [usageId], references: [id], onDelete: Cascade)
 
-  @@unique([id, userId])
+  @@id([id, userId])
 }
 
 model Subscription {

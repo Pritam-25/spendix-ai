@@ -29,11 +29,12 @@ export default function TransactionsClient({
 }: {
   accounts: Account[];
 }) {
-  // ✅ bulk scanned rows
+  //  bulk scanned rows
   const [transactions, setTransactions] = useState<EditableTransaction[]>([]);
 
-  // ✅ local added accounts (from drawer)
+  //  local added accounts (from drawer)
   const [localAccounts, setLocalAccounts] = useState<SimpleAccount[]>([]);
+  const [importJobId, setImportJobId] = useState<string>("");
 
   // convert prisma → simple
   const baseAccounts = useMemo<SimpleAccount[]>(
@@ -56,10 +57,12 @@ export default function TransactionsClient({
     return Array.from(map.values());
   }, [baseAccounts, localAccounts]);
 
-  const defaultAccountId =
-    accountsState.find((a) => a.isDefault)?.id ?? "";
+  const defaultAccountId = accountsState.find((a) => a.isDefault)?.id ?? "";
 
-  const handleBulkScanComplete = (data: ScannedReceipt[]) => {
+  const handleBulkScanComplete = (
+    data: ScannedReceipt[],
+    newImportJobId: string,
+  ) => {
     const mapped: EditableTransaction[] = data.map((receipt) => ({
       id: nanoid(),
       selected: false,
@@ -69,15 +72,15 @@ export default function TransactionsClient({
       accountId: defaultAccountId,
       description: receipt.description ?? "",
       category: receipt.category
-        ? defaultCategories.find(
-            (c) =>
-              c.name.toLowerCase() === receipt.category!.toLowerCase(),
-          )?.id ?? ""
+        ? (defaultCategories.find(
+            (c) => c.name.toLowerCase() === receipt.category!.toLowerCase(),
+          )?.id ?? "")
         : "",
       recurring: "NONE",
     }));
 
     setTransactions(mapped);
+    setImportJobId(newImportJobId);
   };
 
   return (
@@ -88,7 +91,8 @@ export default function TransactionsClient({
         data={transactions}
         onChangeAction={setTransactions}
         accounts={accountsState}
-        onAccountCreated={setLocalAccounts}   // 👈 important
+        onAccountCreatedAction={setLocalAccounts} // 👈 important
+        importJobId={importJobId}
       />
     </div>
   );

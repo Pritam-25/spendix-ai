@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import {
@@ -44,123 +44,114 @@ export function RowForm({
     mode: "onBlur",
   });
 
-  const { register, setValue, watch, formState } = form;
+  const { register, setValue, formState, control } = form;
   const { errors } = formState;
+
+  const watchedValues = useWatch({ control });
 
   // Sync parent whenever fields change
   useEffect(() => {
-    const subscription = watch((values) => {
-      onUpdateAction({ ...row, ...values });
+    onUpdateAction({
+      ...row,
+      ...watchedValues,
     });
-    return () => subscription.unsubscribe();
-  }, [watch, onUpdateAction, row]);
+  }, [watchedValues, onUpdateAction, row]);
 
   const rowHasError = Object.keys(errors).length > 0;
 
   return (
-  <TableRow className={rowHasError ? "bg-red-50" : ""}>
-    {/* Checkbox */}
-    <TableCell>
-      <Checkbox
-        checked={row.selected || false}
-        onCheckedChange={(checked) =>
-          onUpdateAction({
-            ...row,
-            selected: checked === "indeterminate" ? undefined : checked,
-          })
-        }
-      />
-    </TableCell>
+    <TableRow className={rowHasError ? "bg-red-50" : ""}>
+      {/* Checkbox */}
+      <TableCell>
+        <Checkbox
+          checked={row.selected || false}
+          onCheckedChange={(checked) =>
+            onUpdateAction({
+              ...row,
+              selected: checked === "indeterminate" ? undefined : checked,
+            })
+          }
+        />
+      </TableCell>
 
-    {/* Date */}
-    <TableCell>
-      <DatePicker
-        value={watch("date") ? new Date(watch("date")) : undefined}
-        onChangeAction={(d) => setValue("date", d ?? new Date())}
-      />
-      {errors.date && (
-        <p className="text-xs text-destructive mt-1">
-          {errors.date.message}
-        </p>
-      )}
-    </TableCell>
+      {/* Date */}
+      <TableCell>
+        <DatePicker
+          value={watchedValues.date ? new Date(watchedValues.date) : undefined}
+          onChangeAction={(d) => setValue("date", d ?? new Date())}
+        />
+        {errors.date && (
+          <p className="text-xs text-destructive mt-1">{errors.date.message}</p>
+        )}
+      </TableCell>
 
-    {/* Type */}
-    <TableCell>
-      <Select
-        value={watch("type")}
-        onValueChange={(v) =>
-          setValue("type", v as TransactionType)
-        }
-      >
-        <SelectTrigger>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="EXPENSE">Expense</SelectItem>
-          <SelectItem value="INCOME">Income</SelectItem>
-        </SelectContent>
-      </Select>
-    </TableCell>
+      {/* Type */}
+      <TableCell>
+        <Select
+          value={watchedValues.type}
+          onValueChange={(v) => setValue("type", v as TransactionType)}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="EXPENSE">Expense</SelectItem>
+            <SelectItem value="INCOME">Income</SelectItem>
+          </SelectContent>
+        </Select>
+      </TableCell>
 
-    {/* Amount */}
-    <TableCell>
-      <Input type="number" {...register("amount")} />
-      {errors.amount && (
-        <p className="text-xs text-destructive mt-1">
-          {errors.amount.message}
-        </p>
-      )}
-    </TableCell>
+      {/* Amount */}
+      <TableCell>
+        <Input type="number" {...register("amount")} />
+        {errors.amount && (
+          <p className="text-xs text-destructive mt-1">
+            {errors.amount.message}
+          </p>
+        )}
+      </TableCell>
 
-    {/* Description */}
-    <TableCell>
-      <Input {...register("description")} />
-    </TableCell>
+      {/* Description */}
+      <TableCell>
+        <Input {...register("description")} />
+      </TableCell>
 
-    {/* Recurring */}
-    <TableCell>
-      <Select
-        value={watch("recurring")}
-        onValueChange={(v) =>
-          setValue("recurring", v as RecurringInterval)
-        }
-      >
-        <SelectTrigger>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {["NONE", "DAILY", "WEEKLY", "MONTHLY"].map((r) => (
-            <SelectItem key={r} value={r}>
-              {r}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </TableCell>
+      {/* Recurring */}
+      <TableCell>
+        <Select
+          value={watchedValues.recurring}
+          onValueChange={(v) => setValue("recurring", v as RecurringInterval)}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {["NONE", "DAILY", "WEEKLY", "MONTHLY"].map((r) => (
+              <SelectItem key={r} value={r}>
+                {r}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </TableCell>
 
-    {/* Category */}
-    <TableCell>
-      <CategoryCombobox
-        value={watch("category")}
-        onChangeAction={(v) => setValue("category", v)}
-        categories={defaultCategories
-          .filter((c) => c.type === watch("type"))
-          .map((c) => ({ id: c.id, name: c.name }))}
-      />
-    </TableCell>
+      {/* Category */}
+      <TableCell>
+        <CategoryCombobox
+          value={watchedValues.category}
+          onChangeAction={(v) => setValue("category", v)}
+          categories={defaultCategories
+            .filter((c) => c.type === watchedValues.type)
+            .map((c) => ({ id: c.id, name: c.name }))}
+        />
+      </TableCell>
 
-    {/* Delete */}
-    <TableCell>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onDeleteAction}
-      >
-        <Trash2 className="h-4 w-4 text-destructive" />
-      </Button>
-    </TableCell>
-  </TableRow>
-);
-
+      {/* Delete */}
+      <TableCell>
+        <Button variant="ghost" size="icon" onClick={onDeleteAction}>
+          <Trash2 className="h-4 w-4 text-destructive" />
+        </Button>
+      </TableCell>
+    </TableRow>
+  );
 }
