@@ -78,6 +78,7 @@ export function RowForm({
       {/* Date */}
       <TableCell>
         <DatePicker
+          label=""
           value={row.date ? new Date(row.date) : undefined}
           onChangeAction={(d) => updateField("date", (d ?? new Date()) as any)}
         />

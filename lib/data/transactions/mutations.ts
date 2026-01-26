@@ -9,9 +9,7 @@ import { calculateNextRecurringDate } from "@/lib/utils/recurring";
 import { ErrorCode } from "@/lib/constants/error-codes";
 import { prisma } from "@/lib/prisma";
 import { ImportJobStatus } from "@prisma/client";
-import {
-  upsertImportJob,
-} from "../users/usages";
+import { upsertImportJob } from "../users/usages";
 
 type CreateTransactionProps = {
   userId: string;
@@ -39,76 +37,69 @@ export async function createTransaction({
   isReceiptScan,
   importId,
 }: CreateTransactionProps) {
-    return await prisma.$transaction(async (tx) => {
-      if (isReceiptScan && !importId) {
-        throw new Error(ErrorCode.IMPORT_JOB_ID_NOT_FOUND);
-      }
+  return await prisma.$transaction(async (tx) => {
+    if (isReceiptScan && !importId) {
+      throw new Error(ErrorCode.IMPORT_JOB_ID_NOT_FOUND);
+    }
 
-      console.log("isreceiptscan", isReceiptScan);
-      console.log("importId", importId);
-      console.log("saved: ", ImportJobStatus.SAVED);
-
-      // idempotency check
-      if (isReceiptScan) {
-        console.log("Import job check for id:", importId);
-        const existing = await tx.importJob.findUnique({
-          where: { id_userId: { id: importId, userId } },
-        });
-        console.log("Existing import job status:", existing);
-        if (existing?.status === ImportJobStatus.SAVED) {
-          console.log("Existing import job status saved:", existing);
-          throw new Error(ErrorCode.IMPORT_JOB_ALREADY_PROCESSED);
-        }
-      }
-
-      const balanceChange =
-        data.type === TransactionType.INCOME ? data.amount : -data.amount;
-
-      // calculate new balance
-      const newBalance = account.balance.add(balanceChange);
-
-      if (newBalance.lessThan(0)) {
-        throw new Error(ErrorCode.INSUFFICIENT_BALANCE);
-      }
-
-      // calculate next recurring date
-      const nextRecurringDate =
-        data.isRecurring && data.recurringInterval
-          ? calculateNextRecurringDate(data.date, data.recurringInterval)
-          : null;
-
-      // create transaction
-      const transaction = await tx.transaction.create({
-        data: {
-          ...data,
-          userId,
-          nextRecurringDate,
-        },
+    // idempotency check
+    if (isReceiptScan) {
+      const existing = await tx.importJob.findUnique({
+        where: { id_userId: { id: importId, userId } },
       });
-
-      //  atomic balance update
-      await tx.account.update({
-        where: { id: account.id },
-        data: {
-          balance: {
-            increment: balanceChange,
-          },
-        },
-      });
-
-      // mark import job as saved
-      if (isReceiptScan) {
-        await upsertImportJob({
-          importJobId: importId,
-          userId,
-          status: ImportJobStatus.SAVED,
-          accountId: account.id,
-          tx,
-        });
+      if (existing?.status === ImportJobStatus.SAVED) {
+        throw new Error(ErrorCode.IMPORT_JOB_ALREADY_PROCESSED);
       }
+    }
 
-      return transaction;
+    const balanceChange =
+      data.type === TransactionType.INCOME ? data.amount : -data.amount;
+
+    // calculate new balance
+    const newBalance = account.balance.add(balanceChange);
+
+    if (newBalance.lessThan(0)) {
+      throw new Error(ErrorCode.INSUFFICIENT_BALANCE);
+    }
+
+    // calculate next recurring date
+    const nextRecurringDate =
+      data.isRecurring && data.recurringInterval
+        ? calculateNextRecurringDate(data.date, data.recurringInterval)
+        : null;
+
+    // create transaction
+    const transaction = await tx.transaction.create({
+      data: {
+        ...data,
+        userId,
+        nextRecurringDate,
+      },
     });
+
+    //  atomic balance update
+    await tx.account.update({
+      where: { id: account.id },
+      data: {
+        balance: {
+          increment: balanceChange,
+        },
+      },
+    });
+
+    // mark import job as saved
+    if (isReceiptScan) {
+      await upsertImportJob({
+        importJobId: importId,
+        userId,
+        status: ImportJobStatus.SAVED,
+        accountId: account.id,
+        tx,
+      });
+    }
+
+    return transaction;
+  });
 }
 
 export async function updateTransaction({
@@ -267,7 +258,7 @@ export async function saveBulkTransactions(
 
     if (existingImport?.status === ImportJobStatus.SAVED) {
       // Import already processed → idempotent
-      return { skipped: true };
+      throw new Error(ErrorCode.IMPORT_JOB_ALREADY_PROCESSED);
     }
 
     //  find existing (possible duplicates)
@@ -331,7 +322,6 @@ export async function saveBulkTransactions(
         },
       },
     });
-
 
     //  update import job status
     await upsertImportJob({
