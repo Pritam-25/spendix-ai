@@ -56,7 +56,6 @@ export async function getAiReceiptUsageStatus() {
   };
 }
 
-
 /**
  * Increment AI receipt scan usage for a user.
  * Works both inside a transaction (tx) or standalone.
@@ -122,7 +121,6 @@ type UpsertImportJobArgs = {
   errMsg?: string;
   tx?: Prisma.TransactionClient;
 };
-
 
 export async function upsertImportJob({
   importJobId,

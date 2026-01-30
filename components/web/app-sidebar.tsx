@@ -52,7 +52,7 @@ const items = [
   },
   {
     title: "Recurring",
-    url: "/recurring",
+    url: "/transactions/recurrings",
     icon: Repeat,
   },
   {

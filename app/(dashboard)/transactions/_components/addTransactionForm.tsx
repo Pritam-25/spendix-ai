@@ -50,6 +50,8 @@ import { CategoryCombobox } from "@/components/web/category-combobox";
 import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { useFeature } from "@/lib/hooks/useFeature";
+import { FEATURES } from "@/lib/config/features";
 
 type AddTransactionFormProps = {
   accounts: Account[];
@@ -57,7 +59,6 @@ type AddTransactionFormProps = {
   editmode: boolean;
   editId?: string;
   initialData: Partial<TransactionFormType>;
-  canUseRecurring: boolean;
   initialUsage: UsageStatus;
 };
 
@@ -70,19 +71,15 @@ type SimpleAccount = {
 };
 
 export default function AddTransactionForm(props: AddTransactionFormProps) {
-  const {
-    accounts,
-    category,
-    editmode,
-    editId,
-    initialData,
-    canUseRecurring,
-    initialUsage,
-  } = props;
+  const { accounts, category, editmode, editId, initialData, initialUsage } =
+    props;
 
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl");
+  const canUseRecurring = useFeature(FEATURES.RECURRING_TRANSACTIONS);
+
+  console.log("canUseRecurring: ", canUseRecurring);
 
   const [isPending, startTransition] = useTransition();
   const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false);

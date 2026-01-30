@@ -326,7 +326,7 @@ Multiple transactions:
     const errorMessage = mapped?.error ?? aiError;
 
     // create importId with status failed
-    if (importId && userId) {
+    if (error && importId && userId) {
       await upsertImportJob({
         importJobId: importId,
         userId,
@@ -488,7 +488,7 @@ Return ONLY valid JSON.
     const errorMessage = mapped?.error ?? aiError;
 
     // create importId with status failed
-    if (importId && userId) {
+    if (error && importId && userId) {
       await upsertImportJob({
         importJobId: importId,
         userId,

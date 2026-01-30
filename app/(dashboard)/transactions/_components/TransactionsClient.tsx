@@ -67,8 +67,7 @@ export default function TransactionsClient({
 
   const handleBulkScanComplete = useCallback(
     (data: ScannedReceipt[], newImportJobId: string) => {
-      const defaultAccountId =
-        accountsState.find((a) => a.isDefault)?.id ?? "";
+      const defaultAccountId = accountsState.find((a) => a.isDefault)?.id ?? "";
 
       const mapped: EditableTransaction[] = data.map((receipt) => ({
         id: nanoid(),
@@ -80,8 +79,7 @@ export default function TransactionsClient({
         description: receipt.description ?? "",
         category: receipt.category
           ? (defaultCategories.find(
-              (c) =>
-                c.name.toLowerCase() === receipt.category!.toLowerCase(),
+              (c) => c.name.toLowerCase() === receipt.category!.toLowerCase(),
             )?.id ?? "")
           : "",
         recurring: "NONE",
@@ -99,7 +97,7 @@ export default function TransactionsClient({
 
       <BulkScanTransactionTable
         data={transactions}
-        onChangeAction={handleTransactionsChange}  
+        onChangeAction={handleTransactionsChange}
         accounts={accountsState}
         onAccountCreatedAction={setLocalAccounts}
         importJobId={importJobId}

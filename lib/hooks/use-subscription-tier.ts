@@ -7,32 +7,24 @@ export type SubscriptionTier = "free" | "pro" | "premium";
 
 export function useSubscriptionTier() {
   const { has } = useAuth();
-  const [tier, setTier] = useState<SubscriptionTier | null>(null);
+  const [tier, setTier] = useState<SubscriptionTier>("free");
 
   useEffect(() => {
+    if (!has) return;
+
     let active = true;
 
-    async function check() {
-      try {
-        if (!has) {
-          if (active) setTier("free");
-          return;
-        }
-
-        const isPremium = await has({ plan: "premium" });
-        const isPro = !isPremium && (await has({ plan: "pro" }));
-
+    Promise.all([has({ plan: "premium" }), has({ plan: "pro" })])
+      .then(([premium, pro]) => {
         if (!active) return;
 
-        if (isPremium) setTier("premium");
-        else if (isPro) setTier("pro");
+        if (premium) setTier("premium");
+        else if (pro) setTier("pro");
         else setTier("free");
-      } catch {
+      })
+      .catch(() => {
         if (active) setTier("free");
-      }
-    }
-
-    void check();
+      });
 
     return () => {
       active = false;

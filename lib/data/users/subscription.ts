@@ -84,23 +84,3 @@ Clerk has({ feature }) ?
    required plan → correct error
 
 */
-
-// hasfeature for client-side components
-export async function hasFeature(feature: FeatureKey) {
-  const { has, userId } = await auth();
-  if (!userId) {
-    return false;
-  }
-  // 1️⃣ FAST CLERK CHECK
-  const clerkAllowed = has({ feature });
-  if (clerkAllowed) return true;
-
-  // 2️⃣ DB CHECK
-  const userPlan = await getUserPlanFromDB(userId);
-  const requiredPlan = FEATURE_MIN_PLAN[feature];
-  if (!userPlan || !requiredPlan) {
-    return false;
-  }
-  // 3️⃣ PLAN COMPARISON
-  return isPlanSufficient(userPlan, requiredPlan);
-}

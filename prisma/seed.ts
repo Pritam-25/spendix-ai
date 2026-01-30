@@ -1,6 +1,6 @@
 // prisma/seed.ts
 import "dotenv/config";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { subDays } from "date-fns";
 import { Prisma } from "@prisma/client";
 

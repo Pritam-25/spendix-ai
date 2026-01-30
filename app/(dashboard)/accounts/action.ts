@@ -11,9 +11,26 @@ import {
   updateDefaultAccount,
 } from "@/lib/data/accounts/mutations";
 import { Prisma } from "@prisma/client";
+import {
+  ExportFormat,
+  exportTransactions,
+} from "@/lib/data/exports/export.data";
+import { requireFeature } from "@/lib/data/users/subscription";
+import { FEATURES } from "@/lib/config/features";
+import { getAllTransactionsByAccountId } from "@/lib/data/accounts/queries";
 
 type ResponseResult =
   | { success: true; message: string; accountId?: string }
+  | { success: false; error: string };
+
+export type ExportActionResult =
+  | {
+      success: true;
+      data: string;
+      mime: string;
+      filename: string;
+      message: string;
+    }
   | { success: false; error: string };
 
 // Action to create a new account
@@ -120,3 +137,54 @@ export async function deleteAccountAction(
     return { success: false, error: ErrorCode.ACCOUNT_DELETE_FAILED };
   }
 }
+
+// export account transactions
+export const exportAccountTransactionAction = async (
+  accountId: string,
+  format: ExportFormat,
+): Promise<ExportActionResult> => {
+  try {
+    const user = await requireUser();
+
+    const hasFeature = await requireFeature(FEATURES.CSV_EXCEL_EXPORT);
+    if (!hasFeature) {
+      return {
+        success: false,
+        error: "Upgrade to Pro to export transactions",
+      };
+    }
+
+    const data = await getAllTransactionsByAccountId(accountId);
+    if (!data || data.transactions.length === 0) {
+      return {
+        success: false,
+        error: "No transactions to export",
+      };
+    }
+
+    const exported = await exportTransactions(
+      format,
+      data.transactions,
+      accountId,
+    );
+
+    return {
+      success: true,
+      ...exported,
+      message: "Transactions exported successfully",
+    };
+  } catch (error) {
+    // Map known domain errors
+    const mapped = mapDomainError(error);
+
+    // If error is known, normalize it to ResponseResult
+    if (mapped) {
+      return { success: false, error: mapped.error };
+    }
+
+    return {
+      success: false,
+      error: "failed to export transactions",
+    };
+  }
+};

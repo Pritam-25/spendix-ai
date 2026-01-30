@@ -1,4 +1,4 @@
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { inngest } from "./client";
 import { calculateNextRecurringDate } from "@/lib/utils/recurring";
 
