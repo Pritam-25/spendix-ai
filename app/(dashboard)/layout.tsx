@@ -5,8 +5,6 @@ import { AppSidebar } from "@/components/web/app-sidebar";
 import { DashboardHeader } from "@/components/web/navbar/dashboard-header";
 import { SpendixChatSheet } from "@/components/web/spendixAi";
 
-
-
 export default async function AppLayout({
   children,
 }: {
