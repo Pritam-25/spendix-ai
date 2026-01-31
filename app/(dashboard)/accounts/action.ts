@@ -144,7 +144,7 @@ export const exportAccountTransactionAction = async (
   format: ExportFormat,
 ): Promise<ExportActionResult> => {
   try {
-    const user = await requireUser();
+    await requireUser();
 
     const hasFeature = await requireFeature(FEATURES.CSV_EXCEL_EXPORT);
     if (!hasFeature) {
