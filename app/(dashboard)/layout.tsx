@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/web/app-sidebar";
 import { DashboardHeader } from "@/components/web/navbar/dashboard-header";
+import { SpendixChatSheet } from "@/components/web/spendixAi";
+
+
 
 export default async function AppLayout({
   children,
@@ -19,6 +22,7 @@ export default async function AppLayout({
         <AppSidebar />
         <main className="flex-1 p-6">
           <DashboardHeader />
+          <SpendixChatSheet />
           {children}
         </main>
       </div>
