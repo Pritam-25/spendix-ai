@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { DefaultChatTransport } from "ai";
 import { useChat } from "@ai-sdk/react";
-import { Loader2, MessageCircle } from "lucide-react";
+import { Loader2, BotMessageSquareIcon } from "lucide-react";
 
 import {
   Sheet,
@@ -65,7 +65,7 @@ export function SpendixChatSheet() {
           size="icon"
           className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg"
         >
-          <MessageCircle className="h-6 w-6" />
+          <BotMessageSquareIcon className="size-7" />
         </Button>
       </SheetTrigger>
 

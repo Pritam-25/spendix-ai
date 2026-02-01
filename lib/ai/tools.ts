@@ -2,7 +2,13 @@ import { tool } from "@langchain/core/tools";
 import { Command } from "@langchain/langgraph";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-import { startOfMonth, endOfMonth, subMonths } from "date-fns";
+import {
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+  subWeeks,
+  subYears,
+} from "date-fns";
 
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/data/users/auth";
@@ -17,47 +23,120 @@ function decimalToNumber(value: Prisma.Decimal | number | null | undefined) {
   return value ?? 0;
 }
 
-/* ----------------------------------------
-   Gemini requires strict schemas
------------------------------------------ */
-const FetchLastMonthExpenseSchema = z.object({}).strict();
+/**
+ * Normalize CUSTOM date ranges inferred by the LLM
+ * - Fix wrong year inference
+ * - Ensure start <= end
+ */
+function normalizeCustomDates(start: Date, end: Date) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+
+  // If model inferred a year too far in the past, fix it
+  if (start.getFullYear() < currentYear - 1) {
+    start.setFullYear(currentYear);
+    end.setFullYear(currentYear);
+  }
+
+  return { start, end };
+}
 
 /* ----------------------------------------
-   Tool: Last month total expense
+   Zod Schema for Tool Input Validation
 ----------------------------------------- */
-export const fetchLastMonthExpenseTool = tool(
-  async (_input: z.infer<typeof FetchLastMonthExpenseSchema>, config) => {
+const FinancialSummarySchema = z
+  .object({
+    type: z.enum(["EXPENSE", "INCOME", "BOTH"]),
+    timeframe: z.enum(["LAST_WEEK", "LAST_MONTH", "LAST_YEAR", "CUSTOM"]),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.timeframe === "CUSTOM") {
+      if (!data.startDate || !data.endDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "startDate and endDate are required for CUSTOM timeframe",
+        });
+      }
+    }
+  });
+
+/* ----------------------------------------
+   Tool: Financial Summary
+----------------------------------------- */
+export const financialSummaryTool = tool(
+  async (input: z.infer<typeof FinancialSummarySchema>, config) => {
     try {
-      console.log("🛠️ [Tool] fetch_last_month_expense called");
+      console.log("🛠️ [Tool] financial_summary called");
 
-      // ✅ Centralized auth (Clerk + DB)
+      //  Centralized auth (Clerk + DB)
       const user = await requireUser();
 
-      const base = subMonths(new Date(), 1);
-      const start = startOfMonth(base);
-      const end = endOfMonth(base);
+      const { type, timeframe, startDate, endDate } = input;
+
+      const now = new Date();
+      let start: Date;
+      let end: Date;
+
+      switch (timeframe) {
+        case "LAST_WEEK":
+          start = subWeeks(now, 1);
+          end = now;
+          break;
+
+        case "LAST_MONTH":
+          const base = subMonths(now, 1);
+          start = startOfMonth(base);
+          end = endOfMonth(base);
+          break;
+
+        case "LAST_YEAR":
+          start = subYears(now, 1);
+          end = now;
+          break;
+
+        case "CUSTOM":
+          const normalized = normalizeCustomDates(
+            new Date(startDate!),
+            new Date(endDate!),
+          );
+          start = normalized.start;
+          end = normalized.end;
+          break;
+
+        default:
+          throw new Error(`Unsupported timeframe: ${timeframe}`);
+      }
+
+      console.log("📅 Interpreted range:", { start, end });
+
+      const where: any = {
+        userId: user.id,
+        date: { gte: start, lte: end },
+        ...(type !== "BOTH" ? { type } : {}),
+      };
 
       const transactions = await prisma.transaction.findMany({
-        where: {
-          userId: user.id,
-          type: "EXPENSE",
-          date: {
-            gte: start,
-            lte: end,
-          },
-        },
-        select: { amount: true },
+        where,
+        select: { amount: true, type: true },
       });
 
-      const totalExpense = transactions.reduce(
-        (sum, tx) => sum + decimalToNumber(tx.amount),
-        0,
-      );
+      let totalIncome = 0;
+      let totalExpense = 0;
+
+      for (const tx of transactions) {
+        const amount = decimalToNumber(tx.amount);
+        tx.type === "INCOME"
+          ? (totalIncome += amount)
+          : (totalExpense += amount);
+      }
 
       const result = {
-        timeframe: "last_month",
+        timeframe,
         start: start.toISOString(),
         end: end.toISOString(),
+        totalIncome,
         totalExpense,
       };
 
@@ -84,7 +163,7 @@ export const fetchLastMonthExpenseTool = tool(
           messages: [
             {
               role: "tool",
-              content: `Error fetching last month's expense: ${error instanceof Error ? error.message : "Unknown error"}`,
+              content: `Error fetching financial summary: ${error instanceof Error ? error.message : "Unknown error"}`,
               tool_call_id: config.toolCall?.id,
             },
           ],
@@ -93,13 +172,14 @@ export const fetchLastMonthExpenseTool = tool(
     }
   },
   {
-    name: "fetch_last_month_expense",
-    description: "Get the user's total EXPENSE for last month",
-    schema: FetchLastMonthExpenseSchema,
+    name: "financial_summary",
+    description:
+      "Get a summary of the user's financial transactions over a specified timeframe.",
+    schema: FinancialSummarySchema,
   },
 );
 
 /* ----------------------------------------
    Export Spendix tools
 ----------------------------------------- */
-export const spendixTools = [fetchLastMonthExpenseTool];
+export const spendixTools = [financialSummaryTool];

@@ -3,20 +3,8 @@ import { SystemMessage } from "@langchain/core/messages";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { spendixTools } from "./tools";
+import { SYSTEM_PROMPT } from "./prompt";
 
-/* ----------------------------------------
-   System Prompt
------------------------------------------ */
-const SYSTEM_PROMPT = `
-You are Spendix, a focused financial assistant.
-
-Rules:
-- You can ONLY report the user's total EXPENSE for last month.
-- If the user asks about last month spending, call fetch_last_month_expense.
-- Answer numeric-first and concise.
-- Never fabricate numbers.
-- If the question is outside scope, politely explain the limitation.
-`;
 
 /* ----------------------------------------
    Gemini Model
