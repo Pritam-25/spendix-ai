@@ -1,31 +1,35 @@
-import { StateGraph, MessagesAnnotation } from "@langchain/langgraph";
+import {
+  StateGraph,
+  MessagesAnnotation,
+  ConditionalEdgeRouter,
+  GraphNode,
+} from "@langchain/langgraph";
 import { SystemMessage } from "@langchain/core/messages";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { spendixTools } from "./tools";
 import { SYSTEM_PROMPT } from "./prompt";
 
-
 /* ----------------------------------------
    Gemini Model
 ----------------------------------------- */
 const model = new ChatGoogleGenerativeAI({
-  model: "gemini-2.5-flash-lite",
+  model: "gemini-2.5-flash",
   temperature: 0,
 }).bindTools(spendixTools);
 
 /* ----------------------------------------
    Agent Node
 ----------------------------------------- */
-async function agentNode(state: typeof MessagesAnnotation.State) {
+const agentNode: GraphNode<typeof MessagesAnnotation.State> = async (state) => {
   console.log("🟢 [AgentNode] Invoked");
 
   console.log(
     "📩 Incoming messages:",
-    state.messages.map((m) => ({ type: m.getType(), content: m.content })),
+    state.messages.map((m) => ({ type: m.type, content: m.content })),
   );
 
-  const hasSystem = state.messages.some((m) => m.getType() === "system");
+  const hasSystem = state.messages.some((m) => m.type === "system");
   console.log("🧠 Has system prompt:", hasSystem);
 
   const messages = hasSystem
@@ -34,7 +38,7 @@ async function agentNode(state: typeof MessagesAnnotation.State) {
 
   console.log(
     "📤 Messages sent to Gemini:",
-    messages.map((m) => ({ type: m.getType(), content: m.content })),
+    messages.map((m) => ({ type: m.type, content: m.content })),
   );
 
   try {
@@ -49,7 +53,7 @@ async function agentNode(state: typeof MessagesAnnotation.State) {
     console.error("❌ Gemini invocation failed:", error);
     throw error;
   }
-}
+};
 
 /* ----------------------------------------
    Tool Node
@@ -60,25 +64,29 @@ const toolNode = new ToolNode(spendixTools);
 /* ----------------------------------------
    Tool Router
 ----------------------------------------- */
-function shouldCallTool(state: typeof MessagesAnnotation.State) {
+// Conditional edge function to route to the tool node or end
+const shouldContinue: ConditionalEdgeRouter<typeof MessagesAnnotation.State> = (
+  state,
+) => {
   const lastMessage = state.messages[state.messages.length - 1];
   const hasToolCall =
     "tool_calls" in lastMessage &&
     Array.isArray(lastMessage.tool_calls) &&
     lastMessage.tool_calls.length > 0;
-  console.log("🔀 Should call tool?", hasToolCall);
-  return hasToolCall ? "tools" : "__end__";
-}
+
+  return hasToolCall ? "toolNode" : "__end__";
+};
 
 /* ----------------------------------------
    Graph
 ----------------------------------------- */
 export const graph = new StateGraph(MessagesAnnotation)
   .addNode("agent", agentNode)
-  .addNode("tools", toolNode)
+  .addNode("toolNode", toolNode)
+
   .addEdge("__start__", "agent")
-  .addConditionalEdges("agent", shouldCallTool)
-  .addEdge("tools", "agent")
+  .addConditionalEdges("agent", shouldContinue, ["toolNode", "__end__"])
+  .addEdge("toolNode", "agent")
   .compile();
 
 console.log("✅ Spendix StateGraph compiled successfully");
