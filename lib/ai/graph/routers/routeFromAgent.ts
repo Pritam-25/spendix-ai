@@ -2,12 +2,15 @@ import {
   ConditionalEdgeRouter,
   MessagesAnnotation,
 } from "@langchain/langgraph";
+import { MEMORY_CONFIG } from "../memory/memory.config";
 
 export const routeFromAgent: ConditionalEdgeRouter<
   typeof MessagesAnnotation.State
 > = (state) => {
-  if (state.messages.length > 100) {
-    console.log("🟠 [RouteFromAgent] Routing to summarize due to message count");
+  if (state.messages.length > MEMORY_CONFIG.SUMMARIZE_TRIGGER) {
+    console.log(
+      "🟠 [RouteFromAgent] Routing to summarize due to message count",
+    );
     return "summarize";
   }
 

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   Sidebar,
@@ -64,12 +65,13 @@ const items = [
 
 export function AppSidebar() {
   const { openUserProfile } = useClerk();
+  const pathname = usePathname();
 
   return (
     <Sidebar>
       <SidebarContent>
         {/* App brand */}
-        <div className="px-3 py-4">
+        <div className="px-3 py-4 bg-secondary/30 border-b border-border">
           <Link
             href="/"
             className="flex items-center gap-2 text-lg font-semibold tracking-tight"
@@ -77,12 +79,12 @@ export function AppSidebar() {
             <span className="inline-block rounded-md bg-primary/10 px-2 py-1 text-primary">
               <PiggyBank className="h-5 w-5 text-primary" />
             </span>
-            <span>Spendix</span>
+            <span className="text-black dark:text-white">Spendix</span>
           </Link>
         </div>
 
         {/* Primary action */}
-        <div className="px-3 pb-3">
+        <div className="px-3 py-3">
           <Button asChild className="w-full justify-start gap-2" size="sm">
             <Link href="/transactions/create">
               <Plus className="h-4 w-4" />
@@ -97,11 +99,17 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url} className="flex items-center gap-2">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={
+                      pathname === item.url ||
+                      pathname?.startsWith(`${item.url}/`)
+                    }
+                  >
+                    <Link href={item.url} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

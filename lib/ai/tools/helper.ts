@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client";
 
-export function decimalToNumber(value: Prisma.Decimal | number | null | undefined) {
+export function decimalToNumber(
+  value: Prisma.Decimal | number | null | undefined,
+) {
   if (value instanceof Prisma.Decimal) {
     return Number(value.toString());
   }

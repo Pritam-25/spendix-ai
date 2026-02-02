@@ -72,7 +72,7 @@ export default async function getDefaultAccountDataForDashboard(
     }),
 
     prisma.transaction.findMany({
-      where: {accountId: defaultAccount.id}, // get recent transactions not only this month
+      where: { accountId: defaultAccount.id }, // get recent transactions not only this month
       orderBy: { date: "desc" },
       take: 5,
       select: {

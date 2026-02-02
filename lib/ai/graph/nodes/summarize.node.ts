@@ -1,6 +1,7 @@
 import { RemoveMessage, SystemMessage } from "@langchain/core/messages";
 import { GraphNode, MessagesAnnotation } from "@langchain/langgraph";
 import { model } from "../../model/gemini";
+import { MEMORY_CONFIG } from "../memory/memory.config";
 
 export const summarizeNode: GraphNode<typeof MessagesAnnotation.State> = async (
   state,
@@ -9,8 +10,14 @@ export const summarizeNode: GraphNode<typeof MessagesAnnotation.State> = async (
 
   const messages = state.messages;
 
-  // first 60 messages → summarize
-  const toSummarize = messages.slice(0, 60);
+  const { KEEP_LAST_MESSAGES } = MEMORY_CONFIG;
+
+  // summarize everything except last 15
+  const toSummarize = messages.slice(0, messages.length - KEEP_LAST_MESSAGES);
+
+  if (toSummarize.length === 0) {
+    return {};
+  }
 
   const summaryPrompt = [
     new SystemMessage(

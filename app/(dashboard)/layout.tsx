@@ -18,10 +18,12 @@ export default async function AppLayout({
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
-        <main className="flex-1 p-6">
+        <main className="flex-1">
           <DashboardHeader />
-          <SpendixChatSheet />
-          {children}
+          <div className="px-6">
+            <SpendixChatSheet />
+            {children}
+          </div>
         </main>
       </div>
     </SidebarProvider>

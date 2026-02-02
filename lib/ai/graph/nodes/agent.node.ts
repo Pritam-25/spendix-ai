@@ -14,12 +14,11 @@ export const agentNode: GraphNode<typeof MessagesAnnotation.State> = async (
   );
 
   try {
-    const [firstMessage, ...rest] = state.messages;
+    const nonSystemMessages = state.messages.filter(
+      (message) => message.type !== "system",
+    );
 
-    const messages =
-      firstMessage && firstMessage.type === "system"
-        ? [firstMessage, new SystemMessage(SYSTEM_PROMPT), ...rest]
-        : [new SystemMessage(SYSTEM_PROMPT), ...state.messages];
+    const messages = [new SystemMessage(SYSTEM_PROMPT), ...nonSystemMessages];
 
     const response = await model.invoke(messages);
 
