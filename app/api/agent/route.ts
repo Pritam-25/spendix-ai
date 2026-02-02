@@ -5,7 +5,8 @@ import { createUIMessageStreamResponse, type UIMessage } from "ai";
 
 import { toBaseMessages, toUIMessageStream } from "@ai-sdk/langchain";
 
-import { graph } from "@/lib/ai/graph";
+import { graph } from "@/lib/ai/graph/index";
+import { ensureCheckpointerReady } from "@/lib/ai/graph/memory/checkpointer";
 
 export const maxDuration = 30;
 
@@ -31,12 +32,17 @@ export async function POST(req: Request) {
     // Convert Vercel UI messages → LangChain messages
     const langchainMessages = await toBaseMessages(body.messages);
 
+    await ensureCheckpointerReady();
+
     // Stream from LangGraph
     const stream = await graph.stream(
       { messages: langchainMessages },
       {
         streamMode: ["values", "messages"],
-        configurable: { userId },
+        configurable: {
+          thread_id: userId, // 👈 short-term memory key
+          userId, // 👈 for tools / auth / DB queries
+        },
       },
     );
 

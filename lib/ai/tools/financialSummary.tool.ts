@@ -1,7 +1,6 @@
 import { tool } from "@langchain/core/tools";
 import { Command } from "@langchain/langgraph";
 import { z } from "zod";
-import { Prisma } from "@prisma/client";
 import {
   startOfMonth,
   endOfMonth,
@@ -12,34 +11,12 @@ import {
 
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/data/users/auth";
+import { decimalToNumber, normalizeCustomDates } from "./helper";
 
 /* ----------------------------------------
    Helpers
 ----------------------------------------- */
-function decimalToNumber(value: Prisma.Decimal | number | null | undefined) {
-  if (value instanceof Prisma.Decimal) {
-    return Number(value.toString());
-  }
-  return value ?? 0;
-}
 
-/**
- * Normalize CUSTOM date ranges inferred by the LLM
- * - Fix wrong year inference
- * - Ensure start <= end
- */
-function normalizeCustomDates(start: Date, end: Date) {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-
-  // If model inferred a year too far in the past, fix it
-  if (start.getFullYear() < currentYear - 1) {
-    start.setFullYear(currentYear);
-    end.setFullYear(currentYear);
-  }
-
-  return { start, end };
-}
 
 /* ----------------------------------------
    Zod Schema for Tool Input Validation
@@ -178,8 +155,3 @@ export const financialSummaryTool = tool(
     schema: FinancialSummarySchema,
   },
 );
-
-/* ----------------------------------------
-   Export Spendix tools
------------------------------------------ */
-export const spendixTools = [financialSummaryTool];
