@@ -1,10 +1,22 @@
-import { SystemMessage } from "@langchain/core/messages";
+import { AIMessage, SystemMessage } from "@langchain/core/messages";
 import { GraphNode, MessagesAnnotation } from "@langchain/langgraph";
-import { model } from "../../model/gemini";
+import { chatModel } from "../../model/gemini-chatmodel";
 import { SYSTEM_PROMPT } from "../../prompt";
+import {
+  fetchStoredMemories,
+  formatMemoryForPrompt,
+  type MemoryStoreLike,
+} from "../memory/memory.utils";
+
+const ALLOWED_TOOL_NAMES = new Set(["financial_summary"]);
+
+type StoreContext = {
+  store?: MemoryStoreLike;
+};
 
 export const agentNode: GraphNode<typeof MessagesAnnotation.State> = async (
   state,
+  config,
 ) => {
   console.log("🟢 [AgentNode] Invoked");
 
@@ -18,9 +30,50 @@ export const agentNode: GraphNode<typeof MessagesAnnotation.State> = async (
       (message) => message.type !== "system",
     );
 
-    const messages = [new SystemMessage(SYSTEM_PROMPT), ...nonSystemMessages];
+    const store = (config as StoreContext).store;
+    const userId = config?.configurable?.userId as string | undefined;
 
-    const response = await model.invoke(messages);
+    let memoryContext = "(empty)";
+
+    if (store && userId) {
+      try {
+        const stored = await fetchStoredMemories(store, userId);
+        if (stored.length > 0) {
+          memoryContext = formatMemoryForPrompt(stored);
+        }
+      } catch (memoryError) {
+        console.warn("⚠️ Failed to load user memory", memoryError);
+      }
+    }
+
+    const systemMessage = new SystemMessage(
+      `${SYSTEM_PROMPT}\n\nUSER MEMORY:\n${memoryContext}`,
+    );
+
+    const messages = [systemMessage, ...nonSystemMessages];
+
+    const response = await chatModel.invoke(messages);
+
+    const invalidToolCalls = Array.isArray(response.tool_calls)
+      ? response.tool_calls.filter(
+          (call) => !ALLOWED_TOOL_NAMES.has(call.name ?? ""),
+        )
+      : [];
+
+    if (invalidToolCalls.length > 0) {
+      console.warn(
+        "⚠️ [AgentNode] Blocking unsupported tool calls",
+        invalidToolCalls.map((call) => call.name),
+      );
+
+      return {
+        messages: [
+          new AIMessage(
+            "I can only use the financial summary tool. Tell me what timeframe or totals you need, and I'll fetch them.",
+          ),
+        ],
+      };
+    }
 
     console.log("✅ Gemini raw response:", response);
     console.log("🧾 Gemini content:", response.content);

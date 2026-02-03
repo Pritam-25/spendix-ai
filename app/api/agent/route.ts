@@ -5,8 +5,9 @@ import { createUIMessageStreamResponse, type UIMessage } from "ai";
 
 import { toBaseMessages, toUIMessageStream } from "@ai-sdk/langchain";
 
-import { graph } from "@/lib/ai/graph/index";
+import { chatGraph, memoryGraph } from "@/lib/ai/graph";
 import { ensureCheckpointerReady } from "@/lib/ai/graph/memory/checkpointer";
+import { ensureMemoryStoreReady } from "@/lib/ai/graph/memory/store";
 
 export const maxDuration = 30;
 
@@ -31,11 +32,22 @@ export async function POST(req: Request) {
 
     // Convert Vercel UI messages → LangChain messages
     const langchainMessages = await toBaseMessages(body.messages);
+    const humanMessages = langchainMessages.filter(
+      (message) => message.type === "human",
+    );
 
-    await ensureCheckpointerReady();
+    try {
+      await Promise.all([ensureCheckpointerReady(), ensureMemoryStoreReady()]);
+    } catch (initError) {
+      console.error("[Spendix AI] Storage initialization failed", initError);
+      return NextResponse.json(
+        { error: "AI storage is unavailable. Please try again shortly." },
+        { status: 503 },
+      );
+    }
 
     // Stream from LangGraph
-    const stream = await graph.stream(
+    const stream = await chatGraph.stream(
       { messages: langchainMessages },
       {
         streamMode: ["values", "messages"],
@@ -45,6 +57,22 @@ export async function POST(req: Request) {
         },
       },
     );
+
+    if (humanMessages.length > 0) {
+      void memoryGraph
+        .invoke(
+          { messages: humanMessages },
+          {
+            configurable: {
+              thread_id: userId,
+              userId,
+            },
+          },
+        )
+        .catch((memoryError) =>
+          console.error("[Spendix AI] Memory graph failed", memoryError),
+        );
+    }
 
     return createUIMessageStreamResponse({
       stream: toUIMessageStream(stream),

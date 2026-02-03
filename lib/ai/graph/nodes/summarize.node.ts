@@ -1,6 +1,6 @@
 import { RemoveMessage, SystemMessage } from "@langchain/core/messages";
 import { GraphNode, MessagesAnnotation } from "@langchain/langgraph";
-import { model } from "../../model/gemini";
+import { summaryModel } from "../../model/gemini-summrymodel";
 import { MEMORY_CONFIG } from "../memory/memory.config";
 
 export const summarizeNode: GraphNode<typeof MessagesAnnotation.State> = async (
@@ -26,7 +26,7 @@ export const summarizeNode: GraphNode<typeof MessagesAnnotation.State> = async (
     ...toSummarize,
   ];
 
-  const summaryResponse = await model.invoke(summaryPrompt);
+  const summaryResponse = await summaryModel.invoke(summaryPrompt);
 
   const summaryMessage = new SystemMessage(
     `Conversation summary:\n${summaryResponse.content}`,
