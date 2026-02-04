@@ -24,7 +24,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useSubscriptionTier } from "@/lib/hooks/use-subscription-tier";
+import { useUserPlan } from "@/lib/hooks/useUserPlan";
+import { PlanType } from "@prisma/client";
 
 type UserDropdownVariant = "navbar" | "sidebar";
 
@@ -38,7 +39,7 @@ export default function UserDropdown({
   const [open, setOpen] = React.useState(false);
   const { user } = useUser();
   const { signOut, openUserProfile } = useClerk();
-  const tier = useSubscriptionTier();
+  const tier = useUserPlan();
 
   if (!user) return null;
 
@@ -159,13 +160,13 @@ export default function UserDropdown({
             <Settings className="h-4 w-4" />
             <span>Account settings</span>
           </DropdownMenuItem>
-          {tier !== "premium" && tier && (
+          {tier !== PlanType.PREMIUM && tier && (
             <DropdownMenuItem asChild>
               <Link href="/pricing" className="flex items-center gap-2 ">
                 <Star className="h-4 w-4 " />
 
-                {tier === "free" && <span>Upgrade to Pro</span>}
-                {tier === "pro" && <span>Upgrade to Premium</span>}
+                {tier === PlanType.FREE && <span>Upgrade to Pro</span>}
+                {tier === PlanType.PRO && <span>Upgrade to Premium</span>}
               </Link>
             </DropdownMenuItem>
           )}

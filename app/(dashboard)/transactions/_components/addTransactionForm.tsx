@@ -50,7 +50,9 @@ import { CategoryCombobox } from "@/components/web/category-combobox";
 import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { useSubscriptionTier } from "@/lib/hooks/use-subscription-tier";
+import { useUserPlan } from "@/lib/hooks/useUserPlan";
+import { useFeature } from "@/lib/hooks/useFeature";
+import { FEATURES } from "@/lib/config/features";
 
 type AddTransactionFormProps = {
   accounts: Account[];
@@ -76,9 +78,9 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl");
-  const tier = useSubscriptionTier();
+  const tier = useUserPlan();
 
-  const canUseRecurring = tier != "free";
+  const canUseRecurring = useFeature(FEATURES.RECURRING_TRANSACTIONS);
 
   const [isPending, startTransition] = useTransition();
   const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false);

@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { DefaultChatTransport } from "ai";
 import { useChat } from "@ai-sdk/react";
+import { useRouter } from "next/navigation";
 import {
   Loader2,
   BotMessageSquareIcon,
@@ -12,8 +13,11 @@ import {
   PieChartIcon,
   BrainIcon,
 } from "lucide-react";
+import { FaCrown } from "react-icons/fa6";
 
 import { cn } from "@/lib/cn";
+import { FEATURES } from "@/lib/config/features";
+import { useFeature } from "@/lib/hooks/useFeature";
 
 import { Suggestion } from "@/components/ai-elements/suggestion";
 
@@ -54,10 +58,14 @@ export function SpendixChatSheet() {
     () => new DefaultChatTransport({ api: "/api/agent" }),
     [],
   );
+  const router = useRouter();
+  const hasPremiumCopilot = useFeature(FEATURES.AI_FINANCE_CHATBOT);
 
   const { messages, sendMessage, status, error } = useChat({ transport });
 
   const isStreaming = status === "streaming" || status === "submitted";
+  const upgradeHref =
+    "/pricing?plan=premium&feature=ai-copilot&source=sidebar-chat";
 
   const handleSubmit = (message: PromptInputMessage) => {
     if (!message.text?.trim()) return;
@@ -80,6 +88,45 @@ export function SpendixChatSheet() {
   const visibleMessages = messages.filter((m) => m.role !== "system");
   const hasMessages = visibleMessages.length > 0;
 
+  const renderPremiumUpsell = () => (
+    <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
+      <div className="space-y-2">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-500/10">
+          <FaCrown className="h-6 w-6" />
+        </div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Premium Feature
+        </p>
+        <p className="text-2xl font-semibold">Unlock Spendix Copilot</p>
+        <p className="text-sm text-muted-foreground">
+          Get AI-powered insights, instant anomaly detection, and proactive cash
+          flow advice.
+        </p>
+      </div>
+
+      <ul className="w-full max-w-sm space-y-2 text-left text-sm text-muted-foreground">
+        {[
+          "Real-time answers about spend, budgets, and runway",
+          "Automated pattern spotting and anomaly alerts",
+          "Context-aware suggestions based on your data",
+        ].map((benefit) => (
+          <li key={benefit} className="flex items-start gap-2">
+            <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />
+            <span>{benefit}</span>
+          </li>
+        ))}
+      </ul>
+
+      <Button
+        className="w-full max-w-sm"
+        size="lg"
+        onClick={() => router.push(upgradeHref)}
+      >
+        Upgrade to Premium
+      </Button>
+    </div>
+  );
+
   return (
     <Sheet>
       {/* Floating Trigger */}
@@ -96,115 +143,123 @@ export function SpendixChatSheet() {
         <SheetHeader className="border-b px-4 py-3">
           <SheetTitle>Spendix Copilot</SheetTitle>
           <SheetDescription>
-            Your personalised AI finance assistant.
+            {hasPremiumCopilot
+              ? "Your personalised AI finance assistant."
+              : "Upgrade to Premium to enable AI finance copilots."}
           </SheetDescription>
         </SheetHeader>
 
-        {/* Conversation */}
-        <Conversation className="flex-1">
-          <ConversationContent
-            className={cn(
-              !hasMessages && "flex h-full items-center justify-center",
-            )}
-          >
-            {hasMessages ? (
-              <>
-                {visibleMessages.map((message) => (
-                  <Message key={message.id} from={message.role}>
-                    <MessageContent>
-                      {message.role === "assistant" ? (
-                        <MessageResponse>
-                          {message.parts
-                            ?.filter((part) => part.type === "text")
-                            .map((part) => part.text)
-                            .join("")}
-                        </MessageResponse> //  Wrap AI messages in MessageResponse
-                      ) : (
-                        message.parts?.map(
-                          (part) => part.type === "text" && part.text,
-                        )
-                      )}
-                    </MessageContent>
-                  </Message>
-                ))}
-
-                {isStreaming && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <BrainIcon className="h-3.5 w-3.5 animate-pulse" />
-                    Thinking…
-                  </div>
+        {hasPremiumCopilot ? (
+          <>
+            {/* Conversation */}
+            <Conversation className="flex-1">
+              <ConversationContent
+                className={cn(
+                  !hasMessages && "flex h-full items-center justify-center",
                 )}
-
-                {error && (
-                  <p className="text-xs text-destructive">
-                    {error.message || "Something went wrong"}
-                  </p>
-                )}
-              </>
-            ) : (
-              <ConversationEmptyState className="mx-auto w-full max-w-sm space-y-5 px-4 text-center">
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Spendix Copilot
-                  </p>
-                  <p className="text-2xl font-semibold">
-                    Your AI finance copilot
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Get instant answers about spend, budgets, and runway.
-                  </p>
-                </div>
-
-                <p className="text-xs text-muted-foreground/80">
-                  Ask a question or choose a suggestion below.
-                </p>
-
-                <div className="space-y-2 text-left">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                    Suggested prompts
-                  </p>
-                  <div className="flex flex-col gap-1.5">
-                    {suggestions.map((suggestion) => (
-                      <Suggestion
-                        key={suggestion.prompt}
-                        suggestion={suggestion.prompt}
-                        onClick={handleSuggestionClick}
-                        disabled={isStreaming}
-                        className="w-full justify-start text-left text-xs"
-                      >
-                        {suggestion.label}
-                      </Suggestion>
+              >
+                {hasMessages ? (
+                  <>
+                    {visibleMessages.map((message) => (
+                      <Message key={message.id} from={message.role}>
+                        <MessageContent>
+                          {message.role === "assistant" ? (
+                            <MessageResponse>
+                              {message.parts
+                                ?.filter((part) => part.type === "text")
+                                .map((part) => part.text)
+                                .join("")}
+                            </MessageResponse> //  Wrap AI messages in MessageResponse
+                          ) : (
+                            message.parts?.map(
+                              (part) => part.type === "text" && part.text,
+                            )
+                          )}
+                        </MessageContent>
+                      </Message>
                     ))}
-                  </div>
-                </div>
 
-                <p className="text-[11px] text-muted-foreground/70">
-                  Spendix only uses your data. Nothing is shared or trained
-                  externally.
-                </p>
-              </ConversationEmptyState>
-            )}
-          </ConversationContent>
+                    {isStreaming && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <BrainIcon className="h-3.5 w-3.5 animate-pulse" />
+                        Thinking…
+                      </div>
+                    )}
 
-          <ConversationScrollButton />
-        </Conversation>
+                    {error && (
+                      <p className="text-xs text-destructive">
+                        {error.message || "Something went wrong"}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <ConversationEmptyState className="mx-auto w-full max-w-sm space-y-5 px-4 text-center">
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Spendix Copilot
+                      </p>
+                      <p className="text-2xl font-semibold">
+                        Your AI finance copilot
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Get instant answers about spend, budgets, and runway.
+                      </p>
+                    </div>
 
-        {/* Prompt Input */}
-        <PromptInput onSubmit={handleSubmit} className="border-t px-4 py-4">
-          <PromptInputBody>
-            <PromptInputTextarea
-              placeholder="Ask about spend, budgets..."
-              disabled={isStreaming}
-            />
-          </PromptInputBody>
+                    <p className="text-xs text-muted-foreground/80">
+                      Ask a question or choose a suggestion below.
+                    </p>
 
-          <PromptInputFooter className="flex justify-end">
-            <PromptInputSubmit
-              status={isStreaming ? "streaming" : "ready"}
-              disabled={isStreaming}
-            />
-          </PromptInputFooter>
-        </PromptInput>
+                    <div className="space-y-2 text-left">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        Suggested prompts
+                      </p>
+                      <div className="flex flex-col gap-1.5">
+                        {suggestions.map((suggestion) => (
+                          <Suggestion
+                            key={suggestion.prompt}
+                            suggestion={suggestion.prompt}
+                            onClick={handleSuggestionClick}
+                            disabled={isStreaming}
+                            className="w-full justify-start text-left text-xs"
+                          >
+                            {suggestion.label}
+                          </Suggestion>
+                        ))}
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-muted-foreground/70">
+                      Spendix only uses your data. Nothing is shared or trained
+                      externally.
+                    </p>
+                  </ConversationEmptyState>
+                )}
+              </ConversationContent>
+
+              <ConversationScrollButton />
+            </Conversation>
+
+            {/* Prompt Input */}
+            <PromptInput onSubmit={handleSubmit} className="border-t px-4 py-4">
+              <PromptInputBody>
+                <PromptInputTextarea
+                  placeholder="Ask about spend, budgets..."
+                  disabled={isStreaming}
+                />
+              </PromptInputBody>
+
+              <PromptInputFooter className="flex justify-end">
+                <PromptInputSubmit
+                  status={isStreaming ? "streaming" : "ready"}
+                  disabled={isStreaming}
+                />
+              </PromptInputFooter>
+            </PromptInput>
+          </>
+        ) : (
+          renderPremiumUpsell()
+        )}
       </SheetContent>
     </Sheet>
   );

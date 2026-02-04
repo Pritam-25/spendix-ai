@@ -1,26 +1,28 @@
 "use client";
 
 import { buttonVariants } from "@/components/ui/button";
-import { Crown } from "lucide-react"; // optional small crown icon
-import { useSubscriptionTier } from "@/lib/hooks/use-subscription-tier";
-// Render a non-anchor so parent Link can wrap this component without nesting <a>
+import { useUserPlan } from "@/lib/hooks/useUserPlan";
 import { cn } from "@/lib/cn";
+import { PlanType } from "@prisma/client";
+import { FaCrown } from "react-icons/fa6";
 
 export default function UpgradeButton() {
-  const tier = useSubscriptionTier();
+  const tier = useUserPlan();
 
-  if (!tier || tier === "premium") return null;
+  if (!tier || tier === PlanType.PREMIUM) return null;
 
-  const targetLabel = tier === "free" ? "Get Pro" : "Get Premium";
+  const targetLabel = tier === PlanType.FREE ? "Get Pro" : "Get Premium";
 
   return (
     <span
       className={cn(
         buttonVariants({ variant: "default", size: "sm" }),
-        "inline-flex items-center gap-2 rounded-full dark:bg-yellow-800 dark:text-yellow-50 dark:border-yellow-600 dark:border-2 hover:dark:bg-yellow-700",
+        "inline-flex items-center gap-2 rounded-full border-2",
+        "bg-yellow-100 text-yellow-900 border-yellow-300 hover:bg-yellow-200 font-semibold",
+        "dark:bg-yellow-800 dark:text-yellow-50 dark:border-yellow-600 hover:dark:bg-yellow-700",
       )}
     >
-      <Crown className="w-4 h-4" />
+      <FaCrown className="w-4 h-4" />
       {targetLabel}
     </span>
   );
