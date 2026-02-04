@@ -88,15 +88,15 @@ model User {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  budgets                Budget[]
-  accounts               Account[]
-  transactions           Transaction[]
-  usage                  Usage?
-  subscription           Subscription?
-  payments               Payment[]
-  subscriptionItems      SubscriptionItem[]
-  transactionRags        TransactionRag[]
-  accountTransactionRags AccountTransactionRag[]
+  budgets                       Budget[]
+  accounts                      Account[]
+  transactions                  Transaction[]
+  usage                         Usage?
+  subscription                  Subscription?
+  payments                      Payment[]
+  subscriptionItems             SubscriptionItem[]
+  accountTransactionRags        AccountTransactionRag[]
+  accountMonthlyTransactionRags AccountMonthlyTransactionRag[]
 
   @@map("users")
 }
@@ -210,8 +210,9 @@ model Account {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Relations
-  transactions           Transaction[]
-  accountTransactionRags AccountTransactionRag[]
+  transactions                  Transaction[]
+  accountTransactionRags        AccountTransactionRag[]
+  accountMonthlyTransactionRags AccountMonthlyTransactionRag[]
 
   @@index([userId])
   @@map("accounts")
@@ -234,33 +235,14 @@ model Transaction {
   updatedAt         DateTime           @updatedAt
 
   // Foreign Keys
-  userId          String
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accountId       String
-  account         Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  transactionRags TransactionRag[]
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   // ✅ Prevent duplicate transactions
   @@unique([userId, accountId, date, amount, description])
   @@map("transactions")
-}
-
-model TransactionRag {
-  id            String @id @default(uuid())
-  userId        String
-  transactionId String
-
-  content   String
-  embedding Unsupported("vector(768)") // for gemini text-embedding-004
-
-  createdAt DateTime @default(now())
-
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@unique([transactionId])
-  @@map("transaction_rag")
 }
 
 model AccountTransactionRag {
@@ -276,6 +258,26 @@ model AccountTransactionRag {
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, accountId])
   @@index([userId, accountId])
   @@map("account_transaction_rag")
+}
+
+model AccountMonthlyTransactionRag {
+  id           String   @id @default(uuid())
+  userId       String
+  accountId    String
+  summaryMonth DateTime
+
+  content   String
+  embedding Unsupported("vector(768)") // for gemini text-embedding-004
+
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, accountId, summaryMonth])
+  @@index([userId, accountId, summaryMonth])
+  @@map("account_monthly_transaction_rag")
 }

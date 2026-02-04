@@ -3,9 +3,10 @@ import { inngest } from "@/inngest/client";
 import {
   processRecurringTransaction,
   triggerRecurringTransactions,
-} from "@/inngest/transaction";
-import { storeUserMemory } from "@/inngest/memory";
-import { createTransactionRag } from "@/inngest/functions/createTransactionRag";
+} from "@/inngest/functions/transaction";
+import { storeUserMemory } from "@/inngest/functions/memory";
+import { refreshAccountTransactionRag } from "@/inngest/functions/refreshAccountTransactionRag";
+import { refreshAccountMonthlySummaryFromEvent } from "@/inngest/functions/transactionMonthlySummary";
 
 // Create an API that serves zero functions
 export const { GET, POST, PUT } = serve({
@@ -14,6 +15,7 @@ export const { GET, POST, PUT } = serve({
     triggerRecurringTransactions,
     processRecurringTransaction,
     storeUserMemory,
-    createTransactionRag,
+    refreshAccountTransactionRag,
+    refreshAccountMonthlySummaryFromEvent,
   ],
 });

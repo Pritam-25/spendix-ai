@@ -17,6 +17,7 @@ import {
   updateTransaction,
 } from "@/lib/data/transactions/mutations";
 import { bulkDeleteTransactions } from "@/lib/data/transactions/mutations";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { requireFeature } from "@/lib/data/users/subscription";
@@ -83,29 +84,20 @@ export async function createTransactionAction(
       importId,
     });
 
-    await inngest
-      .send({
-        name: "transaction.created",
-        data: {
-          transaction: {
-            id: transaction.id,
-            userId: transaction.userId,
-            accountId: transaction.accountId,
-            accountName: account.name ?? "Account",
-            amount: transaction.amount.toNumber(),
-            category: transaction.category,
-            description: transaction.description,
-            date: transaction.date.toISOString(),
-            type: transaction.type,
-          },
+    await inngest.send({
+      name: "transaction.changed",
+      data: {
+        transaction: {
+          id: transaction.id,
+          userId: transaction.userId,
+          accountId: transaction.accountId,
+          date: transaction.date,
+          accountName: account?.name,
+          accountType: account?.type,
+          accountBalance: account ? Number(account.balance) : undefined,
         },
-      })
-      .catch((error: Error) => {
-        console.error("Failed to enqueue transaction.created event", {
-          transactionId: transaction.id,
-          error,
-        });
-      });
+      },
+    });
 
     revalidatePath("/transactions");
     revalidatePath("/dashboard");
@@ -138,7 +130,29 @@ export async function bulkDeleteTransactionAction(
   try {
     const user = await requireUser();
 
-    await bulkDeleteTransactions({ userId: user.id, transactionIds });
+    const { deletedTransactions, accountSnapshots } =
+      await bulkDeleteTransactions({ userId: user.id, transactionIds });
+
+    const snapshotMap = new Map(accountSnapshots);
+
+    await inngest.send(
+      deletedTransactions.map((tx) => {
+        const acc = snapshotMap.get(tx.accountId);
+        return {
+          name: "transaction.changed",
+          data: {
+            deleted: {
+              userId: tx.userId,
+              accountId: tx.accountId,
+              date: tx.date,
+              accountName: acc.name,
+              accountType: acc.type,
+              accountBalance: Number(acc.balance),
+            },
+          },
+        };
+      }),
+    );
 
     revalidatePath("/transactions");
     revalidatePath("/dashboard");
@@ -172,10 +186,28 @@ export async function updateTransactionAction(
       await requireFeature(FEATURES.RECURRING_TRANSACTIONS);
     }
 
-    await updateTransaction({
+    const { updatedTransaction, accountSnapshot } = await updateTransaction({
       id: transactionId,
       userId: user.id,
       data: parsed.data,
+    });
+
+    await inngest.send({
+      name: "transaction.changed",
+      data: {
+        transaction: {
+          id: transactionId,
+          userId: user.id,
+          accountId: parsed.data.accountId,
+          date: updatedTransaction.date,
+          previousDate: updatedTransaction.date,
+          accountName: accountSnapshot?.name,
+          accountType: accountSnapshot?.type,
+          accountBalance: accountSnapshot
+            ? Number(accountSnapshot.balance)
+            : undefined,
+        },
+      },
     });
 
     revalidatePath("/dashboard");

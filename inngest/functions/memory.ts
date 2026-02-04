@@ -1,4 +1,4 @@
-import { inngest } from "./client";
+import { inngest } from "../client";
 import { memoryGraph } from "@/lib/ai/graph";
 import { ensureMemoryStoreReady } from "@/lib/ai/graph/memory/store";
 import { HumanMessage } from "@langchain/core/messages";

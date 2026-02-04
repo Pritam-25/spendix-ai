@@ -155,11 +155,19 @@ export async function updateTransaction({
     await tx.account.update({
       where: { id: existingTransaction.accountId },
       data: {
-        balance: newBalance,
+        balance: { increment: balanceDifference },
       },
     });
 
-    return updatedTransaction;
+    return {
+      updatedTransaction,
+      accountSnapshot: {
+        userId,
+        name: existingTransaction.account.name,
+        type: existingTransaction.account.type,
+        balance: existingTransaction.account.balance.add(balanceDifference),
+      },
+    };
   });
 }
 
@@ -174,6 +182,7 @@ export async function bulkDeleteTransactions({
       id: { in: transactionIds },
       userId,
     },
+    include: { account: true },
   });
 
   if (transactions.length === 0) {
@@ -191,13 +200,22 @@ export async function bulkDeleteTransactions({
     */
 
   const accountBalanceChanges: Record<string, Prisma.Decimal> = {};
+  const accountSnapshots = new Map<string, any>();
 
   for (const tx of transactions) {
-    const amount = tx.type === TransactionType.EXPENSE ? tx.amount : -tx.amount;
+    const diff =
+      tx.type === TransactionType.EXPENSE ? tx.amount : tx.amount.neg();
 
     accountBalanceChanges[tx.accountId] = (
       accountBalanceChanges[tx.accountId] || new Prisma.Decimal(0)
-    ).plus(amount);
+    ).plus(diff);
+
+    accountSnapshots.set(tx.accountId, {
+      userId,
+      name: tx.account.name,
+      type: tx.account.type,
+      balance: tx.account.balance, // initial
+    });
   }
 
   // Run delete + balance update inside a DB transaction
@@ -212,20 +230,22 @@ export async function bulkDeleteTransactions({
       },
     });
 
-    // Update account balances in parallel
-    await Promise.all(
-      Object.entries(accountBalanceChanges).map(([accountId, balanceChange]) =>
-        tx.account.update({
-          where: { id: accountId, userId },
-          data: {
-            balance: {
-              increment: balanceChange,
-            },
-          },
-        }),
-      ),
-    );
+    for (const [accountId, diff] of Object.entries(accountBalanceChanges)) {
+      await tx.account.update({
+        where: { id: accountId, userId },
+        data: { balance: { increment: diff } },
+      });
+
+      accountSnapshots.get(accountId).balance = accountSnapshots
+        .get(accountId)
+        .balance.add(diff);
+    }
   });
+
+  return {
+    deletedTransactions: transactions,
+    accountSnapshots: Array.from(accountSnapshots.entries()),
+  };
 }
 
 // ------------------------------------------------//
