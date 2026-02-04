@@ -1,7 +1,6 @@
 "use client";
 
 import type { MouseEvent } from "react";
-
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
@@ -89,6 +88,11 @@ const items: NavItem[] = [
   },
 ];
 
+const featurePlanMap: Partial<Record<FeatureKey, "pro" | "premium">> = {
+  [FEATURES.RECURRING_TRANSACTIONS]: "pro",
+  [FEATURES.AI_BULK_INSERT]: "premium",
+};
+
 const premiumSpotlights: Partial<
   Record<
     FeatureKey,
@@ -135,7 +139,8 @@ export function AppSidebar() {
   const buildUpgradeHref = (item: NavItem) => {
     const slug =
       item.upgradeSlug ?? item.title.toLowerCase().replace(/\s+/g, "-");
-    return `/pricing?plan=premium&feature=${slug}&source=sidebar`;
+    const plan = item.feature ? featurePlanMap[item.feature] : undefined;
+    return `/pricing?plan=${plan ?? "premium"}&feature=${slug}&source=sidebar`;
   };
 
   const handleLockedNavigation = (

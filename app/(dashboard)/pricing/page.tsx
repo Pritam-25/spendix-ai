@@ -1,4 +1,15 @@
+import type { ComponentProps, ComponentType } from "react";
+
 import { PricingTable } from "@clerk/nextjs";
+
+type NativePricingTableProps = ComponentProps<typeof PricingTable>;
+
+const PricingTableWithRedirect = PricingTable as ComponentType<
+  NativePricingTableProps & {
+    path?: string;
+    redirectUrl?: string;
+  }
+>;
 
 export default function PricingPage() {
   return (
@@ -24,7 +35,7 @@ export default function PricingPage() {
         </header>
 
         <div className="rounded-3xl border bg-card/70 shadow-lg shadow-black/5 p-3 sm:p-6 md:p-8 backdrop-blur">
-          <PricingTable />
+          <PricingTableWithRedirect path="/pricing" redirectUrl="/dashboard" />
         </div>
 
         <div className="grid gap-4 text-xs sm:text-sm text-muted-foreground md:grid-cols-3">
