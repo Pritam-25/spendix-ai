@@ -69,7 +69,7 @@ export default function TopIncomeBarChart({
           config={chartConfig}
           className="mx-auto w-full max-h-[200px]"
         >
-          <BarChart data={chartData} layout="vertical" margin={{ right: 24 }}>
+          <BarChart data={chartData} layout="vertical" margin={{ right: 40 }}>
             <CartesianGrid horizontal={false} />
 
             <YAxis
@@ -78,7 +78,7 @@ export default function TopIncomeBarChart({
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              width={100}
+              width={70}
             />
 
             <XAxis type="number" hide />

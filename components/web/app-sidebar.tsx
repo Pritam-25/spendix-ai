@@ -105,23 +105,25 @@ const premiumSpotlights: Partial<
   >
 > = {
   [FEATURES.RECURRING_TRANSACTIONS]: {
-    eyebrow: "Smart Automations",
-    description: "Let Spendix watch your bills and recurring spend for you.",
-    benefits: [
-      "Smart detection for subscriptions & utilities",
-      "Forecast balances before charges land",
-    ],
-    cta: "Upgrade to Pro",
-  },
-  [FEATURES.AI_BULK_INSERT]: {
-    eyebrow: "AI Imports",
-    description: "Upload statements and let AI auto-import & categorize.",
-    benefits: [
-      "Bulk ingest CSV, PDF, or bank exports",
-      "AI cleans data + tags expenses instantly",
-    ],
-    cta: "Upgrade to Premium",
-  },
+  eyebrow: "Smart Automations",
+  description: "Automatically track your recurring bills and subscriptions.",
+  benefits: [
+    "Detect monthly bills and subscriptions automatically",
+    "Know upcoming payments before they happen",
+  ],
+  cta: "Upgrade to Pro",
+},
+
+[FEATURES.AI_BULK_INSERT]: {
+  eyebrow: "AI Imports",
+  description: "Scan transaction screenshots and let AI add them for you.",
+  benefits: [
+    "Upload Payment app screenshots",
+    "AI reads and saves expenses instantly",
+  ],
+  cta: "Upgrade to Premium",
+},
+
 };
 
 export function AppSidebar() {

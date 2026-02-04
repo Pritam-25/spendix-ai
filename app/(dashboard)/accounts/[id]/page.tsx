@@ -129,7 +129,7 @@ const AccountTransactionPage = async ({
                   </CardDescription>
                 </div>
 
-                <ExportButton action={handleExportAction} />
+                <ExportButton action={handleExportAction} accountId={id} />
               </div>
             </CardHeader>
 

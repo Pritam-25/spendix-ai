@@ -88,13 +88,16 @@ model User {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  budgets           Budget[]
-  accounts          Account[]
-  transactions      Transaction[]
-  usage             Usage?
-  subscription      Subscription?
-  payments          Payment[]
-  subscriptionItems SubscriptionItem[]
+  budgets                Budget[]
+  accounts               Account[]
+  transactions           Transaction[]
+  usage                  Usage?
+  subscription           Subscription?
+  payments               Payment[]
+  subscriptionItems      SubscriptionItem[]
+  transactionRags        TransactionRag[]
+  accountTransactionRags AccountTransactionRag[]
+  budgetRags             BudgetRag[]
 
   @@map("users")
 }
@@ -120,11 +123,11 @@ model Usage {
 }
 
 model ImportJob {
-  id        String   
+  id        String
   userId    String
   accountId String?
-  status    ImportJobStatus   @default(SCANNED)
-  createdAt DateTime @default(now())
+  status    ImportJobStatus @default(SCANNED)
+  createdAt DateTime        @default(now())
   errorMsg  String?
 
   usageId String?
@@ -187,8 +190,9 @@ model Budget {
   updatedAt     DateTime  @updatedAt
 
   // Foreign Key
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String      @unique
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgetRags BudgetRag[]
 
   @@index([userId])
   @@map("budgets")
@@ -208,7 +212,8 @@ model Account {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Relations
-  transactions Transaction[]
+  transactions           Transaction[]
+  accountTransactionRags AccountTransactionRag[]
 
   @@index([userId])
   @@map("accounts")
@@ -231,12 +236,66 @@ model Transaction {
   updatedAt         DateTime           @updatedAt
 
   // Foreign Keys
-  userId    String
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accountId String
-  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId       String
+  account         Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  transactionRags TransactionRag[]
 
   // ✅ Prevent duplicate transactions
   @@unique([userId, accountId, date, amount, description])
   @@map("transactions")
+}
+
+model TransactionRag {
+  id            String @id @default(uuid())
+  userId        String
+  transactionId String
+
+  content   String
+  embedding Unsupported("vector(768)") // for gemini text-embedding-004
+
+  createdAt DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([transactionId])
+  @@map("transaction_rag")
+}
+
+model AccountTransactionRag {
+  id        String @id @default(uuid())
+  userId    String
+  accountId String
+
+  content   String
+  embedding Unsupported("vector(768)") // for gemini text-embedding-004
+
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([userId, accountId])
+  @@map("account_transaction_rag")
+}
+
+model BudgetRag {
+  id       String @id @default(uuid())
+  userId   String
+  budgetId String
+
+  content   String
+  embedding Unsupported("vector(768)") // for gemini text-embedding-004
+
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budget Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([budgetId])
+  @@map("budget_rag")
 }
