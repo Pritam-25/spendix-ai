@@ -4,18 +4,10 @@ import {
   EXPENSE_CATEGORIES,
   INCOME_CATEGORIES,
 } from "@/lib/constants/categories";
-
-type ExportTransaction = {
-  date: Date | string;
-  description?: string;
-  amount: number;
-  category?: string;
-  type: TransactionType;
-  recurring?: RecurringInterval | null;
-};
+import { Transactions } from "./export.data";
 
 export async function exportToExcel(
-  transactions: ExportTransaction[],
+  transactions: Transactions,
   accountId?: string,
 ) {
   const workbook = new ExcelJS.Workbook();
@@ -76,7 +68,7 @@ export async function exportToExcel(
       amount: tx.amount,
       category: tx.category ?? "",
       type: tx.type,
-      recurring: tx.recurring ?? "",
+      recurring: tx.recurringInterval ?? "",
     });
 
     // ---- Formats ----

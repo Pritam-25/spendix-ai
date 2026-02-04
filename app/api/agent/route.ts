@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-
 import { createUIMessageStreamResponse, type UIMessage } from "ai";
-
 import { toBaseMessages, toUIMessageStream } from "@ai-sdk/langchain";
-
-import { chatGraph, memoryGraph } from "@/lib/ai/graph";
+import { chatGraph } from "@/lib/ai/graph";
 import { ensureCheckpointerReady } from "@/lib/ai/graph/memory/checkpointer";
-import { ensureMemoryStoreReady } from "@/lib/ai/graph/memory/store";
+import { inngest } from "@/inngest/client";
+import { extractUserText } from "@/lib/ai/utils/extractText";
 
-export const maxDuration = 30;
+export const maxDuration = 15;
 
 export async function POST(req: Request) {
   try {
@@ -32,12 +30,16 @@ export async function POST(req: Request) {
 
     // Convert Vercel UI messages → LangChain messages
     const langchainMessages = await toBaseMessages(body.messages);
-    const humanMessages = langchainMessages.filter(
-      (message) => message.type === "human",
-    );
+    const recentUserMessages = body.messages
+      .filter((message) => message.role === "user")
+      .slice(-8)
+      .map((message) => ({
+        role: message.role,
+        content: extractUserText(message),
+      }));
 
     try {
-      await Promise.all([ensureCheckpointerReady(), ensureMemoryStoreReady()]);
+      await ensureCheckpointerReady();
     } catch (initError) {
       console.error("[Spendix AI] Storage initialization failed", initError);
       return NextResponse.json(
@@ -47,36 +49,32 @@ export async function POST(req: Request) {
     }
 
     // Stream from LangGraph
-    const stream = await chatGraph.stream(
+    const graphStream = await chatGraph.stream(
       { messages: langchainMessages },
       {
         streamMode: ["values", "messages"],
         configurable: {
           thread_id: userId, // 👈 short-term memory key
-          userId, // 👈 for tools / auth / DB queries
+          userId, // 👈 for tools / auth / DB queries and LTM
         },
       },
     );
 
-    if (humanMessages.length > 0) {
-      void memoryGraph
-        .invoke(
-          { messages: humanMessages },
-          {
-            configurable: {
-              thread_id: userId,
-              userId,
-            },
-          },
-        )
-        .catch((memoryError) =>
-          console.error("[Spendix AI] Memory graph failed", memoryError),
-        );
-    }
-
-    return createUIMessageStreamResponse({
-      stream: toUIMessageStream(stream),
+    const uiStream = toUIMessageStream(graphStream, {
+      onFinal: () => {
+        if (!recentUserMessages.length) return;
+        void inngest
+          .send({
+            name: "spendix/memory.store",
+            data: { userId, messages: recentUserMessages },
+          })
+          .catch((err) =>
+            console.error("[Spendix AI] Failed to enqueue memory event", err),
+          );
+      },
     });
+
+    return createUIMessageStreamResponse({ stream: uiStream });
   } catch (error) {
     console.error("[Spendix AI] Error:", error);
 

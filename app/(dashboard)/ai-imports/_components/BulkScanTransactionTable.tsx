@@ -32,9 +32,8 @@ import {
 } from "@/components/ui/select";
 
 import CreateAccountDrawer from "../../accounts/_components/CreateAccountDrawer";
-import { SimpleAccount } from "./TransactionsClient";
-import { saveBulkTransactionsAction } from "../action";
-
+import { SimpleAccount } from "./TransactionClient";
+import { saveBulkTransactionsAction } from "@/app/(dashboard)/transactions/action";
 type Props = {
   data: EditableTransaction[];
   onChangeAction: React.Dispatch<React.SetStateAction<EditableTransaction[]>>;

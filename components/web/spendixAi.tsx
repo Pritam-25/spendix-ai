@@ -219,7 +219,7 @@ const suggestions = [
       </>
     ),
     prompt:
-      "Give me a financial summary for this month including income, expenses, and net balance",
+      "Give me a financial summary for this month including income and expenses",
   },
   {
     label: (

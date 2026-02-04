@@ -53,12 +53,12 @@ const items = [
   },
   {
     title: "Recurring",
-    url: "/transactions/recurrings",
+    url: "/recurrings",
     icon: Repeat,
   },
   {
     title: "Ai Imports",
-    url: "/transactions/ai-imports",
+    url: "/ai-imports",
     icon: CircleFadingArrowUp,
   },
 ];
@@ -84,7 +84,7 @@ export function AppSidebar() {
         </div>
 
         {/* Primary action */}
-        <div className="px-3 py-3">
+        <div className="px-3 pt-4">
           <Button asChild className="w-full justify-start gap-2" size="sm">
             <Link href="/transactions/create">
               <Plus className="h-4 w-4" />

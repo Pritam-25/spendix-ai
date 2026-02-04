@@ -1,6 +1,10 @@
 import { TransactionType } from "@prisma/client";
+import { Transactions } from "./export.data";
 
-export async function exportToCSV(transactions: any[], accountId?: string) {
+export async function exportToCSV(
+  transactions: Transactions,
+  accountId?: string,
+) {
   // Build a simple CSV string so the result is serializable for server actions
   const headers = ["Date", "Description", "Amount", "Category", "Type"];
 

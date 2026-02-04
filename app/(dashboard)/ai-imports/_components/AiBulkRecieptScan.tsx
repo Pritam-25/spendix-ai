@@ -1,6 +1,6 @@
 "use client";
 
-import { aiBulkReceiptScan } from "../action";
+import { aiBulkReceiptScan } from "@/app/(dashboard)/transactions/action";
 import { Button } from "@/components/ui/button";
 import { CameraIcon, Loader2 } from "lucide-react";
 import { useRef, useTransition } from "react";

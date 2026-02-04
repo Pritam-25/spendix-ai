@@ -9,8 +9,8 @@ import CreateAccountDrawer from "../../accounts/_components/CreateAccountDrawer"
 
 export function EmptyDashboard() {
   return (
-    <Card className="mt-8">
-      <CardContent className="mt-8 flex flex-col items-center gap-4 py-20 text-center">
+    <Card>
+      <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
         <div className="text-5xl">👋</div>
         <h2 className="text-xl font-semibold">Welcome to Spendix</h2>
         <p className="max-w-md text-sm text-muted-foreground">

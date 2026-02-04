@@ -1,12 +1,25 @@
+import { Transaction, TransactionType } from "@prisma/client";
 import { exportToCSV } from "./export.csv";
 import { exportToExcel } from "./export.excel";
 import { exportToPDF } from "./export.pdf";
 
 export type ExportFormat = "csv" | "excel" | "pdf";
 
+export type Transactions = Pick<
+  Transaction,
+  | "date"
+  | "description"
+  | "amount"
+  | "category"
+  | "type"
+  | "accountId"
+  | "recurringInterval"
+  | "createdAt"
+>[];
+
 export async function exportTransactions(
   format: ExportFormat,
-  data: any[],
+  data: Transactions,
   accountId?: string,
 ) {
   switch (format) {

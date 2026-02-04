@@ -20,7 +20,7 @@ export default async function AppLayout({
         <AppSidebar />
         <main className="flex-1">
           <DashboardHeader />
-          <div className="px-6">
+          <div className="px-6 py-2">
             <SpendixChatSheet />
             {children}
           </div>
