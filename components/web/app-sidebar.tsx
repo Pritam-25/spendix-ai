@@ -140,7 +140,7 @@ export function AppSidebar() {
     const slug =
       item.upgradeSlug ?? item.title.toLowerCase().replace(/\s+/g, "-");
     const plan = item.feature ? featurePlanMap[item.feature] : undefined;
-    return `/pricing?plan=${plan ?? "premium"}&feature=${slug}&source=sidebar`;
+    return `/pricing?redirect=${item.url}&plan=${plan ?? "premium"}&feature=${slug}`;
   };
 
   const handleLockedNavigation = (

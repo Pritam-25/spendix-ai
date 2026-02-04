@@ -1,17 +1,17 @@
-import type { ComponentProps, ComponentType } from "react";
-
 import { PricingTable } from "@clerk/nextjs";
 
-type NativePricingTableProps = ComponentProps<typeof PricingTable>;
+type PricingPageProps = {
+  searchParams: Promise<{
+    redirect?: string;
+  }>;
+};
 
-const PricingTableWithRedirect = PricingTable as ComponentType<
-  NativePricingTableProps & {
-    path?: string;
-    redirectUrl?: string;
-  }
->;
+export default async function PricingPage({ searchParams }: PricingPageProps) {
+  const params = await searchParams;
+  const redirectUrl = params?.redirect ?? "/dashboard";
 
-export default function PricingPage() {
+  console.log("Redirect URL:", redirectUrl); // Debug log to verify the redirect URL
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-background via-background/80 to-background px-4 py-12 flex justify-center">
       <section className="w-full max-w-6xl space-y-10">
@@ -35,7 +35,7 @@ export default function PricingPage() {
         </header>
 
         <div className="rounded-3xl border bg-card/70 shadow-lg shadow-black/5 p-3 sm:p-6 md:p-8 backdrop-blur">
-          <PricingTableWithRedirect path="/pricing" redirectUrl="/dashboard" />
+          <PricingTable newSubscriptionRedirectUrl={`${redirectUrl}`} />
         </div>
 
         <div className="grid gap-4 text-xs sm:text-sm text-muted-foreground md:grid-cols-3">
