@@ -31,6 +31,7 @@ import { EXPENSE_CATEGORIES } from "@/lib/constants/categories";
 import generateImportId from "@/lib/utils/generateImportId";
 import { ImportJobStatus } from "@prisma/client";
 import { normalizeAiImportError } from "@/lib/utils/normalizeAiErrors";
+import { inngest } from "@/inngest/client";
 
 type ResponseResult =
   | { success: true; message: string }
@@ -74,13 +75,37 @@ export async function createTransactionAction(
       throw new Error(ErrorCode.ACCOUNT_NOT_FOUND);
     }
 
-    await createTransaction({
+    const transaction = await createTransaction({
       userId: user.id,
       account: { id: account.id, balance: account.balance },
       data: parsed.data,
       isReceiptScan,
       importId,
     });
+
+    await inngest
+      .send({
+        name: "transaction.created",
+        data: {
+          transaction: {
+            id: transaction.id,
+            userId: transaction.userId,
+            accountId: transaction.accountId,
+            accountName: account.name ?? "Account",
+            amount: transaction.amount.toNumber(),
+            category: transaction.category,
+            description: transaction.description,
+            date: transaction.date.toISOString(),
+            type: transaction.type,
+          },
+        },
+      })
+      .catch((error: Error) => {
+        console.error("Failed to enqueue transaction.created event", {
+          transactionId: transaction.id,
+          error,
+        });
+      });
 
     revalidatePath("/transactions");
     revalidatePath("/dashboard");

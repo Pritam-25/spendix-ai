@@ -97,7 +97,6 @@ model User {
   subscriptionItems      SubscriptionItem[]
   transactionRags        TransactionRag[]
   accountTransactionRags AccountTransactionRag[]
-  budgetRags             BudgetRag[]
 
   @@map("users")
 }
@@ -190,9 +189,8 @@ model Budget {
   updatedAt     DateTime  @updatedAt
 
   // Foreign Key
-  userId     String      @unique
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  budgetRags BudgetRag[]
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("budgets")
@@ -261,7 +259,7 @@ model TransactionRag {
   transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([transactionId])
+  @@unique([transactionId])
   @@map("transaction_rag")
 }
 
@@ -280,22 +278,4 @@ model AccountTransactionRag {
 
   @@index([userId, accountId])
   @@map("account_transaction_rag")
-}
-
-model BudgetRag {
-  id       String @id @default(uuid())
-  userId   String
-  budgetId String
-
-  content   String
-  embedding Unsupported("vector(768)") // for gemini text-embedding-004
-
-  createdAt DateTime @default(now())
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  budget Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([budgetId])
-  @@map("budget_rag")
 }

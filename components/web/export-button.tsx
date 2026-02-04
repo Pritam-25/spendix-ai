@@ -32,8 +32,7 @@ export default function ExportMenu({ action, accountId }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const canExport = useFeature(FEATURES.CSV_EXCEL_EXPORT);
-  const upgradeHref =
-    `/pricing?redirect=/accounts/${accountId}&plan=premium&feature=csv-export`;
+  const upgradeHref = `/pricing?redirect=/accounts/${accountId}&plan=premium&feature=csv-export`;
   const handleUpgrade = () => {
     router.push(upgradeHref);
   };
@@ -46,7 +45,6 @@ export default function ExportMenu({ action, accountId }: Props) {
             type="button"
             variant="outline"
             className="cursor-pointer gap-2 border-amber-400 bg-amber-200/80 hover:bg-amber-200 dark:border-amber-300 dark:text-amber-300 dark:bg-transparent dark:hover:bg-amber-900/20"
-
             onClick={handleUpgrade}
           >
             <FaCrown className="h-4 w-4" />
@@ -77,10 +75,17 @@ export default function ExportMenu({ action, accountId }: Props) {
             </li>
             <li className="flex items-start gap-1">
               <span className="text-amber-500">•</span>
-              <span>Keep auditors and advisors aligned with clean exports.</span>
+              <span>
+                Keep auditors and advisors aligned with clean exports.
+              </span>
             </li>
           </ul>
-          <Button type="button" size="sm" className="w-full" onClick={handleUpgrade}>
+          <Button
+            type="button"
+            size="sm"
+            className="w-full"
+            onClick={handleUpgrade}
+          >
             Upgrade to Premium
           </Button>
         </HoverCardContent>
