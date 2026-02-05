@@ -8,7 +8,11 @@ import {
   type MemoryStoreLike,
 } from "../memory/memory.utils";
 
-const ALLOWED_TOOL_NAMES = new Set(["financial_summary"]);
+const ALLOWED_TOOL_NAMES = new Set([
+  "financial_summary",
+  "account_rag_lookup",
+  "account_monthly_rag_lookup",
+]);
 
 type StoreContext = {
   store?: MemoryStoreLike;
@@ -69,7 +73,7 @@ export const agentNode: GraphNode<typeof MessagesAnnotation.State> = async (
       return {
         messages: [
           new AIMessage(
-            "I can only use the financial summary tool. Tell me what timeframe or totals you need, and I'll fetch them.",
+            "I can only call the built-in Spendix tools (financial_summary, account_rag_lookup, account_monthly_rag_lookup). Please restate what totals or account insights you need so I can fetch them.",
           ),
         ],
       };

@@ -1,9 +1,16 @@
 import { ToolMessage } from "@langchain/core/messages";
+import type {
+  StructuredToolCallInput,
+  StructuredToolInterface,
+  ToolRunnableConfig,
+} from "@langchain/core/tools";
 import { GraphNode, MessagesAnnotation } from "@langchain/langgraph";
 
 import { spendixTools } from "../../tools";
 
-const toolRegistry = new Map(spendixTools.map((tool) => [tool.name, tool]));
+const toolRegistry = new Map<string, StructuredToolInterface>(
+  spendixTools.map((tool) => [tool.name, tool]),
+);
 
 export const toolNode: GraphNode<typeof MessagesAnnotation.State> = async (
   state,
@@ -34,7 +41,10 @@ export const toolNode: GraphNode<typeof MessagesAnnotation.State> = async (
       }
 
       try {
-        const output = await tool.invoke(toolCall.args ?? {}, config);
+        const output = await tool.invoke(
+          (toolCall.args ?? {}) as StructuredToolCallInput,
+          config as ToolRunnableConfig,
+        );
         return new ToolMessage({
           content: typeof output === "string" ? output : JSON.stringify(output),
           tool_call_id: toolCallId,
