@@ -9,7 +9,7 @@ export const getAccounts = async () => {
 
   const accounts = await prisma.account.findMany({
     where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: "asc" },
   });
 
   return accounts.map(serialize);

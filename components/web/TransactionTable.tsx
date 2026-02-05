@@ -12,7 +12,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { format } from "date-fns";
-
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -55,7 +54,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { categoryColors } from "@/lib/constants/categories";
-
 import {
   RecurringInterval,
   Transaction,
@@ -74,11 +72,21 @@ const RecurringIntervals: Record<RecurringInterval, string> = {
 export type TransactionSortField = "date" | "amount";
 export type SortDirection = "asc" | "desc";
 
+type TransactionWithAccount = Transaction & {
+  account?: {
+    name?: string | null;
+  } | null;
+};
+
+type TransactionTableProps = {
+  transactions: TransactionWithAccount[];
+  showRecurringMetaColumns?: boolean;
+};
+
 export default function TransactionTable({
   transactions,
-}: {
-  transactions: Transaction[];
-}) {
+  showRecurringMetaColumns = false,
+}: TransactionTableProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -104,7 +112,10 @@ export default function TransactionTable({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteIds, setDeleteIds] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
-  const filteredAndSorted: Transaction[] = useMemo(() => {
+
+  const formatOptionalDate = (value?: Date | string | null) =>
+    value ? format(new Date(value), "PP") : "-";
+  const filteredAndSorted: TransactionWithAccount[] = useMemo(() => {
     let data = [...transactions];
 
     if (searchTerm) {
@@ -285,6 +296,7 @@ export default function TransactionTable({
     : noneFilteredSelected
       ? false
       : "indeterminate";
+  const totalColumns = 7 + (showRecurringMetaColumns ? 3 : 0);
 
   return (
     <div className="space-y-4">
@@ -369,6 +381,9 @@ export default function TransactionTable({
               </TableHead>
               <TableHead className="text-center">Description</TableHead>
               <TableHead className="text-center">Category</TableHead>
+              {showRecurringMetaColumns && (
+                <TableHead className="text-center">Account</TableHead>
+              )}
               <TableHead
                 className="cursor-pointer text-center"
                 onClick={() => handleSort("amount")}
@@ -384,6 +399,12 @@ export default function TransactionTable({
                 </div>
               </TableHead>
               <TableHead className="text-center">Recurring</TableHead>
+              {showRecurringMetaColumns && (
+                <>
+                  <TableHead className="text-center">Next Recurring</TableHead>
+                  <TableHead className="text-center">Last Processed</TableHead>
+                </>
+              )}
               <TableHead className="w-[50px] text-center" />
             </TableRow>
           </TableHeader>
@@ -391,149 +412,169 @@ export default function TransactionTable({
             {filteredAndSorted.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={totalColumns}
                   className="h-24 text-center text-muted-foreground"
                 >
                   No transactions found
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedTransactions.map((transaction: Transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell className="text-center">
-                    <Checkbox
-                      className="rounded-[4px]"
-                      checked={selectedIds.has(transaction.id)}
-                      onCheckedChange={() =>
-                        handleCheckboxChange(transaction.id)
-                      }
-                    />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {format(new Date(transaction.date), "PP")}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {transaction.description ? (
-                      transaction.description.length > 30 ? (
+              paginatedTransactions.map(
+                (transaction: TransactionWithAccount) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell className="text-center">
+                      <Checkbox
+                        className="rounded-[4px]"
+                        checked={selectedIds.has(transaction.id)}
+                        onCheckedChange={() =>
+                          handleCheckboxChange(transaction.id)
+                        }
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {formatOptionalDate(transaction.date)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {transaction.description ? (
+                        transaction.description.length > 30 ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-block max-w-[200px] truncate align-middle">
+                                  {transaction.description}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="max-w-xs break-words">
+                                  {transaction.description}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <span>{transaction.description}</span>
+                        )
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center capitalize">
+                      <span
+                        style={{
+                          background:
+                            categoryColors[transaction.category] ?? "#6b7280",
+                        }}
+                        className="rounded px-2 py-1 text-sm text-white"
+                      >
+                        {transaction.category}
+                      </span>
+                    </TableCell>
+                    {showRecurringMetaColumns && (
+                      <TableCell className="text-center">
+                        {transaction.account?.name ?? "-"}
+                      </TableCell>
+                    )}
+                    <TableCell
+                      className={`text-center ${
+                        transaction.type === "EXPENSE"
+                          ? "text-red-500"
+                          : "text-green-500"
+                      }`}
+                    >
+                      {transaction.type === "EXPENSE" ? "-₹ " : "+₹ "}
+                      {Number(transaction.amount).toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {transaction.isRecurring ? (
                         <TooltipProvider>
                           <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-block max-w-[200px] truncate align-middle">
-                                {transaction.description}
+                            <TooltipTrigger>
+                              <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700">
+                                <RefreshCw className="h-3 w-3" />
+                                {transaction.recurringInterval &&
+                                  RecurringIntervals[
+                                    transaction.recurringInterval as RecurringInterval
+                                  ]}
                               </span>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p className="max-w-xs break-words">
-                                {transaction.description}
-                              </p>
+                              <div className="text-sm">
+                                <div className="font-medium">Next Date:</div>
+                                <div>
+                                  {transaction.nextRecurringDate &&
+                                    format(
+                                      new Date(transaction.nextRecurringDate),
+                                      "PP",
+                                    )}
+                                </div>
+                              </div>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       ) : (
-                        <span>{transaction.description}</span>
-                      )
-                    ) : (
-                      "-"
+                        <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs">
+                          <Clock className="h-3 w-3" />
+                          One-time
+                        </span>
+                      )}
+                    </TableCell>
+                    {showRecurringMetaColumns && (
+                      <>
+                        <TableCell className="text-center">
+                          {formatOptionalDate(transaction.nextRecurringDate)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {formatOptionalDate(transaction.lastProcessed)}
+                        </TableCell>
+                      </>
                     )}
-                  </TableCell>
-                  <TableCell className="text-center capitalize">
-                    <span
-                      style={{
-                        background:
-                          categoryColors[transaction.category] ?? "#6b7280",
-                      }}
-                      className="rounded px-2 py-1 text-sm text-white"
-                    >
-                      {transaction.category}
-                    </span>
-                  </TableCell>
-                  <TableCell
-                    className={`text-center ${
-                      transaction.type === "EXPENSE"
-                        ? "text-red-500"
-                        : "text-green-500"
-                    }`}
-                  >
-                    {transaction.type === "EXPENSE" ? "-₹ " : "+₹ "}
-                    {Number(transaction.amount).toFixed(2)}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {transaction.isRecurring ? (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700">
-                              <RefreshCw className="h-3 w-3" />
-                              {transaction.recurringInterval &&
-                                RecurringIntervals[
-                                  transaction.recurringInterval as RecurringInterval
-                                ]}
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <div className="text-sm">
-                              <div className="font-medium">Next Date:</div>
-                              <div>
-                                {transaction.nextRecurringDate &&
-                                  format(
-                                    new Date(transaction.nextRecurringDate),
-                                    "PP",
-                                  )}
-                              </div>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs">
-                        <Clock className="h-3 w-3" />
-                        One-time
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 p-0"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onSelect={(event) => {
-                            event.preventDefault();
-                            const currentQuery = searchParams.toString();
-                            const returnUrl =
-                              pathname +
-                              (currentQuery ? `?${currentQuery}` : "");
+                    <TableCell className="text-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 p-0"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onSelect={(event) => {
+                              event.preventDefault();
+                              const currentQuery = searchParams.toString();
+                              const returnUrl =
+                                pathname +
+                                (currentQuery ? `?${currentQuery}` : "");
 
-                            router.push(
-                              `/transactions/create?edit=${transaction.id}&returnUrl=${encodeURIComponent(returnUrl)}`,
-                            );
-                          }}
-                        >
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-red-500"
-                          onSelect={(event) => {
-                            event.preventDefault();
-                            openSingleDeleteDialog(transaction.id);
-                          }}
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
+                              const recurringParam = showRecurringMetaColumns
+                                ? "recurring=true&"
+                                : "";
+                              router.push(
+                                `/transactions/create?edit=${transaction.id}&${recurringParam}returnUrl=${encodeURIComponent(returnUrl)}`,
+                              );
+                            }}
+                          >
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-red-500"
+                            onSelect={(event) => {
+                              event.preventDefault();
+                              openSingleDeleteDialog(transaction.id);
+                            }}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ),
+              )
             )}
           </TableBody>
         </Table>

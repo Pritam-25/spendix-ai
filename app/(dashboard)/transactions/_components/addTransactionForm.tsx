@@ -50,7 +50,6 @@ import { CategoryCombobox } from "@/components/web/category-combobox";
 import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { useUserPlan } from "@/lib/hooks/useUserPlan";
 import { useFeature } from "@/lib/hooks/useFeature";
 import { FEATURES } from "@/lib/config/features";
 
@@ -60,7 +59,7 @@ type AddTransactionFormProps = {
   editmode: boolean;
   editId?: string;
   initialData: Partial<TransactionFormType>;
-  initialUsage: UsageStatus;
+  initialUsage?: UsageStatus;
 };
 
 type SimpleAccount = {
@@ -78,8 +77,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl");
-  const tier = useUserPlan();
-
+  const recurringForm = searchParams.get("recurring") === "true";
   const canUseRecurring = useFeature(FEATURES.RECURRING_TRANSACTIONS);
 
   const [isPending, startTransition] = useTransition();
@@ -129,7 +127,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
           category: "",
           description: "",
           accountId: defaultAccountId,
-          isRecurring: false,
+          isRecurring: recurringForm,
           recurringInterval: undefined,
         };
 
@@ -151,6 +149,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
   const dateValue = useWatch({ control, name: "date" });
   const isRecurring = useWatch({ control, name: "isRecurring" });
   const recurringInterval = useWatch({ control, name: "recurringInterval" });
+  const showRecurringInterval = recurringForm || isRecurring;
 
   const filteredCategories = useMemo(
     () =>
@@ -174,15 +173,13 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
 
       toast.success(result.message);
       const accountPath = `/accounts/${accountId}`;
+      const safeReturnUrl =
+        returnUrl && returnUrl.startsWith("/") ? returnUrl : null;
 
       if (editmode && editId) {
-        const safeReturnUrl = returnUrl?.startsWith("/")
-          ? returnUrl
-          : accountPath;
-
-        router.replace(safeReturnUrl);
+        router.replace(safeReturnUrl ?? accountPath);
       } else {
-        router.push(accountPath);
+        router.push(safeReturnUrl ?? accountPath);
       }
     });
   };
@@ -192,8 +189,12 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
     if (!canUseRecurring) {
       setValue("isRecurring", false);
       setValue("recurringInterval", undefined);
+      return;
     }
-  }, [canUseRecurring, setValue]);
+    if (recurringForm || initialData?.isRecurring) {
+      setValue("isRecurring", true);
+    }
+  }, [canUseRecurring, initialData?.isRecurring, recurringForm, setValue]);
 
   // Reset category when switching between income/expense so it stays valid
   useEffect(() => {
@@ -223,7 +224,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
         {/* AI Receipt Scanner */}
         {!editmode && (
           <AiRecieptScanner
-            initialUsage={initialUsage}
+            initialUsage={initialUsage!}
             onScanComplete={(result) => {
               setIsReceiptScan(true);
               setImportId(result.importId);
@@ -449,31 +450,33 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
                       {/* Pop-out card containing both the toggle and interval select */}
                       <Card className="mt-4 shadow-md">
                         <CardContent>
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="space-y-1">
-                              <FieldLabel htmlFor="transaction-recurring">
-                                Recurring transaction
-                              </FieldLabel>
-                              <FieldDescription>
-                                Turn on to repeat this transaction
-                                automatically.
-                              </FieldDescription>
+                          {!recurringForm && (
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="space-y-1">
+                                <FieldLabel htmlFor="transaction-recurring">
+                                  Recurring transaction
+                                </FieldLabel>
+                                <FieldDescription>
+                                  Turn on to repeat this transaction
+                                  automatically.
+                                </FieldDescription>
+                              </div>
+                              <Switch
+                                id="transaction-recurring"
+                                checked={isRecurring}
+                                onCheckedChange={(checked) => {
+                                  setValue("isRecurring", checked);
+                                  if (!checked) {
+                                    setValue("recurringInterval", undefined);
+                                  }
+                                }}
+                                disabled={isPending}
+                              />
                             </div>
-                            <Switch
-                              id="transaction-recurring"
-                              checked={isRecurring}
-                              onCheckedChange={(checked) => {
-                                setValue("isRecurring", checked);
-                                if (!checked) {
-                                  setValue("recurringInterval", undefined);
-                                }
-                              }}
-                              disabled={isPending}
-                            />
-                          </div>
+                          )}
 
-                          {isRecurring && (
-                            <div className="mt-4">
+                          {showRecurringInterval && (
+                            <div className={recurringForm ? "" : "mt-4"}>
                               <FieldLabel htmlFor="transaction-recurring-interval">
                                 Recurring interval
                               </FieldLabel>

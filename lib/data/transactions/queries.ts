@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "../users/auth";
+import { serialize } from "@/lib/utils/serialize";
 
 export function findAccountById(accountId: string, userId: string) {
   return prisma.account.findUnique({
@@ -22,7 +23,7 @@ export async function getTransactionById(transactionId: string) {
     },
   });
 
-  return transaction;
+  return serialize(transaction);
 }
 
 export async function getRecurringTransactions() {
@@ -40,14 +41,20 @@ export async function getRecurringTransactions() {
       amount: true,
       type: true,
       category: true,
+      isRecurring: true,
       recurringInterval: true,
       nextRecurringDate: true,
       lastProcessed: true,
+      account: {
+        select: {
+          name: true,
+        },
+      },
     },
     orderBy: {
       createdAt: "desc",
     },
   });
 
-  return recurrings;
+  return serialize(recurrings);
 }
