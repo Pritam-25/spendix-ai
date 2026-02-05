@@ -32,7 +32,7 @@ export default async function RecurringTransactionsPage() {
               href="/transactions/create?recurring=true&returnUrl=/recurrings"
               className={cn(
                 buttonVariants({ variant: "default" }),
-                "ml-auto flex items-center gap-2",
+                "ml-auto flex items-center gap-2 w-full sm:w-auto",
               )}
             >
               <Plus className="h-4 w-4" />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Save } from "lucide-react";
+import { Save, Scan } from "lucide-react";
 import { toast } from "sonner";
 
 import { EditableTransaction } from "@/lib/schemas/transaction.schema";
@@ -30,6 +30,14 @@ import {
   SelectValue,
   SelectSeparator,
 } from "@/components/ui/select";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 
 import CreateAccountDrawer from "../../accounts/_components/CreateAccountDrawer";
 import { SimpleAccount } from "./TransactionClient";
@@ -106,59 +114,62 @@ export default function BulkScanTransactionTable({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Review transactions</CardTitle>
-          <CardDescription>Fix errors before saving</CardDescription>
-        </div>
+      <CardHeader className="border-b px-4 py-4 sm:px-6">
+        <div className="flex flex-col sm:flex-row justify-between gap-3">
+          <div>
+            <CardTitle>Review transactions</CardTitle>
+            <CardDescription>
+              Review and edit your transactions before saving
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select
+              value={defaultAccountId}
+              onValueChange={(value) => {
+                if (value === "__create_account") {
+                  setIsAccountDrawerOpen(true);
+                  return;
+                }
+                setDefaultAccountId(value);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[220px]">
+                <SelectValue placeholder="Select account" />
+              </SelectTrigger>
 
-        <div className="flex items-center gap-2">
-          <Select
-            value={defaultAccountId}
-            onValueChange={(value) => {
-              if (value === "__create_account") {
-                setIsAccountDrawerOpen(true);
-                return;
-              }
-              setDefaultAccountId(value);
-            }}
-          >
-            <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder="Select account" />
-            </SelectTrigger>
+              <SelectContent>
+                {accounts.map((acc) => (
+                  <SelectItem key={acc.id} value={acc.id}>
+                    <div className="flex justify-between items-center gap-2 w-full">
+                      <span className="truncate max-w-[150px]">{acc.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        (₹{acc.balance.toFixed(2)})
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
 
-            <SelectContent>
-              {accounts.map((acc) => (
-                <SelectItem key={acc.id} value={acc.id}>
-                  <div className="flex justify-between items-center gap-2 w-full">
-                    <span className="truncate max-w-[150px]">{acc.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      (₹{acc.balance.toFixed(2)})
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
+                <SelectSeparator />
 
-              <SelectSeparator />
+                <SelectItem value="__create_account">+ Add account</SelectItem>
+              </SelectContent>
+            </Select>
 
-              <SelectItem value="__create_account">+ Add account</SelectItem>
-            </SelectContent>
-          </Select>
+            {someSelected && (
+              <Button variant="destructive" size="sm" onClick={deleteSelected}>
+                Delete selected
+              </Button>
+            )}
 
-          {someSelected && (
-            <Button variant="destructive" size="sm" onClick={deleteSelected}>
-              Delete selected
+            <Button
+              onClick={onSaveAll}
+              disabled={!canSave || isPending}
+              className="gap-2"
+            >
+              <Save className="h-4 w-4" />
+              Save
             </Button>
-          )}
-
-          <Button
-            onClick={onSaveAll}
-            disabled={!canSave || isPending}
-            className="gap-2"
-          >
-            <Save className="h-4 w-4" />
-            Save
-          </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -180,50 +191,67 @@ export default function BulkScanTransactionTable({
         }}
       />
 
-      <CardContent>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader className="bg-accent">
-              <TableRow>
-                <TableHead>
-                  <Checkbox
-                    checked={
-                      allSelected
-                        ? true
-                        : someSelected
-                          ? "indeterminate"
-                          : false
-                    }
-                    onCheckedChange={(v) => toggleAll(v === true)}
-                  />
-                </TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Recurring</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
+      <CardContent className="px-0 py-4 sm:px-6">
+        {data.length === 0 ? (
+          <Empty className="mx-auto w-full border border-dashed bg-muted/40">
+            <EmptyHeader className="w-full max-w-none">
+              <EmptyTitle>Scan a statement to see transactions here</EmptyTitle>
+              <EmptyDescription>
+                Upload a bank statement or snap a screenshot so we can extract
+                every line item. Once the scan finishes you can edit amounts,
+                categories, and recurring details before saving.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <div className="rounded-md border">
+            <div className="w-full overflow-x-auto">
+              <div className="inline-block min-w-[900px] align-middle">
+                <Table>
+                  <TableHeader className="bg-accent">
+                    <TableRow>
+                      <TableHead>
+                        <Checkbox
+                          checked={
+                            allSelected
+                              ? true
+                              : someSelected
+                                ? "indeterminate"
+                                : false
+                          }
+                          onCheckedChange={(v) => toggleAll(v === true)}
+                        />
+                      </TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Recurring</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead />
+                    </TableRow>
+                  </TableHeader>
 
-            <TableBody>
-              {data.map((row) => (
-                <RowForm
-                  key={row.id}
-                  row={row}
-                  onUpdateAction={(updated) =>
-                    onChangeAction((prev) =>
-                      prev.map((r) => (r.id === row.id ? updated : r)),
-                    )
-                  }
-                  onDeleteAction={() => deleteRow(row.id)}
-                  defaultAccountId={defaultAccountId}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+                  <TableBody>
+                    {data.map((row) => (
+                      <RowForm
+                        key={row.id}
+                        row={row}
+                        onUpdateAction={(updated) =>
+                          onChangeAction((prev) =>
+                            prev.map((r) => (r.id === row.id ? updated : r)),
+                          )
+                        }
+                        onDeleteAction={() => deleteRow(row.id)}
+                        defaultAccountId={defaultAccountId}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

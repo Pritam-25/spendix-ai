@@ -134,7 +134,7 @@ const AccountTransactionPage = async ({
             </CardHeader>
 
             {/* ✅ Horizontal scroll safety for mobile */}
-            <CardContent className="pt-4 overflow-x-auto">
+            <CardContent className="pt-4 overflow-x-auto scroll-smooth">
               <TransactionTable transactions={transactions} />
             </CardContent>
           </Card>

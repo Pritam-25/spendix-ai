@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     "Discover Spendix: AI-powered budgeting, proactive alerts, and analytics built for modern finance teams.",
 };
 
-export default function Page() {
+export default function PublicPage() {
   return (
     <article
       aria-label="Spendix marketing page"
