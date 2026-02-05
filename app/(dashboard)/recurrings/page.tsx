@@ -45,6 +45,7 @@ export default async function RecurringTransactionsPage() {
         <CardContent className="pt-4 overflow-x-auto">
           <TransactionTable
             transactions={recurringTransactions}
+            showAccountColumn
             showRecurringMetaColumns
           />
         </CardContent>

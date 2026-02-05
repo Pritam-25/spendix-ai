@@ -58,3 +58,31 @@ export async function getRecurringTransactions() {
 
   return serialize(recurrings);
 }
+
+export async function getAllTransactions() {
+  const user = await requireUser();
+
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      userId: user.id,
+    },
+    select: {
+      id: true,
+      date: true,
+      description: true,
+      amount: true,
+      type: true,
+      category: true,
+      isRecurring: true,
+      recurringInterval: true,
+      account: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: [{ date: "desc" }, { id: "desc" }],
+  });
+
+  return transactions.map(serialize);
+}

@@ -61,6 +61,7 @@ import {
 } from "@prisma/client";
 import { bulkDeleteTransactionAction } from "@/app/(dashboard)/transactions/action";
 import { toast } from "sonner";
+import { cn } from "@/lib/cn";
 
 const RecurringIntervals: Record<RecurringInterval, string> = {
   DAILY: "Daily",
@@ -69,7 +70,7 @@ const RecurringIntervals: Record<RecurringInterval, string> = {
   YEARLY: "Yearly",
 };
 
-export type TransactionSortField = "date" | "amount";
+export type TransactionSortField = "date" | "amount" | "account";
 export type SortDirection = "asc" | "desc";
 
 type TransactionWithAccount = Transaction & {
@@ -80,11 +81,13 @@ type TransactionWithAccount = Transaction & {
 
 type TransactionTableProps = {
   transactions: TransactionWithAccount[];
+  showAccountColumn?: boolean;
   showRecurringMetaColumns?: boolean;
 };
 
 export default function TransactionTable({
   transactions,
+  showAccountColumn = false,
   showRecurringMetaColumns = false,
 }: TransactionTableProps) {
   const router = useRouter();
@@ -144,6 +147,14 @@ export default function TransactionTable({
         case "amount": {
           const diff = Number(a.amount) - Number(b.amount);
           return diff * direction;
+        }
+        case "account": {
+          const nameA = (a.account?.name ?? "").toLowerCase();
+          const nameB = (b.account?.name ?? "").toLowerCase();
+
+          if (!nameA && nameB) return 1 * direction;
+          if (nameA && !nameB) return -1 * direction;
+          return nameA.localeCompare(nameB) * direction;
         }
         case "date":
         default: {
@@ -296,7 +307,8 @@ export default function TransactionTable({
     : noneFilteredSelected
       ? false
       : "indeterminate";
-  const totalColumns = 7 + (showRecurringMetaColumns ? 3 : 0);
+  const totalColumns =
+    7 + (showAccountColumn ? 1 : 0) + (showRecurringMetaColumns ? 2 : 0);
 
   return (
     <div className="space-y-4">
@@ -381,8 +393,21 @@ export default function TransactionTable({
               </TableHead>
               <TableHead className="text-center">Description</TableHead>
               <TableHead className="text-center">Category</TableHead>
-              {showRecurringMetaColumns && (
-                <TableHead className="text-center">Account</TableHead>
+              {showAccountColumn && (
+                <TableHead
+                  className="cursor-pointer text-center"
+                  onClick={() => handleSort("account")}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    Account
+                    {sortConfig.field === "account" &&
+                      (sortConfig.direction === "asc" ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      ))}
+                  </div>
+                </TableHead>
               )}
               <TableHead
                 className="cursor-pointer text-center"
@@ -440,7 +465,14 @@ export default function TransactionTable({
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="inline-block max-w-[200px] truncate align-middle">
+                                <span
+                                  className={cn(
+                                    "inline-block truncate align-middle",
+                                    showAccountColumn
+                                      ? "max-w-[320px]"
+                                      : "max-w-[250px]",
+                                  )}
+                                >
                                   {transaction.description}
                                 </span>
                               </TooltipTrigger>
@@ -469,9 +501,30 @@ export default function TransactionTable({
                         {transaction.category}
                       </span>
                     </TableCell>
-                    {showRecurringMetaColumns && (
+                    {showAccountColumn && (
                       <TableCell className="text-center">
-                        {transaction.account?.name ?? "-"}
+                        {transaction.account?.name ? (
+                          transaction.account.name.length > 24 ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-block max-w-[200px] truncate align-middle">
+                                    {transaction.account?.name}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="max-w-xs break-words">
+                                    {transaction.account?.name}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : (
+                            <span>{transaction.account.name}</span>
+                          )
+                        ) : (
+                          "-"
+                        )}
                       </TableCell>
                     )}
                     <TableCell
