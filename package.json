@@ -61,6 +61,7 @@
     "embla-carousel-react": "^8.6.0",
     "exceljs": "^4.4.0",
     "fast-csv": "^5.0.5",
+    "framer-motion": "^12.33.0",
     "get-stream": "^9.0.1",
     "inngest": "^3.49.1",
     "lucide-react": "^0.562.0",
