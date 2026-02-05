@@ -633,18 +633,19 @@ export default function TransactionTable({
         </Table>
       </div>
 
-      <div className="flex items-center justify-between gap-2 py-2 text-sm text-muted-foreground">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 p-2 text-sm text-muted-foreground">
         <div>
           Page {pageIndex + 1}
           {` • ${filteredAndSorted.length} matching`}
           {selectedCount > 0 && ` • ${selectedCount} selected`}
         </div>
-        <div className="space-x-2">
+        <div className="flex w-full sm:w-auto gap-2">
           <Button
             variant="secondary"
             size="sm"
             onClick={handlePrevious}
             disabled={pageIndex === 0}
+            className="flex-1 sm:flex-none"
           >
             Previous
           </Button>
@@ -653,6 +654,7 @@ export default function TransactionTable({
             size="sm"
             onClick={handleNext}
             disabled={!hasNextPage}
+            className="flex-1 sm:flex-none"
           >
             Next
           </Button>

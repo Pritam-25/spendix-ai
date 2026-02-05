@@ -150,7 +150,7 @@ export default function ChartTable({ transactions }: ChartTableProps) {
           </CardDescription>
         </div>
         <Select defaultValue={dateRange} onValueChange={setDateRange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Date range" />
           </SelectTrigger>
           <SelectContent>
@@ -176,7 +176,7 @@ export default function ChartTable({ transactions }: ChartTableProps) {
               ₹ {totals.expense.toFixed(2)}
             </p>
           </div>
-          <div className="text-center">
+          <div className="text-center hidden sm:block">
             <p className="text-muted-foreground">Net</p>
             <p
               className={`font-bold text-lg ${

@@ -1,7 +1,6 @@
 import Navbar from "@/components/web/navbar/navbar";
 import type { Metadata, Viewport } from "next";
 import { ReactNode } from "react";
-
 import Footer from "./_components/Footer";
 
 const siteUrl = "https://spend-ix.app";
