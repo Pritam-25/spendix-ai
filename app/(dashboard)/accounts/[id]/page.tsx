@@ -120,7 +120,7 @@ const AccountTransactionPage = async ({
           <Card className="h-full">
             <CardHeader className="border-b">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
+                <div className="space-y-2">
                   <CardTitle className="text-base font-semibold">
                     Transactions
                   </CardTitle>

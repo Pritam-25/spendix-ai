@@ -46,8 +46,8 @@ export function RecentTransactionsCard({
 }: RecentTransactionsCardProps) {
   return (
     <Card className="lg:col-span-2 h-full">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div className="space-y-1">
+      <CardHeader className="flex flex-col sm:flex-row items-center justify-between">
+        <div className="space-y-2">
           <CardTitle>Recent Transactions</CardTitle>
           <CardDescription>
             Your most recent income and expenses at a glance
@@ -55,7 +55,7 @@ export function RecentTransactionsCard({
         </div>
         <Link
           href={`/accounts/${accountId}`}
-          className={cn(buttonVariants({ variant: "outline" }))}
+          className={cn(buttonVariants({ variant: "outline" }),"w-full sm:w-auto mt-3 sm:mt-0") }
         >
           View all
         </Link>
