@@ -1,4 +1,3 @@
-import { PlanType } from "@prisma/client";
 import { FEATURE_MIN_PLAN } from "../config/feature-requirements";
 import { isPlanSufficient } from "../config/plan-order";
 import { FeatureKey } from "../config/features";

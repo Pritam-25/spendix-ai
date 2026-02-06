@@ -5,12 +5,10 @@ import { DefaultChatTransport } from "ai";
 import { useChat } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
 import {
-  Loader2,
   BotMessageSquareIcon,
   BarChart3Icon,
   LayersIcon,
   WalletIcon,
-  PieChartIcon,
   BrainIcon,
 } from "lucide-react";
 import { FaCrown } from "react-icons/fa6";

@@ -59,7 +59,7 @@ import {
   Transaction,
   TransactionType,
 } from "@prisma/client";
-import { bulkDeleteTransactionAction } from "@/app/(dashboard)/transactions/action";
+import { bulkDeleteTransactionAction } from "@/app/actions/transactions.action";
 import { toast } from "sonner";
 import { cn } from "@/lib/cn";
 
@@ -329,6 +329,7 @@ export default function TransactionTable({
               size="sm"
               onClick={openBulkDeleteDialog}
               disabled={isPending}
+              className="w-full sm:w-auto"
             >
               <Trash2 className="mr-1 h-4 w-4" />
               Delete ({selectedCount})

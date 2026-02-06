@@ -94,9 +94,11 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       />
       <header
         aria-label="Primary"
-        className="fixed inset-x-0 top-0 z-50 border-b border-border/60 bg-white/5 backdrop-blur-xl border-b border-border shadow-md"
+        className="fixed top-0 sm:top-4 left-1/2 sm:left-1/2 -translate-x-1/2 sm:-translate-x-1/2 z-50 w-full sm:max-w-6xl "
       >
-        <Navbar />
+        <div className="container mx-auto sm:rounded-full border border-border/60 bg-white/5 shadow-lg backdrop-blur-xl px-4">
+          <Navbar />
+        </div>
       </header>
       <main className="relative flex w-full flex-col items-center justify-start overflow-hidden bg-transparent">
         {children}

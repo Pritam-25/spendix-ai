@@ -1,6 +1,6 @@
 "use client";
 
-import { aiScanReceiptAction } from "../action";
+import { aiScanReceiptAction } from "@/app/actions/ai.action";
 import { Button } from "@/components/ui/button";
 import { CameraIcon, Loader2 } from "lucide-react";
 import { useRef, useState, useTransition } from "react";

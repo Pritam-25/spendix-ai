@@ -55,7 +55,10 @@ export function RecentTransactionsCard({
         </div>
         <Link
           href={`/accounts/${accountId}`}
-          className={cn(buttonVariants({ variant: "outline" }),"w-full sm:w-auto mt-3 sm:mt-0") }
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "w-full sm:w-auto mt-3 sm:mt-0",
+          )}
         >
           View all
         </Link>

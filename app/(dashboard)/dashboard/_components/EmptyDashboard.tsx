@@ -4,7 +4,6 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/cn";
 import { PlusIcon } from "lucide-react";
-
 import CreateAccountDrawer from "../../accounts/_components/CreateAccountDrawer";
 
 export function EmptyDashboard() {

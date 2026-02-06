@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Save, Scan } from "lucide-react";
+import { Save } from "lucide-react";
 import { toast } from "sonner";
-
 import { EditableTransaction } from "@/lib/schemas/transaction.schema";
 import { RowForm } from "./RowTransactionForm";
 import { Button } from "@/components/ui/button";
@@ -32,16 +31,14 @@ import {
 } from "@/components/ui/select";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
-  EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
 
 import CreateAccountDrawer from "../../accounts/_components/CreateAccountDrawer";
 import { SimpleAccount } from "./TransactionClient";
-import { saveBulkTransactionsAction } from "@/app/(dashboard)/transactions/action";
+import { saveBulkTransactionsAction } from "@/app/actions/ai.action";
 type Props = {
   data: EditableTransaction[];
   onChangeAction: React.Dispatch<React.SetStateAction<EditableTransaction[]>>;

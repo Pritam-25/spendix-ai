@@ -1,7 +1,7 @@
 "use client";
 
 import { Switch } from "@/components/ui/switch";
-import { updateDefaultAccountAction } from "@/app/(dashboard)/accounts/action";
+import { updateDefaultAccountAction } from "@/app/actions/accounts.action";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import {

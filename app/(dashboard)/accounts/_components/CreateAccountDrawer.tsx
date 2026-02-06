@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createAccountAction } from "@/app/(dashboard)/accounts/action";
+import { createAccountAction } from "@/app/actions/accounts.action";
 import { toast } from "sonner";
 import { AccountType } from "@prisma/client";
 

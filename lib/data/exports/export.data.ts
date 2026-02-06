@@ -1,4 +1,4 @@
-import { Transaction, TransactionType } from "@prisma/client";
+import { Transaction } from "@prisma/client";
 import { exportToCSV } from "./export.csv";
 import { exportToExcel } from "./export.excel";
 import { exportToPDF } from "./export.pdf";

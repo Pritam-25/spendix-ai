@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Trash2Icon } from "lucide-react";
 
-import { deleteAccountAction } from "@/app/(dashboard)/accounts/action";
+import { deleteAccountAction } from "@/app/actions/accounts.action";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {

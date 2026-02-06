@@ -1,8 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Building2 } from "lucide-react";
-import Link from "next/link";
-
+import { Building2 } from "lucide-react";
 import TransactionTable from "@/components/web/TransactionTable";
 import ChartTable from "../_components/ChartTable";
 import { getAllTransactionsByAccountId } from "@/lib/data/accounts/queries";
@@ -15,11 +13,13 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 import { AccountAnalyticsSkeleton } from "../_components/AccountAnalyticsSkeleton";
 import { ExportFormat } from "@/lib/data/exports/export.data";
-import { exportAccountTransactionAction, ExportActionResult } from "../action";
+import {
+  exportAccountTransactionAction,
+  ExportActionResult,
+} from "@/app/actions/accounts.action";
 
 interface AccountTransactionFromProps {
   params: Promise<{ id: string }>;

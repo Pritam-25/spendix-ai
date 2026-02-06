@@ -71,7 +71,11 @@ export const financialSummaryTool = tool(
 
     for (const tx of transactions) {
       const amount = decimalToNumber(tx.amount);
-      tx.type === "INCOME" ? (totalIncome += amount) : (totalExpense += amount);
+      if (tx.type === "INCOME") {
+        totalIncome += amount;
+      } else {
+        totalExpense += amount;
+      }
     }
 
     return {

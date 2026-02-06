@@ -10,7 +10,7 @@ export const storeUserMemory = inngest.createFunction(
     retries: 5,
   },
   { event: "spendix/memory.store" },
-  async ({ event, step }) => {
+  async ({ event }) => {
     const { userId, messages } = event.data as {
       userId?: string;
       messages?: { role: "user"; content: string }[];

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
 import { budgetSchema, type BudgetFormType } from "@/lib/schemas/budget.schema";
-import { createOrUpdateBudgetAction } from "./action";
+import { createOrUpdateBudgetAction } from "@/app/actions/budget.action";
 
 type BudgetFormProps = {
   initialAmount?: number;

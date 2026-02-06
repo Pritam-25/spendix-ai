@@ -6,7 +6,7 @@ import UpgradeButton from "./updrade-button";
 
 export default function Navbar() {
   return (
-    <nav className="container mx-auto flex h-16 items-center justify-between gap-4 px-4 md:px-6 lg:px-30">
+    <nav className="w-full flex h-16 items-center justify-between gap-4">
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2">
           <Logo />

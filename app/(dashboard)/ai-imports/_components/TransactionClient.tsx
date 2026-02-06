@@ -3,7 +3,6 @@
 import { useMemo, useState, useCallback } from "react";
 import { nanoid } from "nanoid";
 import { TransactionType, Account, AccountType } from "@prisma/client";
-
 import AiBulkReceiptScanner from "./AiBulkRecieptScan";
 import BulkScanTransactionTable from "./BulkScanTransactionTable";
 import { defaultCategories } from "@/lib/constants/categories";

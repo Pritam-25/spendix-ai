@@ -50,7 +50,7 @@ export function RowForm({
     key: K,
     value: BulkTransactionRowType[K],
   ) => {
-    setValue(key as any, value as any);
+    setValue(key, value as any);
 
     onUpdateAction({
       ...row,
