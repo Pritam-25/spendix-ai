@@ -47,7 +47,7 @@ export function RecentTransactionsCard({
   return (
     <Card className="lg:col-span-2 h-full">
       <CardHeader className="flex flex-col sm:flex-row items-center justify-between">
-        <div className="space-y-2">
+        <div className="space-y-1">
           <CardTitle>Recent Transactions</CardTitle>
           <CardDescription>
             Your most recent income and expenses at a glance

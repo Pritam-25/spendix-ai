@@ -53,59 +53,58 @@ const AccountTransactionPage = async ({
           {/* ================= LEFT SIDE ================= */}
           <div className="flex flex-col gap-4">
             {/* Account Header */}
-            <div className="rounded-xl border bg-gradient-to-br from-background to-muted px-4 py-4 md:px-6 md:py-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="rounded-2xl border bg-card/80 bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.12),_transparent_60%)] px-4 py-5 shadow-lg shadow-black/5 md:px-6">
+              <div className="flex flex-row gap-6 lg:items-center justify-between">
                 {/* Left: account info */}
-                <div className="flex items-start gap-3">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    asChild
-                    className="h-8 w-8"
-                  >
-                    <Link href="/accounts">
-                      <ArrowLeft className="h-4 w-4" />
-                      <span className="sr-only">Back to accounts</span>
-                    </Link>
-                  </Button>
-
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-5 w-5 text-primary" />
-                      <h1 className="text-lg sm:text-xl font-semibold tracking-tight">
-                        {account.name}
-                      </h1>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      <span className="rounded-full bg-muted px-2 py-0.5">
-                        {account.type === "CURRENT"
-                          ? "Current account"
-                          : "Savings account"}
-                      </span>
-
-                      {account.isDefault && (
-                        <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
-                          Default account
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                          <Building2 className="h-5 w-5" />
                         </span>
-                      )}
+
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                            Account
+                          </p>
+                          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                            {account.name}
+                          </h1>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <span className="rounded-full bg-muted/70 px-3 py-1 font-medium text-foreground/80">
+                          {account.type === "CURRENT"
+                            ? "Current account"
+                            : "Savings account"}
+                        </span>
+                        {account.isDefault && (
+                          <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-400">
+                            Default
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Right: balance */}
-                <div className="flex flex-col gap-2 sm:items-end sm:text-right">
-                  <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                    balance
+                <div className="flex flex-col gap-3 ">
+                  <span className="text-muted-foreground/70">
+                    Current balance
                   </span>
 
-                  <span className="text-2xl font-semibold text-emerald-400">
+                  <span className="text-xl font-semibold leading-none text-foreground sm:text-2xl">
                     ₹ {Number(account.balance).toFixed(2)}
                   </span>
 
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
-                    {account.totalTransactions} transactions
-                  </span>
+                  <div className="flex flex-wrap gap-2 text-xs font-medium sm:justify-end">
+                    <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-emerald-400">
+                      {account.totalTransactions} transactions
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

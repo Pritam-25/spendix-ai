@@ -3,7 +3,7 @@ import { Github, Twitter, Linkedin } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="w-full py-8 sm:py-10 md:py-16 relative overflow-hidden border-t border-border/50">
+    <footer className="w-full mt-10 py-8 sm:py-10 md:py-16 relative overflow-hidden border-t border-border/50">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(var(--primary),0.1),transparent_50%)]" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-primary/5" />
@@ -139,7 +139,7 @@ const Footer = () => {
           {/* Copyright Section */}
           <div className="border-t border-border mt-6 pt-6 text-center">
             <p className="text-xs text-muted-foreground">
-              © 2024 Spendix. All rights reserved.
+              © 2026 Spendix. All rights reserved.
             </p>
           </div>
         </div>

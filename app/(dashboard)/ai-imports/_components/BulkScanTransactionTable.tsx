@@ -116,7 +116,7 @@ export default function BulkScanTransactionTable({
     <Card>
       <CardHeader className="border-b px-4 py-4 sm:px-6">
         <div className="flex flex-col sm:flex-row justify-between gap-3">
-          <div className="space-y-2">
+          <div className="space-y-1">
             <CardTitle>Review transactions</CardTitle>
             <CardDescription>
               Review and edit your transactions before saving

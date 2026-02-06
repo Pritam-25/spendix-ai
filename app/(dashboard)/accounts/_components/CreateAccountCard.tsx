@@ -12,13 +12,13 @@ export default function CreateAccountCard() {
         aria-label="Create new account"
         className="
           group relative flex h-full cursor-pointer flex-col
-          items-center justify-center gap-3
-          rounded-xl border border-dashed
-          bg-muted/10 p-6 text-center
-          transition-colors duration-150
-          hover:border-primary/50 hover:bg-muted/20
+          items-center justify-center gap-3 overflow-hidden
+          rounded-xl border border-dashed border-primary/30
+          bg-gradient-to-br from-primary/20 via-primary/5 to-transparent p-6 text-center
+          transition-all duration-200
+          hover:border-primary/60 hover:from-primary/30 hover:via-primary/10 hover:to-primary/5
           focus:outline-none focus-visible:ring-2
-          focus-visible:ring-primary
+          focus-visible:ring-primary/60
         "
       >
         {/* Icon */}

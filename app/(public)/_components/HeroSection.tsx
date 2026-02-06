@@ -10,11 +10,22 @@ const HeroSection = () => {
       aria-labelledby="hero-heading"
       aria-describedby="hero-description"
       role="region"
-      className="relative flex w-full items-center justify-center overflow-hidden py-16"
+      className="relative flex w-full items-center justify-center overflow-hidden pt-16"
     >
       {/* Enhanced background effects */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#00FF88] opacity-[0.10] blur-[80px] rounded-full" />
+        <div
+          className="
+            absolute top-0 left-1/2 -translate-x-1/2
+            rounded-full bg-[#00FF88] opacity-[0.10] blur-[80px]
+            
+            w-[280px] h-[200px]        /* mobile */
+            sm:w-[400px] sm:h-[280px] /* small screens */
+            md:w-[550px] md:h-[380px] /* tablets */
+            lg:w-[700px] lg:h-[480px] /* laptops */
+            xl:w-[850px] xl:h-[600px] /* large screens */
+          "
+        />
 
         {/* Grid pattern */}
         <div
@@ -46,7 +57,7 @@ const HeroSection = () => {
               className="flex items-center justify-center gap-2 mb-6"
             >
               <div className="bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-green-500" />
+                <Sparkles className="w-5 h-5 text-primary" />
                 <span className="text-xs sm:text-sm md:text-base font-medium">
                   AI-Powered Financial Management
                 </span>
@@ -60,7 +71,15 @@ const HeroSection = () => {
               transition={{ delay: 0.3, duration: 0.8 }}
               className="font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-6 leading-tight"
             >
-              <span className="inline-block bg-clip-text text-transparent bg-gradient-to-t from-emerald-600 to-emerald-400 dark:from-emerald-800 dark:via-emerald-600 dark:to-emerald-500">
+              <span
+                className="
+  inline-block bg-clip-text text-transparent
+  bg-gradient-to-b
+  from-primary
+  via-primary
+  to-primary/80
+"
+              >
                 Track Your Finances
               </span>
               <br />
@@ -74,7 +93,7 @@ const HeroSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-lg sm:text-lg md:text-xl lg:text-2xl text-muted-foreground mb-8 max-w-md md:max-w-xl lg:max-w-3xl mx-auto"
+              className="text-md sm:text-lg md:text-xl lg:text-2xl text-muted-foreground mb-8 max-w-md md:max-w-xl lg:max-w-3xl mx-auto"
             >
               Smart budget tracking, real-time analytics, and automated alerts
               when you reach your limit.
@@ -88,7 +107,22 @@ const HeroSection = () => {
             >
               {/* Primary CTA Button */}
               <Link href="/dashboard">
-                <Button className="relative group h-12 px-8 min-w-[160px] rounded-xl text-white transition-all bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600 dark:from-emerald-900 dark:to-emerald-700 dark:hover:from-emerald-800 dark:hover:to-emerald-600 shadow-md hover:shadow-lg">
+                <Button
+                  className="
+    relative group overflow-hidden
+    h-12 px-8 min-w-[160px]
+    rounded-xl
+    bg-primary text-primary-foreground
+    shadow-md transition-all
+    hover:shadow-lg
+    active:scale-[0.98]
+    before:absolute before:inset-0
+    before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent
+    before:translate-x-[-100%]
+    hover:before:translate-x-[100%]
+    before:transition-transform before:duration-700 cursor-pointer
+  "
+                >
                   <span className="relative z-10 flex items-center gap-2 text-base font-semibold">
                     Get Started
                     <motion.div
@@ -107,8 +141,24 @@ const HeroSection = () => {
 
               {/* Secondary CTA Button */}
               <Button
-                variant="outline"
-                className="hidden sm:flex h-12 px-8 min-w-[160px] rounded-xl border-2 border-primary/20 hover:border-primary/40 bg-transparent hover:bg-primary/5 text-base font-semibold backdrop-blur-sm transition-all duration-300"
+                variant="secondary"
+                className="
+    hidden sm:flex
+    h-12 px-8 min-w-[160px]
+    rounded-xl
+    cursor pointer
+    border border-secondary/30
+    dark:border-white/20
+    dark:hover:border-white/40
+    bg-secondary text-secondary-foreground
+    dark:bg-white/5
+    hover:bg-secondary/80
+    hover:border-secondary/50
+    shadow-sm hover:shadow-md
+    text-base font-semibold
+    transition-all duration-300
+    focus-visible:ring-2 focus-visible:ring-ring 
+  "
               >
                 Learn More
               </Button>
