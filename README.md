@@ -4,7 +4,6 @@
 
 AI powered personal finance management platform to track accounts, income, and expenses in one place, with transaction management, automated recurring payments, monthly budgets, spending dashboards, and a personal AI assistant for personalized, real-time insights based on user financial data.
 
-
 <a href="https://sped-ix.app" target="_blank" style="text-decoration:none;">
   <button style="
     display:inline-flex;
@@ -26,10 +25,7 @@ AI powered personal finance management platform to track accounts, income, and e
   </button>
 </a>
 
-
-
 </div>
-
 
 ## Visual Tour
 
@@ -203,8 +199,6 @@ flowchart LR
 - **Event Sourcing** — Inngest flows provide durable retries and idempotent ledger mutations.
 - **Edge Hardening** — Clerk verifies identity, Arcjet throttles anomalies, and secret rotation keeps ingress secure.
 
-
-
 ## Getting Started
 
 ### Prerequisites
@@ -254,8 +248,6 @@ NODEMAILER_USER=alerts@spendix.app
 NODEMAILER_PASS=app-specific-password
 EMAIL_ALERT_FROM="Spendix Alerts <alerts@spendix.app>"
 ```
-
-
 
 ### Useful Scripts
 
