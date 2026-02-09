@@ -1,81 +1,163 @@
 <div align="center">
 
-# Spendix — AI-Powered Personal Finance OS
+# Spendix — AI-Powered Personal Finance Management platform
 
-**Spendix** is a type-safe, AI-native personal finance platform that fuses **Next.js 16**, **LangChain/LangGraph**, **pgvector on Neon**, and **event-driven automations** to remove manual bookkeeping, keep recurring cashflows in sync, and deliver conversational financial intelligence.
+AI powered personal finance management platform to track accounts, income, and expenses in one place, with transaction management, automated recurring payments, monthly budgets, spending dashboards, and a personal AI assistant for personalized, real-time insights based on user financial data.
 
-[Live Demo](https://spedix.app) · [Product Site](https://spedix.app) · Built with ❤️ using **pnpm**
 
-![Spendix dashboard screenshot](public/screenshots/dashboard.png)
+<a href="https://sped-ix.app" target="_blank" style="text-decoration:none;">
+  <button style="
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 16px;
+    background:#22c55e;
+    color:#ffffff;
+    border:none;
+    border-radius:8px;
+    font-weight:600;
+    cursor:pointer;
+  ">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+      viewBox="0 0 24 24">
+      <path d="M8 5v14l11-7z"/>
+    </svg>
+    Live Demo
+  </button>
+</a>
+
+
 
 </div>
 
+
+## Visual Tour
+
+Explore key Spendix surfaces directly in the README. Drag horizontally (or swipe on touch) to advance the slideshow.
+
+<div align="center">
+    <div style="display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; padding:16px; border:1px solid #e5e7eb; border-radius:16px; background:rgba(15,23,42,0.04);">
+        <img src="docs/landing-page.png" alt="Spendix marketing homepage" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
+        <img src="docs/dashboard-page.png" alt="Spendix dashboard view" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
+        <img src="docs/accounts-page.png" alt="Accounts overview" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
+        <img src="docs/account-id-page.png" alt="Account detail drill-down" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
+        <img src="docs/ai-imports-page.png" alt="AI imports workspace" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
+        <img src="docs/budget-page.png" alt="Budget insights" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
+        <img src="docs/recurring-page.png" alt="Recurring transaction planner" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
+        <img src="docs/user-porfile-page.png" alt="User profile and entitlements" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
+    </div>
+    <sub>Tip: drag sideways on desktop or swipe on mobile to cycle through each view.</sub>
+</div>
+
+### Schema Overview
+
+<p align="center">
+    <img src="docs/schema.png" alt="Spendix relational schema" width="880" style="border-radius:12px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
+    <br />
+    <sub>Entity relationships powering accounts, budgets, AI memory, and plan entitlements.</sub>
+</p>
+
 ## Stack Signals
 
-![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-111827?logo=radixui&logoColor=white)
-![CSS](https://img.shields.io/badge/CSS-1572B6?logo=css3&logoColor=white)
-![Zod](https://img.shields.io/badge/Zod-3C3C3C?logoColor=white)
-![Prisma](https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white)
-![Neon PostgreSQL](https://img.shields.io/badge/Neon%20PostgreSQL-1B212D?logo=postgresql&logoColor=white)
-![pgvector](https://img.shields.io/badge/pgvector-0C4A6E?logoColor=white)
-![LangChain](https://img.shields.io/badge/LangChain-2F855A?logoColor=white)
-![LangGraph](https://img.shields.io/badge/LangGraph-18181B?logoColor=white)
-![Vercel%20AI%20SDK](https://img.shields.io/badge/Vercel%20AI%20SDK-000000?logo=vercel&logoColor=white)
-![Vercel%20AI%20Elements](https://img.shields.io/badge/Vercel%20AI%20Elements-0F172A?logo=vercel&logoColor=white)
-![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2855C5?logo=google&logoColor=white)
-![Nodemailer](https://img.shields.io/badge/Nodemailer-1D4ED8?logoColor=white)
-![Inngest](https://img.shields.io/badge/Inngest-0F766E?logoColor=white)
-![Arcjet](https://img.shields.io/badge/Arcjet-312E81?logoColor=white)
-![Clerk](https://img.shields.io/badge/Clerk-1F2933?logo=clerk&logoColor=white)
-![pnpm](https://img.shields.io/badge/pnpm-F69220?logo=pnpm&logoColor=white)
+<div style="display:flex; justify-content:center; width:100%;">
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:18px; width:100%; max-width:1080px; margin:0 auto; padding:12px 0;">
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" height="44" style="padding:8px; background:#ffffff; border-radius:12px;" />
+        <div><strong>Next.js 16</strong></div>
+        <sub>App Router + Server Actions</sub>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" height="44" />
+        <div><strong>TypeScript</strong></div>
+        <sub>Type-safe finance primitives</sub>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+        <img src="https://avatars.githubusercontent.com/u/139895814?s=200&v=4" alt="shadcn" height="44" style="border-radius:12px;" />
+        <div><strong>shadcn/ui</strong></div>
+        <sub>Composable design system</sub>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS" height="44" />
+        <div><strong>Tailored CSS</strong></div>
+        <sub>Tokenized theming</sub>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+        <img src="https://raw.githubusercontent.com/colinhacks/zod/master/logo.svg" alt="Zod" height="44" />
+        <div><strong>Zod</strong></div>
+        <sub>Validation + inference</sub>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prisma/prisma-original.svg" alt="Prisma" height="44" />
+        <div><strong>Prisma</strong></div>
+        <sub>Typed ORM</sub>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="Neon" height="44" />
+        <div><strong>Neon + pgvector</strong></div>
+        <sub>Vectorized storage</sub>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+        <img src="docs/icons/langgraph-color.svg" alt="LangChain" height="44" />
+        <div><strong>LangChain / LangGraph</strong></div>
+        <sub>Agent routing</sub>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+        <img src="https://cdn.brandfetch.io/idDpCfN4VD/w/400/h/400/theme/dark/icon.png?c=1bxid64Mup7aczewSAYMX&t=1759982772575" alt="Vercel AI" height="44" style="border-radius:12px;" />
+        <div><strong>Vercel AI SDK</strong></div>
+        <sub>Chat UX surface</sub>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+        <img src="docs/icons/gemini-color.svg" alt="Gemini" height="44" />
+        <div><strong>Gemini</strong></div>
+        <sub>Reasoning models</sub>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+        <img src="https://cdn.brandfetch.io/idK0lowSpn/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1765345250251" alt="Inngest" height="44" />
+        <div><strong>Inngest</strong></div>
+        <sub>Deterministic automations</sub>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
+        <img src="https://cdn.brandfetch.io/idwI9Qq-AB/w/128/h/129/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1766936314312" alt="Arcjet" height="44" style="border-radius:12px; background:#ffffff;" />
+        <div><strong>Arcjet</strong></div>
+        <sub>Bot defense + rate limits</sub>
+    </div>
+  </div>
+</div>
 
-## Highlights
+## Product Pillars
 
-- Multi-account ledger with granular CRUD and **bank-statement bulk ingestion**.
-- **Subscription-aware UX** where every feature is mapped to plan requirements via [config/plan-mapping.ts](config/plan-mapping.ts) and [config/features.ts](config/features.ts).
-- **AI-powered flows**: LangGraph agent, Gemini tooling, LangChain tools, and Vercel AI Elements chat surface in [components/ai-elements](components/ai-elements).
-- **Event-driven automations** using Inngest workers in [inngest/functions](inngest/functions) for recurring transactions, memory updates, and spend alerts.
-- **pgvector-backed Retrieval-Augmented Generation** defined in [data/accounts/rag.ts](data/accounts/rag.ts) and [lib/ai/tools/accountRag.tool.ts](lib/ai/tools/accountRag.tool.ts).
-- **Arcjet bot protection** wired through [lib/arcjet.ts](lib/arcjet.ts) to throttle scripted abuse.
+- **Unified Ledger Control** — Multi-account books, high-fidelity CRUD, and tight reconciliation keep every inflow/outflow auditable.
+- **AI-Assisted Imports** — Gemini-powered parsing plus human-in-the-loop review accelerate bulk bank statement ingestion.
+- **Recurring Cashflow Engine** — Deterministic schedulers project subscriptions, loans, and bills into actionable calendars.
+- **Budget Intelligence** — Envelope-style tracking, alert thresholds, and visualizations surface overspend before it escalates.
+- **Finance Copilot** — Conversational agents grounded in private vector memory translate intents into secure actions.
+- **Governed Access** — Plan-aware UX, entitlement gating, and webhook-synced billing data keep monetization trustworthy.
 
-## Feature Focus
+## Feature Spotlight
 
-### Subscription Plans & Usage Gates
+### Subscription Intelligence
 
-- Plans, feature matrices, and ordering rules live in [config/plan-mapping.ts](config/plan-mapping.ts), [config/feature-requirements.ts](config/feature-requirements.ts), and [config/plan-order.ts](config/plan-order.ts).
-- Clerk webhooks in [app/api/webhooks/clerk/auth/route.ts](app/api/webhooks/clerk/auth/route.ts) and [app/api/webhooks/clerk/billing/route.ts](app/api/webhooks/clerk/billing/route.ts) keep subscription state, billing metadata, and entitlements synced.
-- UI gates reuse `useFeature()` and plan hooks under [hooks](hooks) to hide/disable premium affordances automatically.
+**Plan graphs**, **feature matrices**, and **plan-order logic** ensure every surface knows what a member can access. Clerk webhooks synchronize lifecycle events, while experience toggles automatically hide, disable, or upsell premium affordances.
 
 ### Recurring Transactions Engine
 
-- Recurrence schemas live in [utils/recurring.ts](utils/recurring.ts) and [schemas/transaction.schema.ts](schemas/transaction.schema.ts).
-- Scheduler + generator logic is wrapped in [inngest/functions/transaction.ts](inngest/functions/transaction.ts) with monthly summaries handled via [inngest/functions/transactionMonthlySummary.ts](inngest/functions/transactionMonthlySummary.ts).
-- Users manage schedules through [app/(dashboard)/recurrings/page.tsx](<app/(dashboard)/recurrings/page.tsx>) with optimistic updates handled by [actions/transactions.action.ts](actions/transactions.action.ts).
+**Recurrence schemas** encode daily to custom cadences, while Inngest orchestrators expand those rules into dated invoices, autopay reminders, and monthly summaries. Optimistic UI states keep editing silky even before workers confirm the schedule.
 
 ### AI Imports & Bulk Bank Statements
 
-- The dedicated workspace in [app/(dashboard)/ai-imports/page.tsx](<app/(dashboard)/ai-imports/page.tsx>) orchestrates uploading, Gemini parsing, and human-in-the-loop review.
-- Components such as [app/(dashboard)/ai-imports/\_components/AiBulkRecieptScan.tsx](<app/(dashboard)/ai-imports/_components/AiBulkRecieptScan.tsx>) and [app/(dashboard)/ai-imports/\_components/BulkScanTransactionTable.tsx](<app/(dashboard)/ai-imports/_components/BulkScanTransactionTable.tsx>) pair Vercel AI Elements with LangChain tools to reconcile imported rows before commit.
-- Data normalization uses helpers in [utils/serialize.ts](utils/serialize.ts) and duplicate-prevention constraints defined in [prisma/migrations/20260125165256_add_unique_constraints_to_prevent_duplicate_transaction/migration.sql](prisma/migrations/20260125165256_add_unique_constraints_to_prevent_duplicate_transaction/migration.sql).
+A dedicated **AI imports workspace** combines drag-and-drop uploads, Gemini extraction, and LangChain tooling to normalize CSV, XLS, or PDF statements. **Duplicate guards** and semantic similarity checks protect the ledger before final commit.
 
 ### Transactions Workspace
 
-- Core ledger UI is implemented in [app/(dashboard)/transactions/page.tsx](<app/(dashboard)/transactions/page.tsx>) with reusable grids in [components/web/TransactionTable.tsx](components/web/TransactionTable.tsx).
-- Form flows reuse [app/(dashboard)/transactions/\_components/addTransactionForm.tsx](<app/(dashboard)/transactions/_components/addTransactionForm.tsx>) plus Zod schemas in [schemas/transaction.schema.ts](schemas/transaction.schema.ts) for type-safe validation.
-- Screenshot above references this module; drop in your own asset under `public/screenshots/dashboard.png` if you’d like to customize the preview.
+The **core ledger canvas** features rapid filters, inline edits, and a transaction drawer tuned for keyboard-first workflows. Zod-backed forms guarantee category, amount, and metadata integrity while delivering real-time totals and context chips.
 
 ### AI Finance Copilot
 
-- Chat surfaces reuse Vercel AI Elements across [components/ai-elements/conversation.tsx](components/ai-elements/conversation.tsx), [components/ai-elements/message.tsx](components/ai-elements/message.tsx), and [components/ai-elements/prompt-input.tsx](components/ai-elements/prompt-input.tsx).
-- LangGraph orchestration runs through [lib/ai/graph/chat.graph.ts](lib/ai/graph/chat.graph.ts), [lib/ai/graph/memory.graph.ts](lib/ai/graph/memory.graph.ts), and routed nodes in [lib/ai/graph/nodes](lib/ai/graph/nodes).
-- Gemini-hosted reasoning models are set up in [lib/gemini.ts](lib/gemini.ts) while domain-specific tools sit under [lib/ai/tools](lib/ai/tools). Conversational + long-term memory persists via [lib/ai/graph/memory/store.ts](lib/ai/graph/memory/store.ts) and Inngest workers in [inngest/functions/memory.ts](inngest/functions/memory.ts).
+**Vercel AI Elements** drive a conversational surface that blends short-term context with long-term embeddings. LangGraph routes between analysis, insight, and action nodes so Spendix can summarize budgets, draft next steps, or queue transactions just by chatting.
 
-### Notifications & Safeguards
+### Safeguards & Notifications
 
-- Budget alert emails trigger off Inngest events and are delivered through **Nodemailer** (SMTP credentials in `.env`).
-- Arcjet rules in [lib/arcjet.ts](lib/arcjet.ts) classify abusive traffic before it ever reaches sensitive routes such as [app/api/agent/route.ts](app/api/agent/route.ts).
+**Arcjet threat intelligence** filters abusive clients before API or server actions execute, while **Nodemailer alerts** broadcast budget breaches or anomaly pings with branded templates. Every sensitive route stays wrapped in authenticated, rate-limited handlers.
 
 ## System Architecture
 
@@ -116,25 +198,12 @@ flowchart LR
     LangGraph --> Inngest
 ```
 
-- **Type Safety Everywhere:** shared Zod schemas in [schemas](schemas) drive React Hook Form, server actions, and Prisma input types.
-- **Vector Intelligence:** pgvector columns defined in [prisma/schema.prisma](prisma/schema.prisma) back RAG helpers in [data/accounts/rag.ts](data/accounts/rag.ts).
-- **Event Sourcing:** Inngest orchestrates cron-style jobs (`transactionMonthlySummary`, `memory`) ensuring deterministic retries.
-- **Edge Hardening:** Arcjet + Clerk secure ingress; Arcjet throttles bots, Clerk signs users + webhooks to sync premium status.
+- **Type Safety Everywhere** — Shared schemas span forms, server actions, and persistence layers.
+- **Vector Intelligence** — pgvector-backed memory ensures AI answers are grounded in first-party data.
+- **Event Sourcing** — Inngest flows provide durable retries and idempotent ledger mutations.
+- **Edge Hardening** — Clerk verifies identity, Arcjet throttles anomalies, and secret rotation keeps ingress secure.
 
-## Repository Guide
 
-| Area                                             | Why it matters                                                                               |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| [app/(dashboard)](<app/(dashboard)>)             | App Router routes for authenticated experiences (accounts, budgets, recurrings, AI imports). |
-| [components/ui](components/ui)                   | shadcn/ui primitives themed via `globals.css` and tokens for consistent UX.                  |
-| [components/ai-elements](components/ai-elements) | Vercel AI Elements chat surfaces wired into LangGraph outputs.                               |
-| [actions](actions)                               | Next.js Server Actions for mutations with optimistic UI + Prisma writes.                     |
-| [data](data)                                     | Query/mutation helpers and export pipelines (CSV/Excel/PDF).                                 |
-| [lib/ai](lib/ai)                                 | LangChain tools, Gemini drivers, LangGraph graphs, and memory stores.                        |
-| [inngest/functions](inngest/functions)           | Event-driven jobs for recurring financial logic.                                             |
-| [prisma/schema.prisma](prisma/schema.prisma)     | Database schema (accounts, transactions, pgvector embeddings, subscription metadata).        |
-| [utils](utils)                                   | Cross-cutting helpers (recurrence math, time ranges, serialization, Clerk mappers).          |
-| [config](config)                                 | Feature gating, plan ordering, and requirement enforcement.                                  |
 
 ## Getting Started
 
@@ -150,10 +219,10 @@ flowchart LR
 
 1. `pnpm install`
 2. `pnpm prisma generate`
-3. Apply schema: `pnpm exec prisma migrate deploy`
-4. Seed local data (optional): `pnpm seed`
-5. Start dev server: `pnpm dev`
-6. Run background workers (optional but recommended): `npx inngest-cli@latest dev --env-file=.env`
+3. `pnpm exec prisma migrate deploy`
+4. (Optional) `pnpm seed`
+5. `pnpm dev`
+6. (Optional) `npx inngest-cli@latest dev --env-file=.env`
 
 ### Example `.env`
 
@@ -186,22 +255,22 @@ NODEMAILER_PASS=app-specific-password
 EMAIL_ALERT_FROM="Spendix Alerts <alerts@spendix.app>"
 ```
 
-> ⚠️ Never commit secrets. Use `.env.local` for local dev and provider secrets for deployments.
+
 
 ### Useful Scripts
 
-- `pnpm dev` – Next.js dev server with hot reload.
-- `pnpm lint` – ESLint over the entire repo.
-- `pnpm build` – Production build (detects type errors).
-- `pnpm start` – Run the compiled app.
-- `pnpm format` / `pnpm format:check` – Prettier helpers.
+- `pnpm dev` — Next.js dev server with hot reload.
+- `pnpm lint` — ESLint across the monorepo.
+- `pnpm build` — Production bundle with type checks.
+- `pnpm start` — Launch compiled output.
+- `pnpm format` / `pnpm format:check` — Prettier helpers.
 
 ## Operational Notes
 
-- **Bank Statement Imports:** CSV/XLS/PDF data is streamed via [data/exports](data/exports) utilities and reconciled against duplicates before Prisma writes.
-- **Budget Alerts:** Budget thresholds (75%+, breach) trigger Inngest budget flows which then call Nodemailer to produce branded alerts.
-- **AI Memory:** Inngest `memory` function consolidates agent recaps into pgvector embeddings so LangGraph can ground future conversations.
-- **Bot Defense:** Arcjet rules run before API handlers to enforce rate limits and anomaly detection even on server actions.
+- **Bank Statement Imports** deduplicate by account, institution, amount, and timestamp windows before persisting.
+- **Budget Alerts** evaluate soft (75%) and hard (100%+) thresholds with context-specific advice in every email.
+- **AI Memory** batches LangGraph recaps so embeddings stay fresh and storage lean.
+- **Bot Defense** leans on Arcjet fingerprints, rate ceilings, and challenge flows to protect APIs and server actions.
 
 ## Roadmap
 
