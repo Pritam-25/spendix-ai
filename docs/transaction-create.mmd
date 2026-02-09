@@ -1,0 +1,43 @@
+---
+config:
+  theme: default
+  layout: elk
+---
+flowchart LR
+    A["User opens Transaction Form"] --> B{"Scan receipt with AI?"}
+    B -- Yes --> C["Upload receipt"]
+    C --> D["AI parses receipt and auto-fill transaction fields"]
+    B -- No --> F["User fills details manually"]
+    F --> G["Select Account"]
+    G --> H{"Account exists?"}
+    H -- No --> I["Click Add Account"]
+    I --> J["Account Create Drawer Opens"]
+    J --> K["Create New Account"]
+    K --> L["Auto-select newly created account"]
+    H -- Yes --> M["Default account auto-selected"]
+    M --> N["User can manually change account"]
+    L --> O["Fill transaction details"]
+    N --> O
+    U{"Enable Recurring?"} --> V["Check if user is Pro"]
+    V -- Not Pro --> W["Recurring option blocked in UI"]
+    V -- Pro --> X["Configure recurring schedule"]
+    W --> Y["Submit Form"]
+    X --> Y
+    Y --> Z["Backend receives request"]
+    Z --> AA["Validate request using Zod schema"]
+    AA --> AB{"Valid data?"}
+    AB -- No --> AC["Return validation error"]
+    AB -- Yes --> AD["RequireUser middleware"]
+    AD --> AE{"User authenticated?"}
+    AE -- No --> AF["Reject request"]
+    AE -- Yes --> AG["UseFeature middleware"]
+    AG --> AH{"Recurring allowed for plan?"}
+    AH -- No --> AI["Block recurring feature"]
+    AH -- Yes --> AJ["Proceed"]
+    AI --> n1["Block Transaction show error toast"]
+    AJ --> AK["Create transaction"]
+    O --> U
+    D --> G
+    AK --> AM["Transaction stored in database show success toast"]
+
+    n1@{ shape: rect}

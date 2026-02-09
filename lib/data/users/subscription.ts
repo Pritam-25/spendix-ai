@@ -18,16 +18,26 @@ export async function getUserPlanFromDB(clerkUserId: string) {
 
   if (!user?.subscription) return null;
 
-  const item = user.subscription.items[0];
+  const allowedStatuses = new Set<SubscriptionStatus>([
+    SubscriptionStatus.ACTIVE,
+    SubscriptionStatus.TRIALING,
+  ]);
+
+  const activeItem = [...user.subscription.items]
+    .filter((item) => allowedStatuses.has(item.status))
+    .sort((a, b) => {
+      const aStart = a.periodStart ? a.periodStart.getTime() : 0;
+      const bStart = b.periodStart ? b.periodStart.getTime() : 0;
+      return bStart - aStart;
+    })[0];
+
+  const fallbackLatest = [...user.subscription.items]
+    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    .find((item) => item.status === SubscriptionStatus.ACTIVE);
+
+  const item = activeItem ?? fallbackLatest;
 
   if (!item) return null;
-
-  if (
-    item.status !== SubscriptionStatus.ACTIVE &&
-    item.status !== SubscriptionStatus.TRIALING
-  ) {
-    return null;
-  }
 
   return item.planType;
 }
@@ -47,6 +57,14 @@ export async function requireFeature(feature: FeatureKey) {
   // 2️⃣ DB CHECK (to know WHY)
   const userPlan = await getUserPlanFromDB(userId);
   const requiredPlan = FEATURE_MIN_PLAN[feature];
+  console.log(
+    "DB check for feature",
+    feature,
+    "-> userPlan:",
+    userPlan,
+    "requiredPlan:",
+    requiredPlan,
+  );
 
   // 3️⃣ User has no plan? throw correct error
   if (!userPlan) {
