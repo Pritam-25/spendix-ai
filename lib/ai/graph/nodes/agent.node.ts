@@ -24,10 +24,13 @@ export const agentNode: GraphNode<typeof MessagesAnnotation.State> = async (
 ) => {
   console.log("🟢 [AgentNode] Invoked");
 
-  console.log(
-    "📩 Incoming messages:",
-    state.messages.map((m) => ({ type: m.type, content: m.content })),
-  );
+  // Get the last message
+  const lastMessage = state.messages[state.messages.length - 1];
+  // Log only type and content
+  console.log("📩 Last message:", {
+    type: lastMessage.type,
+    content: lastMessage.content,
+  });
 
   try {
     const nonSystemMessages = state.messages.filter(

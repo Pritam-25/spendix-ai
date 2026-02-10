@@ -31,11 +31,27 @@ RUN pnpm prisma generate
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ARG NEXT_PUBLIC_APP_URL
 
-ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
-
-# Build Next.js standalone
-RUN pnpm build
+# Build Next.js standalone (ensure public envs exist for SSG)
+RUN set -euo pipefail \
+	 && BUILD_CLERK_KEY="${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-}" \
+	 && BUILD_APP_URL="${NEXT_PUBLIC_APP_URL:-}" \
+	 && if [ -z "$BUILD_CLERK_KEY" ] && [ -f ".env.production" ]; then \
+			BUILD_CLERK_KEY=$(awk -F= '$1=="NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" {print $2}' .env.production | tr -d '\r'); \
+		 fi \
+	 && if [ -z "$BUILD_APP_URL" ] && [ -f ".env.production" ]; then \
+			BUILD_APP_URL=$(awk -F= '$1=="NEXT_PUBLIC_APP_URL" {print $2}' .env.production | tr -d '\r'); \
+		 fi \
+	 && if [ -z "$BUILD_CLERK_KEY" ]; then \
+			echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY must be provided via --build-arg or .env.production"; \
+			exit 1; \
+		 fi \
+	 && if [ -z "$BUILD_APP_URL" ]; then \
+			echo "NEXT_PUBLIC_APP_URL must be provided via --build-arg or .env.production"; \
+			exit 1; \
+		 fi \
+	 && NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$BUILD_CLERK_KEY" \
+		 NEXT_PUBLIC_APP_URL="$BUILD_APP_URL" \
+		 pnpm build
 
 # Remove dev deps
 RUN pnpm prune --prod

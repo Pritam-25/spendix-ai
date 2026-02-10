@@ -83,6 +83,5 @@ export async function getAllTransactions() {
     },
     orderBy: [{ date: "desc" }, { id: "desc" }],
   });
-
   return transactions.map(serialize);
 }

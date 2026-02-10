@@ -5,6 +5,7 @@ import { requireUser } from "../users/auth";
 import { serialize } from "@/lib/utils/serialize";
 import { Prisma, TransactionType } from "@prisma/client";
 import { getKpiDateRange, KpiTimeRange } from "@/lib/utils/timerange";
+import { resolveUserTimezone } from "@/lib/ai/tools/helper";
 
 export type DashboardSummary = {
   accountId: string;
@@ -40,14 +41,15 @@ async function getDefaultAccountByUserId(userId: string) {
 
 // get total income, total expense, recent transactions for default account
 export default async function getDefaultAccountDataForDashboard(
-  timeRange: KpiTimeRange = KpiTimeRange.ALL_TIME,
+  timeRange: KpiTimeRange = KpiTimeRange.THIS_YEAR,
 ): Promise<DashboardSummary | null> {
   const user = await requireUser();
+  const timezone = await resolveUserTimezone(user.clerkUserId);
 
   const defaultAccount = await getDefaultAccountByUserId(user.id);
   if (!defaultAccount) return null;
 
-  const dateFilter = getKpiDateRange(timeRange);
+  const dateFilter = getKpiDateRange(timeRange, timezone);
 
   const baseWhere: Prisma.TransactionWhereInput = {
     accountId: defaultAccount.id,
@@ -109,6 +111,7 @@ export async function getTopCategoriesForDashboard(
   timeRange: KpiTimeRange = KpiTimeRange.ALL_TIME,
 ) {
   const user = await requireUser();
+  const timezone = await resolveUserTimezone(user.clerkUserId);
 
   const defaultAccount = await getDefaultAccountByUserId(user.id);
 
@@ -118,7 +121,7 @@ export async function getTopCategoriesForDashboard(
       topExpenseCategories: [],
     };
 
-  const dateFilter = getKpiDateRange(timeRange);
+  const dateFilter = getKpiDateRange(timeRange, timezone);
 
   const baseWhere: Prisma.TransactionWhereInput = {
     accountId: defaultAccount.id,

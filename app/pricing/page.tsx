@@ -1,4 +1,10 @@
+import Link from "next/link";
+
 import { PricingTable } from "@clerk/nextjs";
+import { ArrowLeft } from "lucide-react";
+
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 
 type PricingPageProps = {
   searchParams: Promise<{
@@ -15,6 +21,19 @@ export default async function PricingPage({ searchParams }: PricingPageProps) {
   return (
     <main className="min-h-screen bg-gradient-to-b from-background via-background/80 to-background px-4 py-12 flex justify-center">
       <section className="w-full max-w-6xl space-y-10">
+        <div>
+          <Link
+            href={redirectUrl}
+            className={cn(
+              buttonVariants({ variant: "secondary", size: "sm" }),
+              "w-fit",
+            )}
+            aria-label="Go back"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            <span>Back</span>
+          </Link>
+        </div>
         <header className="space-y-4 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />

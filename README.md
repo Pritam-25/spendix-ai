@@ -13,13 +13,14 @@ AI powered personal finance management platform to track accounts, income, and e
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" height="48" style="margin:8px;" />
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" height="48" style="margin:8px;" />
   <img src="https://avatars.githubusercontent.com/u/139895814?s=200&v=4" alt="shadcn/ui" height="48" style="margin:8px; border-radius:12px;" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="Tailored CSS" height="48" style="margin:8px;" />
+  <img src="public/docs/Tailwind CSS.png" alt="Tailored CSS" height="48" style="margin:8px;" />
   <img src="https://raw.githubusercontent.com/colinhacks/zod/master/logo.svg" alt="Zod" height="48" style="margin:8px;" />
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prisma/prisma-original.svg" alt="Prisma" height="48" style="margin:8px;" />
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="Neon + pgvector" height="48" style="margin:8px;" />
-  <img src="docs/langgraph-color.png" alt="LangChain / LangGraph" height="48" style="margin:8px;" />
+  <img src="public/docs/langchain.png" alt="LangChain" height="48" style="margin:8px;" />
+    <img src="public/docs/langgraph-color.png" alt="LangGraph" height="48" style="margin:8px;" />
   <img src="https://cdn.brandfetch.io/idDpCfN4VD/w/400/h/400/theme/dark/icon.png?c=1bxid64Mup7aczewSAYMX&t=1759982772575" alt="Vercel AI SDK" height="48" style="margin:8px; border-radius:12px;" />
-  <img src="docs/gemini-color.png" alt="Gemini" height="48" style="margin:8px;" />
+  <img src="public/docs/gemini-color.png" alt="Gemini" height="48" style="margin:8px;" />
   <img src="https://cdn.brandfetch.io/idK0lowSpn/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1765345250251" alt="Inngest" height="48" style="margin:8px; border-radius:12px;" />
   <img src="https://cdn.brandfetch.io/idwI9Qq-AB/w/128/h/129/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1766936314312" alt="Arcjet" height="48" style="margin:8px; border-radius:12px; background:#ffffff;" />
 </p>
@@ -27,13 +28,13 @@ AI powered personal finance management platform to track accounts, income, and e
 <p align="center">Explore the Spendix dashboard layout at a glance.</p>
 
 <div align="center">
-    <img src="docs/dashboard-page.png" alt="Spendix dashboard view" style="max-width:100%; border-radius:16px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
+    <img src="public/docs/dashboard-page.png" alt="Spendix dashboard view" style="max-width:100%; border-radius:16px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
 </div>
 
 <h3 align="center">Schema Overview</h3>
 
 <p align="center">
-    <img src="docs/schema.png" alt="Spendix relational schema" width="880" style="border-radius:12px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
+    <img src="public/docs/spendix schema.svg" alt="Spendix relational schema" width="880" style="border-radius:12px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
     <br />
     <sub>Entity relationships powering accounts, budgets, AI memory, and plan entitlements.</sub>
 </p>
@@ -166,6 +167,12 @@ The **core ledger canvas** features rapid filters, inline edits, and a transacti
 
 **Vercel AI Elements** drive a conversational surface that blends short-term context with long-term embeddings. LangGraph routes between analysis, insight, and action nodes so Spendix can summarize budgets, draft next steps, or queue transactions just by chatting.
 
+<p align="center">
+    <img src="public/docs/langraph%20workflow.png" alt="LangGraph workflow" width="880" style="border-radius:12px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
+    <br />
+    <sub>Workflow showing how LangGraph agents branch between reasoning, memory refresh, and ledger actions.</sub>
+</p>
+
 ### Safeguards & Notifications
 
 **Arcjet threat intelligence** filters abusive clients before API or server actions execute, while **Nodemailer alerts** broadcast budget breaches or anomaly pings with branded templates. Every sensitive route stays wrapped in authenticated, rate-limited handlers.
@@ -173,7 +180,7 @@ The **core ledger canvas** features rapid filters, inline edits, and a transacti
 ## System Architecture
 
 <p align="center">
-    <img src="docs/project-architecture.png" alt="Spendix relational schema" width="880" style="border-radius:12px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
+    <img src="public/docs/project-architecture.png" alt="Spendix relational schema" width="880" style="border-radius:12px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
     <br />
     <sub>Small overview of System Architecture how data is flowing</sub>
 </p>

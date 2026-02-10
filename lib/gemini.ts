@@ -1,25 +1,26 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 const DEFAULT_EMBEDDING_MODEL = "gemini-embedding-001";
+const DEFAULT_DIMENSION = 768;
 
-let cachedEmbeddingModel: ReturnType<
-  GoogleGenerativeAI["getGenerativeModel"]
-> | null = null;
+let cachedClient: GoogleGenAI | null = null;
 
-function getEmbeddingModel() {
+function getClient() {
+  if (cachedClient) {
+    return cachedClient;
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured");
   }
 
-  if (cachedEmbeddingModel) {
-    return cachedEmbeddingModel;
-  }
+  cachedClient = new GoogleGenAI({ apiKey });
+  return cachedClient;
+}
 
-  const modelName = process.env.GEMINI_EMBED_MODEL ?? DEFAULT_EMBEDDING_MODEL;
-  const genAI = new GoogleGenerativeAI(apiKey);
-  cachedEmbeddingModel = genAI.getGenerativeModel({ model: modelName });
-  return cachedEmbeddingModel;
+function getEmbeddingModelName() {
+  return process.env.GEMINI_EMBED_MODEL ?? DEFAULT_EMBEDDING_MODEL;
 }
 
 export async function generateEmbedding(content: string) {
@@ -28,11 +29,18 @@ export async function generateEmbedding(content: string) {
     throw new Error("Cannot generate embedding for empty content");
   }
 
-  const model = getEmbeddingModel();
-  const response = await model.embedContent(trimmed);
-  const values = response.embedding?.values;
+  const ai = getClient();
+  const response = await ai.models.embedContent({
+    model: getEmbeddingModelName(),
+    contents: [trimmed],
+    config: {
+      outputDimensionality: DEFAULT_DIMENSION,
+    },
+  });
 
-  if (!values?.length) {
+  const values = response.embeddings?.[0]?.values;
+
+  if (!Array.isArray(values) || !values.length) {
     throw new Error("Embedding response missing values");
   }
 
