@@ -28,7 +28,6 @@ AI powered personal finance management platform to track accounts, income, and e
 <h2 align="center">Tech Stack Used</h2>
 </div>
 
-
 <p align="center">
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" height="48" style="margin:8px;" />
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" height="48" style="margin:8px;" />
