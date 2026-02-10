@@ -4,26 +4,7 @@
 
 AI powered personal finance management platform to track accounts, income, and expenses in one place, with transaction management, automated recurring payments, monthly budgets, spending dashboards, and a personal AI assistant for personalized, real-time insights based on user financial data.
 
-<a href="https://sped-ix.app" target="_blank" style="text-decoration:none;">
-  <button style="
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:10px 16px;
-    background:#22c55e;
-    color:#ffffff;
-    border:none;
-    border-radius:8px;
-    font-weight:600;
-    cursor:pointer;
-  ">
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-      viewBox="0 0 24 24">
-      <path d="M8 5v14l11-7z"/>
-    </svg>
-    Live Demo
-  </button>
-</a>
+### 🔗 [Live demo: https://sped-ix.app](https://spedix.app)
 
 <h2 align="center">Tech Stack Used</h2>
 </div>
@@ -36,9 +17,9 @@ AI powered personal finance management platform to track accounts, income, and e
   <img src="https://raw.githubusercontent.com/colinhacks/zod/master/logo.svg" alt="Zod" height="48" style="margin:8px;" />
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prisma/prisma-original.svg" alt="Prisma" height="48" style="margin:8px;" />
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="Neon + pgvector" height="48" style="margin:8px;" />
-  <img src="docs/icons/langgraph-color.svg" alt="LangChain / LangGraph" height="48" style="margin:8px;" />
+  <img src="https://cdn.jsdelivr.net/npm/simple-icons@16.8.0/icons/langgraph.svg" alt="LangChain / LangGraph" height="48" style="margin:8px;" />
   <img src="https://cdn.brandfetch.io/idDpCfN4VD/w/400/h/400/theme/dark/icon.png?c=1bxid64Mup7aczewSAYMX&t=1759982772575" alt="Vercel AI SDK" height="48" style="margin:8px; border-radius:12px;" />
-  <img src="docs/icons/gemini-color.svg" alt="Gemini" height="48" style="margin:8px;" />
+  <img src="https://cdn.jsdelivr.net/npm/simple-icons@16.8.0/icons/googlegemini.svg" alt="Gemini" height="48" style="margin:8px;" />
   <img src="https://cdn.brandfetch.io/idK0lowSpn/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1765345250251" alt="Inngest" height="48" style="margin:8px; border-radius:12px;" />
   <img src="https://cdn.brandfetch.io/idwI9Qq-AB/w/128/h/129/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1766936314312" alt="Arcjet" height="48" style="margin:8px; border-radius:12px; background:#ffffff;" />
 </p>
