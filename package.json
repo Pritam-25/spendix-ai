@@ -8,6 +8,8 @@
     "seed": "prisma db seed",
     "build": "next build",
     "start": "next start",
+    "webhook": " ngrok http 3000",
+    "inggest": "npx --ignore-scripts=false inngest-cli@latest dev",
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

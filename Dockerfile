@@ -1,61 +1,68 @@
 # ------------------------
 # Stage 1: Builder
 # ------------------------
-FROM node:22-slim AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
+
+# Prisma + Node need OpenSSL
+RUN apk add --no-cache openssl libc6-compat
 
 # Enable pnpm
 RUN corepack enable && corepack prepare pnpm@10.28.0 --activate
 
-# Copy lockfiles
-COPY package.json pnpm-lock.yaml ./
+# Skip Prisma auto-generate during install
+ENV PRISMA_SKIP_POSTINSTALL_GENERATE=true
 
-# Install all dependencies (dev + prod needed for build)
+# Copy dependency files
+COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma
+
+# Install deps
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
+# Copy source
 COPY . .
 
-# Build-time environment variables (public only)
+# Generate Prisma client explicitly
+RUN pnpm prisma generate
+
+# Build args (public only)
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ARG NEXT_PUBLIC_APP_URL
 
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build Next.js
+# Build Next.js standalone
 RUN pnpm build
 
-# Remove dev dependencies for production
+# Remove dev deps
 RUN pnpm prune --prod
+
 
 # ------------------------
 # Stage 2: Runner
 # ------------------------
-FROM node:22-slim AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
-# Security: non-root user
-RUN addgroup --system nodejs && adduser --system nextjs --ingroup nodejs
+RUN apk add --no-cache openssl libc6-compat
 
-# Copy only standalone output and static assets
+# Non-root user
+RUN addgroup -S nextjs && adduser -S nextjs -G nextjs
+
+# Copy only what is needed
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/prisma ./prisma
 
-# Runtime environment
 ENV NODE_ENV=production
 
-# Run as non-root
 USER nextjs
 
-# Expose port
 EXPOSE 3000
 
-# Start app using standalone server
 CMD ["node", "server.js"]

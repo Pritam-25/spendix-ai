@@ -4,7 +4,7 @@
 
 AI powered personal finance management platform to track accounts, income, and expenses in one place, with transaction management, automated recurring payments, monthly budgets, spending dashboards, and a personal AI assistant for personalized, real-time insights based on user financial data.
 
-### 🔗 [Live demo: https://sped-ix.app](https://spedix.app)
+### 🔗 [Live demo: spendix.app](https://spend-ix.app)
 
 <h2 align="center">Tech Stack Used</h2>
 </div>
@@ -17,9 +17,9 @@ AI powered personal finance management platform to track accounts, income, and e
   <img src="https://raw.githubusercontent.com/colinhacks/zod/master/logo.svg" alt="Zod" height="48" style="margin:8px;" />
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prisma/prisma-original.svg" alt="Prisma" height="48" style="margin:8px;" />
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="Neon + pgvector" height="48" style="margin:8px;" />
-  <img src="https://cdn.jsdelivr.net/npm/simple-icons@16.8.0/icons/langgraph.svg" alt="LangChain / LangGraph" height="48" style="margin:8px;" />
+  <img src="docs/langgraph-color.png" alt="LangChain / LangGraph" height="48" style="margin:8px;" />
   <img src="https://cdn.brandfetch.io/idDpCfN4VD/w/400/h/400/theme/dark/icon.png?c=1bxid64Mup7aczewSAYMX&t=1759982772575" alt="Vercel AI SDK" height="48" style="margin:8px; border-radius:12px;" />
-  <img src="https://cdn.jsdelivr.net/npm/simple-icons@16.8.0/icons/googlegemini.svg" alt="Gemini" height="48" style="margin:8px;" />
+  <img src="docs/gemini-color.png" alt="Gemini" height="48" style="margin:8px;" />
   <img src="https://cdn.brandfetch.io/idK0lowSpn/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1765345250251" alt="Inngest" height="48" style="margin:8px; border-radius:12px;" />
   <img src="https://cdn.brandfetch.io/idwI9Qq-AB/w/128/h/129/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1766936314312" alt="Arcjet" height="48" style="margin:8px; border-radius:12px; background:#ffffff;" />
 </p>
@@ -37,6 +37,99 @@ AI powered personal finance management platform to track accounts, income, and e
     <br />
     <sub>Entity relationships powering accounts, budgets, AI memory, and plan entitlements.</sub>
 </p>
+
+## Plan Comparison
+
+Higher tiers inherit every capability from the preceding plans, with premium-only rows called out explicitly.
+
+<div align="center">
+
+<table style="margin:0 auto;">
+    <thead>
+        <tr>
+            <th>Feature</th>
+            <th>Free</th>
+            <th>Pro</th>
+            <th>Premium</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Income &amp; expense tracking</td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+        </tr>
+        <tr>
+            <td>Monthly budget setup</td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+        </tr>
+        <tr>
+            <td>Search &amp; filter transactions</td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+        </tr>
+        <tr>
+            <td>AI receipt scan (3/month)</td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+        </tr>
+        <tr>
+            <td>Multiple accounts</td>
+            <td><span style="color:#ef4444;">&#10007;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+        </tr>
+        <tr>
+            <td>Unlimited AI receipt scans</td>
+            <td><span style="color:#ef4444;">&#10007;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+        </tr>
+        <tr>
+            <td>Recurring transactions</td>
+            <td><span style="color:#ef4444;">&#10007;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+        </tr>
+        <tr>
+            <td>Budget alert emails</td>
+            <td><span style="color:#ef4444;">&#10007;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+        </tr>
+        <tr>
+            <td>AI spending insights</td>
+            <td><span style="color:#ef4444;">&#10007;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+        </tr>
+        <tr>
+            <td>AI finance chatbot</td>
+            <td><span style="color:#ef4444;">&#10007;</span></td>
+            <td><span style="color:#ef4444;">&#10007;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+        </tr>
+        <tr>
+            <td>AI bulk insert (statement or screenshot ingest)</td>
+            <td><span style="color:#ef4444;">&#10007;</span></td>
+            <td><span style="color:#ef4444;">&#10007;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+        </tr>
+        <tr>
+            <td>CSV, Excel &amp; PDF export</td>
+            <td><span style="color:#ef4444;">&#10007;</span></td>
+            <td><span style="color:#ef4444;">&#10007;</span></td>
+            <td><span style="color:#22c55e;">&#10003;</span></td>
+        </tr>
+    </tbody>
+</table>
+
+</div>
 
 ## Product Pillars
 
@@ -61,6 +154,10 @@ AI powered personal finance management platform to track accounts, income, and e
 
 A dedicated **AI imports workspace** combines drag-and-drop uploads, Gemini extraction, and LangChain tooling to normalize CSV, XLS, or PDF statements. **Duplicate guards** and semantic similarity checks protect the ledger before final commit.
 
+#### Duplicate Receipt Protection (Import job id)
+
+Each receipt import also generates a deterministic hash scoped by user ID, so the same document can never be reprocessed. When a match is detected, the workflow blocks the upload with the precise error message “this receipt has been converted to a transaction already.”
+
 ### Transactions Workspace
 
 The **core ledger canvas** features rapid filters, inline edits, and a transaction drawer tuned for keyboard-first workflows. Zod-backed forms guarantee category, amount, and metadata integrity while delivering real-time totals and context chips.
@@ -75,42 +172,11 @@ The **core ledger canvas** features rapid filters, inline edits, and a transacti
 
 ## System Architecture
 
-```mermaid
-flowchart LR
-    subgraph Client
-        UI[Next.js + shadcn/ui]
-        AIAgent[Vercel AI Elements]
-    end
-
-    subgraph Edge
-        Clerk[(Clerk Auth & Billing)]
-        Arcjet[(Arcjet Shield)]
-    end
-
-    subgraph App
-        Actions[Server Actions]
-        API[Route Handlers]
-        LangGraph[LangGraph Orchestrator]
-    end
-
-    subgraph Data
-        Prisma[(Prisma ORM)]
-        Neon[(Neon PostgreSQL + pgvector)]
-    end
-
-    subgraph Workers
-        Inngest[(Inngest Cron & Events)]
-        Nodemailer[(Email Alerts)]
-    end
-
-    UI --> Clerk --> Actions
-    AIAgent --> LangGraph --> Prisma
-    Actions --> Prisma --> Neon
-    API --> Arcjet --> Actions
-    Inngest --> Prisma
-    Inngest --> Nodemailer
-    LangGraph --> Inngest
-```
+<p align="center">
+    <img src="docs/project-architecture.png" alt="Spendix relational schema" width="880" style="border-radius:12px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
+    <br />
+    <sub>Small overview of System Architecture how data is flowing</sub>
+</p>
 
 - **Type Safety Everywhere** — Shared schemas span forms, server actions, and persistence layers.
 - **Vector Intelligence** — pgvector-backed memory ensures AI answers are grounded in first-party data.
@@ -134,7 +200,6 @@ flowchart LR
 3. `pnpm exec prisma migrate deploy`
 4. (Optional) `pnpm seed`
 5. `pnpm dev`
-6. (Optional) `npx inngest-cli@latest dev --env-file=.env`
 
 ### Example `.env`
 
@@ -172,6 +237,8 @@ EMAIL_ALERT_FROM="Spendix Alerts <alerts@spendix.app>"
 - `pnpm dev` — Next.js dev server with hot reload.
 - `pnpm lint` — ESLint across the monorepo.
 - `pnpm build` — Production bundle with type checks.
+- `pnpm inggest` — Launch inggest dev server.
+- `pnpm webhook` — Expose localhost via ngrok for Clerk webhooks.
 - `pnpm start` — Launch compiled output.
 - `pnpm format` / `pnpm format:check` — Prettier helpers.
 
@@ -192,6 +259,6 @@ EMAIL_ALERT_FROM="Spendix Alerts <alerts@spendix.app>"
 ## Author
 
 **Pritam Maity — Full-Stack & AI Engineer**  
-🔗 [https://sped-ix.app](https://spedix.app)
+🔗 [https://spedix.app](https://spedix.app)
 
 Always open to collaboration, code reviews, or deep dives into Spendix’s architecture—reach out!
