@@ -25,100 +25,38 @@ AI powered personal finance management platform to track accounts, income, and e
   </button>
 </a>
 
+<h2 align="center">Tech Stack Used</h2>
 </div>
 
-## Visual Tour
 
-Explore key Spendix surfaces directly in the README. Drag horizontally (or swipe on touch) to advance the slideshow.
+<p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" height="48" style="margin:8px;" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" height="48" style="margin:8px;" />
+  <img src="https://avatars.githubusercontent.com/u/139895814?s=200&v=4" alt="shadcn/ui" height="48" style="margin:8px; border-radius:12px;" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="Tailored CSS" height="48" style="margin:8px;" />
+  <img src="https://raw.githubusercontent.com/colinhacks/zod/master/logo.svg" alt="Zod" height="48" style="margin:8px;" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prisma/prisma-original.svg" alt="Prisma" height="48" style="margin:8px;" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="Neon + pgvector" height="48" style="margin:8px;" />
+  <img src="docs/icons/langgraph-color.svg" alt="LangChain / LangGraph" height="48" style="margin:8px;" />
+  <img src="https://cdn.brandfetch.io/idDpCfN4VD/w/400/h/400/theme/dark/icon.png?c=1bxid64Mup7aczewSAYMX&t=1759982772575" alt="Vercel AI SDK" height="48" style="margin:8px; border-radius:12px;" />
+  <img src="docs/icons/gemini-color.svg" alt="Gemini" height="48" style="margin:8px;" />
+  <img src="https://cdn.brandfetch.io/idK0lowSpn/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1765345250251" alt="Inngest" height="48" style="margin:8px; border-radius:12px;" />
+  <img src="https://cdn.brandfetch.io/idwI9Qq-AB/w/128/h/129/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1766936314312" alt="Arcjet" height="48" style="margin:8px; border-radius:12px; background:#ffffff;" />
+</p>
+
+<p align="center">Explore the Spendix dashboard layout at a glance.</p>
 
 <div align="center">
-    <div style="display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; padding:16px; border:1px solid #e5e7eb; border-radius:16px; background:rgba(15,23,42,0.04);">
-        <img src="docs/landing-page.png" alt="Spendix marketing homepage" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
-        <img src="docs/dashboard-page.png" alt="Spendix dashboard view" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
-        <img src="docs/accounts-page.png" alt="Accounts overview" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
-        <img src="docs/account-id-page.png" alt="Account detail drill-down" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
-        <img src="docs/ai-imports-page.png" alt="AI imports workspace" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
-        <img src="docs/budget-page.png" alt="Budget insights" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
-        <img src="docs/recurring-page.png" alt="Recurring transaction planner" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
-        <img src="docs/user-porfile-page.png" alt="User profile and entitlements" style="height:360px; border-radius:12px; flex:0 0 auto; scroll-snap-align:center; box-shadow:0 12px 24px rgba(15,23,42,0.25);" />
-    </div>
-    <sub>Tip: drag sideways on desktop or swipe on mobile to cycle through each view.</sub>
+    <img src="docs/dashboard-page.png" alt="Spendix dashboard view" style="max-width:100%; border-radius:16px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
 </div>
 
-### Schema Overview
+<h3 align="center">Schema Overview</h3>
 
 <p align="center">
     <img src="docs/schema.png" alt="Spendix relational schema" width="880" style="border-radius:12px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
     <br />
     <sub>Entity relationships powering accounts, budgets, AI memory, and plan entitlements.</sub>
 </p>
-
-## Stack Signals
-
-<div style="display:flex; justify-content:center; width:100%;">
-  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:18px; width:100%; max-width:1080px; margin:0 auto; padding:12px 0;">
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" height="44" style="padding:8px; background:#ffffff; border-radius:12px;" />
-        <div><strong>Next.js 16</strong></div>
-        <sub>App Router + Server Actions</sub>
-    </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" height="44" />
-        <div><strong>TypeScript</strong></div>
-        <sub>Type-safe finance primitives</sub>
-    </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
-        <img src="https://avatars.githubusercontent.com/u/139895814?s=200&v=4" alt="shadcn" height="44" style="border-radius:12px;" />
-        <div><strong>shadcn/ui</strong></div>
-        <sub>Composable design system</sub>
-    </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS" height="44" />
-        <div><strong>Tailored CSS</strong></div>
-        <sub>Tokenized theming</sub>
-    </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
-        <img src="https://raw.githubusercontent.com/colinhacks/zod/master/logo.svg" alt="Zod" height="44" />
-        <div><strong>Zod</strong></div>
-        <sub>Validation + inference</sub>
-    </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prisma/prisma-original.svg" alt="Prisma" height="44" />
-        <div><strong>Prisma</strong></div>
-        <sub>Typed ORM</sub>
-    </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="Neon" height="44" />
-        <div><strong>Neon + pgvector</strong></div>
-        <sub>Vectorized storage</sub>
-    </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
-        <img src="docs/icons/langgraph-color.svg" alt="LangChain" height="44" />
-        <div><strong>LangChain / LangGraph</strong></div>
-        <sub>Agent routing</sub>
-    </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
-        <img src="https://cdn.brandfetch.io/idDpCfN4VD/w/400/h/400/theme/dark/icon.png?c=1bxid64Mup7aczewSAYMX&t=1759982772575" alt="Vercel AI" height="44" style="border-radius:12px;" />
-        <div><strong>Vercel AI SDK</strong></div>
-        <sub>Chat UX surface</sub>
-    </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
-        <img src="docs/icons/gemini-color.svg" alt="Gemini" height="44" />
-        <div><strong>Gemini</strong></div>
-        <sub>Reasoning models</sub>
-    </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
-        <img src="https://cdn.brandfetch.io/idK0lowSpn/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1765345250251" alt="Inngest" height="44" />
-        <div><strong>Inngest</strong></div>
-        <sub>Deterministic automations</sub>
-    </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(15,23,42,0.08);">
-        <img src="https://cdn.brandfetch.io/idwI9Qq-AB/w/128/h/129/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1766936314312" alt="Arcjet" height="44" style="border-radius:12px; background:#ffffff;" />
-        <div><strong>Arcjet</strong></div>
-        <sub>Bot defense + rate limits</sub>
-    </div>
-  </div>
-</div>
 
 ## Product Pillars
 
