@@ -57,75 +57,75 @@ Higher tiers inherit every capability from the preceding plans, with premium-onl
     <tbody>
         <tr>
             <td>Income &amp; expense tracking</td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>Monthly budget setup</td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>Search &amp; filter transactions</td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>AI receipt scan (3/month)</td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>Multiple accounts</td>
-            <td><span style="color:#ef4444;">&#10007;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td>❌</td>
+            <td>✅</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>Unlimited AI receipt scans</td>
-            <td><span style="color:#ef4444;">&#10007;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td>❌</td>
+            <td>✅</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>Recurring transactions</td>
-            <td><span style="color:#ef4444;">&#10007;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td>❌</td>
+            <td>✅</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>Budget alert emails</td>
-            <td><span style="color:#ef4444;">&#10007;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td>❌</td>
+            <td>✅</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>AI spending insights</td>
-            <td><span style="color:#ef4444;">&#10007;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td>❌</td>
+            <td>✅</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>AI finance chatbot</td>
-            <td><span style="color:#ef4444;">&#10007;</span></td>
-            <td><span style="color:#ef4444;">&#10007;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td>❌</td>
+            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>AI bulk insert (statement or screenshot ingest)</td>
-            <td><span style="color:#ef4444;">&#10007;</span></td>
-            <td><span style="color:#ef4444;">&#10007;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td>❌</td>
+            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>CSV, Excel &amp; PDF export</td>
-            <td><span style="color:#ef4444;">&#10007;</span></td>
-            <td><span style="color:#ef4444;">&#10007;</span></td>
-            <td><span style="color:#22c55e;">&#10003;</span></td>
+            <td>❌</td>
+            <td>❌</td>
+            <td>✅</td>
         </tr>
     </tbody>
 </table>
@@ -167,10 +167,46 @@ The **core ledger canvas** features rapid filters, inline edits, and a transacti
 
 **Vercel AI Elements** drive a conversational surface that blends short-term context with long-term embeddings. LangGraph routes between analysis, insight, and action nodes so Spendix can summarize budgets, draft next steps, or queue transactions just by chatting.
 
-<p align="center">
+<!-- <p align="center">
     <img src="public/docs/langraph%20workflow.png" alt="LangGraph workflow" width="880" style="border-radius:12px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
     <br />
     <sub>Workflow showing how LangGraph agents branch between reasoning, memory refresh, and ledger actions.</sub>
+</p> -->
+
+```mermaid
+---
+config:
+  theme: neo-dark
+---
+flowchart TB
+    A([⭘ Start]) --> B([💡 Agent Node])
+    B --> C{❓ Type of Question?}
+    C -->|Direct Question| E([🏁 End])
+    C -->|Tool Needed| D([🛠 Tool Node])
+    C -->|RAG / Memory Needed| M([📚 RAG Memory Node])
+    D --> F{🔍 Tool Exists?}
+    F -->|Yes| G([⚡ Run Tool & Return ToolMessage])
+    F -->|No| H([❌ Return Error ToolMessage])
+    G --> B
+    H --> B
+    M --> R{🔍 RAG Tool Exists?}
+    R -->|Yes| S([📖 Fetch from Memory & Return Response])
+    R -->|No| T([❌ Return Error Message])
+    S --> B
+    T --> B
+    B --> E
+    subgraph MemoryFlow["🧠 MemoryGraph"]
+        I([⭘ Start]) --> J([📝 Summarize Node])
+        J --> K([💾 Remember Node])
+        K --> L([🏁 End])
+    end
+    classDef circle fill:#1f2937,stroke:#3b82f6,stroke-width:2px,color:#ffffff;
+    classDef square fill:#111827,stroke:#10b981,stroke-width:2px,color:#ffffff;
+    class A,E,I,L circle;
+    class B,D,M,G,H,S,T,J,K square;
+```
+<P align="center">
+<sub>Workflow showing how LangGraph agents branch between reasoning, memory refresh, and ledger actions.</sub>
 </p>
 
 ### Safeguards & Notifications
@@ -179,11 +215,52 @@ The **core ledger canvas** features rapid filters, inline edits, and a transacti
 
 ## System Architecture
 
-<p align="center">
+<!-- <p align="center">
     <img src="public/docs/project-architecture.png" alt="Spendix relational schema" width="880" style="border-radius:12px; box-shadow:0 16px 32px rgba(15,23,42,0.2);" />
     <br />
     <sub>Small overview of System Architecture how data is flowing</sub>
+</p> -->
+
+```mermaid
+flowchart LR
+    subgraph Client
+        UI[Next.js + shadcn/ui]
+        AIAgent[Vercel AI Elements]
+    end
+
+    subgraph Edge
+        Clerk[(Clerk Auth & Billing)]
+        Arcjet[(Arcjet Shield)]
+    end
+
+    subgraph App
+        Actions[Server Actions]
+        API[Route Handlers]
+        LangGraph[LangGraph Orchestrator]
+    end
+
+    subgraph Data
+        Prisma[(Prisma ORM)]
+        Neon[(Neon PostgreSQL + pgvector)]
+    end
+
+    subgraph Workers
+        Inngest[(Inngest Cron & Events)]
+        Nodemailer[(Email Alerts)]
+    end
+
+    UI --> Clerk --> Actions
+    AIAgent --> LangGraph --> Prisma
+    Actions --> Prisma --> Neon
+    API --> Arcjet --> Actions
+    Inngest --> Prisma
+    Inngest --> Nodemailer
+    LangGraph --> Inngest
+```
+<P align="center">
+<sub>Small overview of System Architecture how data is flowing</sub>
 </p>
+
 
 - **Type Safety Everywhere** — Shared schemas span forms, server actions, and persistence layers.
 - **Vector Intelligence** — pgvector-backed memory ensures AI answers are grounded in first-party data.

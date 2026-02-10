@@ -1,0 +1,34 @@
+flowchart LR
+    subgraph Client
+        UI[Next.js + shadcn/ui]
+        AIAgent[Vercel AI Elements]
+    end
+
+    subgraph Edge
+        Clerk[(Clerk Auth & Billing)]
+        Arcjet[(Arcjet Shield)]
+    end
+
+    subgraph App
+        Actions[Server Actions]
+        API[Route Handlers]
+        LangGraph[LangGraph Orchestrator]
+    end
+
+    subgraph Data
+        Prisma[(Prisma ORM)]
+        Neon[(Neon PostgreSQL + pgvector)]
+    end
+
+    subgraph Workers
+        Inngest[(Inngest Cron & Events)]
+        Nodemailer[(Email Alerts)]
+    end
+
+    UI --> Clerk --> Actions
+    AIAgent --> LangGraph --> Prisma
+    Actions --> Prisma --> Neon
+    API --> Arcjet --> Actions
+    Inngest --> Prisma
+    Inngest --> Nodemailer
+    LangGraph --> Inngest
