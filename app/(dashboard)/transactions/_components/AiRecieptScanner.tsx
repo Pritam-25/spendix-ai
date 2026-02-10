@@ -2,6 +2,8 @@
 
 import { aiScanReceiptAction } from "@/app/actions/ai.action";
 import { Button } from "@/components/ui/button";
+import { useUserPlan } from "@/lib/hooks/useUserPlan";
+import { PlanType } from "@prisma/client";
 import { CameraIcon, Loader2 } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -28,18 +30,19 @@ export interface UsageStatus {
 interface ReceiptScannerProps {
   onScanComplete: (data: ScannedReceipt) => void;
   initialUsage: UsageStatus;
+  isFreeUser: boolean;
 }
 
 export default function AiReceiptScanner({
   onScanComplete,
   initialUsage,
+  isFreeUser,
 }: ReceiptScannerProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
   const [usage, setUsage] = useState<UsageStatus>(initialUsage);
 
-  const canScan = !usage?.isLimited;
-  console.log("AI Receipt Scan - canScan:", canScan, "usage:", usage);
+  const canScan = !usage?.isLimited && isFreeUser;
 
   const handleReceiptScan = (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -121,7 +124,7 @@ export default function AiReceiptScanner({
         </Button>
 
         {/* USAGE DISPLAY */}
-        {usage && Number.isFinite(usage.limit) && (
+        {isFreeUser && usage && Number.isFinite(usage.limit) && (
           <div className="flex flex-col items-center gap-1 text-sm">
             <div className="text-muted-foreground">
               <span className="font-semibold text-foreground">
@@ -143,7 +146,7 @@ export default function AiReceiptScanner({
         )}
 
         {/* LIMIT MESSAGE */}
-        {usage?.isLimited && (
+        {isFreeUser && usage?.isLimited && (
           <p className="text-sm text-red-500 font-medium text-center">
             You’ve reached your free AI scan limit. Upgrade to continue.
           </p>

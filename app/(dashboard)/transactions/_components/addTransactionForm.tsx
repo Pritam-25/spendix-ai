@@ -17,6 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Account,
   AccountType,
+  PlanType,
   RecurringInterval,
   TransactionType,
 } from "@prisma/client";
@@ -55,6 +56,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { useFeature } from "@/lib/hooks/useFeature";
 import { FEATURES } from "@/lib/config/features";
+import { useUserPlan } from "@/lib/hooks/useUserPlan";
 
 type AddTransactionFormProps = {
   accounts: Account[];
@@ -162,6 +164,19 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
     [category, transactionType],
   );
 
+  const resolveScanCategoryId = (scannedCategory?: string) => {
+    if (!scannedCategory) return undefined;
+    const normalized = scannedCategory.trim().toLowerCase();
+
+    const match = category.find((cat) => {
+      const idMatch = cat.id.toLowerCase() === normalized;
+      const nameMatch = cat.name.trim().toLowerCase() === normalized;
+      return idMatch || nameMatch;
+    });
+
+    return match?.id;
+  };
+
   const onSubmit = (values: TransactionFormType) => {
     startTransition(async () => {
       const result =
@@ -228,6 +243,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
         {!editmode && (
           <AiRecieptScanner
             initialUsage={initialUsage!}
+            isFreeUser={useUserPlan() === PlanType.FREE}
             onScanComplete={(result) => {
               setIsReceiptScan(true);
               setImportId(result.importId);
@@ -236,7 +252,8 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
               if (result.date) setValue("date", result.date);
               if (result.description)
                 setValue("description", result.description);
-              if (result.category) setValue("category", result.category);
+              const resolvedCategory = resolveScanCategoryId(result.category);
+              if (resolvedCategory) setValue("category", resolvedCategory);
             }}
           />
         )}
