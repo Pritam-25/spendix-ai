@@ -79,6 +79,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
   const { accounts, category, editmode, editId, initialData, initialUsage } =
     props;
 
+  const canUseAiReceiptScan = useFeature(FEATURES.AI_RECEIPT_SCAN);
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl");
@@ -243,7 +244,7 @@ export default function AddTransactionForm(props: AddTransactionFormProps) {
         {!editmode && (
           <AiRecieptScanner
             initialUsage={initialUsage!}
-            isFreeUser={useUserPlan() === PlanType.FREE}
+            featureEnabled={canUseAiReceiptScan}
             onScanComplete={(result) => {
               setIsReceiptScan(true);
               setImportId(result.importId);

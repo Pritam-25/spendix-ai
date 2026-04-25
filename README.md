@@ -205,6 +205,7 @@ flowchart TB
     class A,E,I,L circle;
     class B,D,M,G,H,S,T,J,K square;
 ```
+
 <P align="center">
 <sub>Workflow showing how LangGraph agents branch between reasoning, memory refresh, and ledger actions.</sub>
 </p>
@@ -276,10 +277,10 @@ flowchart LR
     style Edge fill:transparent
     style Client fill:transparent
 ```
+
 <P align="center">
 <sub>Small overview of System Architecture how data is flowing</sub>
 </p>
-
 
 - **Type Safety Everywhere** — Shared schemas span forms, server actions, and persistence layers.
 - **Vector Intelligence** — pgvector-backed memory ensures AI answers are grounded in first-party data.

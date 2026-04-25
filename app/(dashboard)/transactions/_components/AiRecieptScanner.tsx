@@ -30,19 +30,20 @@ export interface UsageStatus {
 interface ReceiptScannerProps {
   onScanComplete: (data: ScannedReceipt) => void;
   initialUsage: UsageStatus;
-  isFreeUser: boolean;
+  featureEnabled: boolean; // true for PRO/PREMIUM users who have the feature
 }
 
 export default function AiReceiptScanner({
   onScanComplete,
   initialUsage,
-  isFreeUser,
+  featureEnabled,
 }: ReceiptScannerProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
   const [usage, setUsage] = useState<UsageStatus>(initialUsage);
 
-  const canScan = !usage?.isLimited && isFreeUser;
+  // Paid users with the feature can always scan; free users are limited by usage
+  const canScan = featureEnabled ? true : !usage?.isLimited;
 
   const handleReceiptScan = (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -124,7 +125,7 @@ export default function AiReceiptScanner({
         </Button>
 
         {/* USAGE DISPLAY */}
-        {isFreeUser && usage && Number.isFinite(usage.limit) && (
+        {!featureEnabled && usage && Number.isFinite(usage.limit) && (
           <div className="flex flex-col items-center gap-1 text-sm">
             <div className="text-muted-foreground">
               <span className="font-semibold text-foreground">
@@ -146,7 +147,7 @@ export default function AiReceiptScanner({
         )}
 
         {/* LIMIT MESSAGE */}
-        {isFreeUser && usage?.isLimited && (
+        {!featureEnabled && usage?.isLimited && (
           <p className="text-sm text-red-500 font-medium text-center">
             You’ve reached your free AI scan limit. Upgrade to continue.
           </p>

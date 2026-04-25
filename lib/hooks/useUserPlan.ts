@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { PlanType } from "@prisma/client";
 
-export function useUserPlan(): PlanType {
+export function useUserPlan(): PlanType | undefined {
   const { has } = useAuth();
-  const [plan, setPlan] = useState<PlanType>(PlanType.FREE);
+  const [plan, setPlan] = useState<PlanType | undefined>(undefined);
 
   useEffect(() => {
     if (!has) return;
