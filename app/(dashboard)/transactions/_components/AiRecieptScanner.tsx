@@ -2,8 +2,6 @@
 
 import { aiScanReceiptAction } from "@/app/actions/ai.action";
 import { Button } from "@/components/ui/button";
-import { useUserPlan } from "@/lib/hooks/useUserPlan";
-import { PlanType } from "@prisma/client";
 import { CameraIcon, Loader2 } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";

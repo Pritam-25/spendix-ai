@@ -17,7 +17,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Account,
   AccountType,
-  PlanType,
   RecurringInterval,
   TransactionType,
 } from "@prisma/client";
@@ -56,7 +55,6 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { useFeature } from "@/lib/hooks/useFeature";
 import { FEATURES } from "@/lib/config/features";
-import { useUserPlan } from "@/lib/hooks/useUserPlan";
 
 type AddTransactionFormProps = {
   accounts: Account[];
